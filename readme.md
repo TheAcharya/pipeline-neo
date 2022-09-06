@@ -2,6 +2,10 @@
 
 Pipeline is a Swift framework for working with FCPXML files easily.
 
+## About (this fork)
+
+Converted from XCode project to Swift package. Minor fixes applied, see [changelog](https://github.com/vzhd1701/pipeline/blob/master/CHANGELOG.md).
+
 ## About
 Pipeline extends the XMLDocument and XMLElement classes in the Foundation framework. It adds properties and methods that simplify the creation and management of FCPXML document structure.
 
@@ -19,19 +23,32 @@ Pipeline currently works with FCPXML v1.6 through v1.8 files.
 ## Documentation
 The latest framework documentation is viewable at [reuelk.github.io/pipeline](https://reuelk.github.io/pipeline) and is also included in the project's `docs` folder as HTML files.
 
-## Adding the Framework to a Project
-To add the framework to your Xcode project:
+## Using this package in your project
 
-1. Clone or download the repository.
-2. Open the `Pipeline.xcodeproj` file in Xcode.
-3. Build the project by pressing Command-B.
-4. Right-click on the `Pipeline.framework` framework in the "Products" folder in the Navigator pane. Select "Show in Finder".
-5. Drag the selected folder into your Xcode project's Navigator pane.
-6. Xcode will prompt you to set some options for adding the folder. Generally, "Copy items if needed", "Create groups" and your application target should be selected.
-7. Select your project in the Navigator pane and go to "Build Phases". Above "Target Dependencies", click the + icon and select "New Copy Files Phase"
-8. Under "Copy Files", select "Frameworks" as the destination.
-8. Click on the plus sign below and add the Pipeline framework.
-9. Add `import Pipeline` to the top of all Swift files that need to use the framework.
+To use this package in a SwiftPM project, you need to set it up as a package dependency:
+
+```swift
+// swift-tools-version:5.6
+import PackageDescription
+
+let package = Package(
+  name: "MyPackage",
+  dependencies: [
+    .package(
+      url: "https://github.com/vzhd1701/pipeline.git",
+      .upToNextMajor(from: "0.1.0") // or `.upToNextMinor
+    )
+  ],
+  targets: [
+    .target(
+      name: "MyTarget",
+      dependencies: [
+        .product(name: "Pipeline", package: "Pipeline")
+      ]
+    )
+  ]
+)
+```
 
 ## Usage Examples
 
