@@ -9,6 +9,9 @@
 import Cocoa
 import CoreMedia
 
+#if canImport(Logging)
+import Logging
+#endif
 
 
 /// Contains miscellaneous utility methods for processing FCPXML data.
@@ -303,7 +306,7 @@ public struct FCPXMLUtility {
 	public func projectTime(forClip clip: XMLElement, inProject project: XMLElement) -> CMTime? {
 		
 		guard let clipElementOffset = clip.fcpxOffset else {
-			print("clipElementOffset is nil")
+			debugLog("clipElementOffset is nil")
 			return nil
 		}
 		
@@ -312,12 +315,12 @@ public struct FCPXMLUtility {
 		if clipParentElement.name == "spine" && clipParentElement.fcpxOffset != nil { // If the clip is in a secondary storyline
 			
 			guard let spineOffset = clipParentElement.fcpxOffset else {
-				print("spineOffset is nil")
+				debugLog("spineOffset is nil")
 				return nil
 			}
 			
 			guard let spineParent = clipParentElement.parent else {
-				print("spineParent is nil")
+				debugLog("spineParent is nil")
 				return nil
 			}
 			
@@ -326,7 +329,7 @@ public struct FCPXMLUtility {
 			let newSpineOffset = CMTimeAdd(spineOffset, clipElementOffset)
 			
 			guard let spineParentOffset = FCPXMLUtility().parentTime(fromLocalTime: newSpineOffset, forClip: spineParentElement) else {
-				print("spineParentOffset is nil")
+				debugLog("spineParentOffset is nil")
 				return nil
 			}
 			
@@ -415,7 +418,7 @@ public struct FCPXMLUtility {
 					if char == "\n" && skipNextNewLineReplacement == false {
 						
 						newSegment += "&#xA;"
-						print("Found new line character in attribute value")
+						debugLog("Found new line character in attribute value")
 						
 					} else if char == "\"" {
 						
@@ -827,8 +830,16 @@ public struct FCPXMLUtility {
 		*/
 		
 	}
-	
 
-	
+#if canImport(Logging)
+  	private static let logger = Logger(label: "Pipeline.FCPXMLUtility")
+
+  	private func debugLog(_ message: String) {
+		FCPXMLUtility.logger.debug("\(message)")
+	}
+#else
+	private func debugLog(_ message: String) {
+		print(message)
+	}
+#endif
 }
-

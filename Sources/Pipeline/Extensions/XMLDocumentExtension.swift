@@ -9,6 +9,11 @@
 import Cocoa
 import CoreMedia
 
+#if canImport(Logging)
+import Logging
+#endif
+
+
 extension XMLDocument {
 	
 	// MARK: - Initializing XMLDocument Objects
@@ -672,7 +677,7 @@ extension XMLDocument {
 		do {
 			try self.setDTDToFCPXML(version: version)
 		} catch {
-			print("Error setting the DTD.")
+			debugLog("Error setting the DTD.")
 			self.dtd = nil
 			throw error
 		}
@@ -680,12 +685,13 @@ extension XMLDocument {
 		do {
 			try self.validate()
 		} catch {
-			print("The document is invalid. It does not conform to the FCPXML v\(version) Document Type Definition.")
+			debugLog("The document is invalid. It does not conform to the FCPXML v\(version) Document Type Definition.")
+			debugLog("Validation Error: \(error)")
 			self.dtd = nil
 			throw error
 		}
 		
-		print("The document conforms to the FCPXML v\(version) Document Type Definition.")
+		debugLog("The document conforms to the FCPXML v\(version) Document Type Definition.")
 		self.dtd = nil
 	}
 	
@@ -720,14 +726,14 @@ extension XMLDocument {
 		}
 		
 		guard let unwrappedURL = dtdURL else {
-			print("Couldn't find the DTD file.")
+			debugLog("Couldn't find the DTD file.")
 			throw FCPXMLDocumentError.DTDResourceNotFound
 		}
 		
 		do {
 			self.dtd? = try XMLDTD(contentsOf: unwrappedURL, options: [.nodePreserveWhitespace, .nodePrettyPrint, .nodeCompactEmptyElement])
 		} catch {
-			print("Error reading the DTD file.")
+			debugLog("Error reading the DTD file.")
 			throw error
 		}
 		
@@ -735,11 +741,11 @@ extension XMLDocument {
 			self.dtd!.name = "fcpxml"
 			self.isStandalone = false
 			
-			print("DTD set successfully.")
+			debugLog("DTD set successfully.")
 			return
 			
 		} else {
-			print("Failed to set the DTD.")
+			debugLog("Failed to set the DTD.")
 			return
 		}
 	}
@@ -850,4 +856,16 @@ extension XMLDocument {
 		case DTDResourceNotFound
 		case DTDResourceUnreadable
 	}
+
+#if canImport(Logging)
+  	private static let logger = Logger(label: "Pipeline.XMLDocument")
+
+  	private func debugLog(_ message: String) {
+		XMLDocument.logger.debug("\(message)")
+	}
+#else
+	private func debugLog(_ message: String) {
+		print(message)
+	}
+#endif
 }
