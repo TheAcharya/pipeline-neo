@@ -134,5 +134,14 @@ do {
 }
 ```
 
-## Authors
-Reuel Kim
+## Credits
+
+Original Work by [Reuel Kim](https://github.com/reuelk) ([0.1.0 ... 0.1.1](https://github.com/reuelk/pipeline))
+
+## License
+
+Licensed under the MIT license. See [LICENSE](https://github.com/TheAcharya/pipeline-neo/blob/main/LICENSE) for details.
+
+## Reporting Bugs
+
+For bug reports, feature requests and other suggestions you can create [a new issue](https://github.com/TheAcharya/pipeline-neo/issues) to discuss.
