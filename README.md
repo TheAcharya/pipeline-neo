@@ -136,7 +136,7 @@ do {
 
 ## Credits
 
-Original Work by [Reuel Kim](https://github.com/reuelk) ([0.1.0 ... 0.1.1](https://github.com/reuelk/pipeline))
+Original Work by [Reuel Kim](https://github.com/reuelk) ([0.5 ... 0.6](https://github.com/reuelk/pipeline))
 
 ## License
 
