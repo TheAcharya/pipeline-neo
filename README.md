@@ -33,7 +33,7 @@ let package = Package(
   name: "MyPackage",
   dependencies: [
     .package(
-      url: "https://github.com/vzhd1701/pipeline.git",
+      url: "https://github.com/TheAcharya/pipeline-neo",
       .upToNextMajor(from: "0.1.0") // or `.upToNextMinor
     )
   ],
@@ -41,7 +41,7 @@ let package = Package(
     .target(
       name: "MyTarget",
       dependencies: [
-        .product(name: "Pipeline", package: "Pipeline")
+        .product(name: "pipeline-neo", package: "pipeline-neo")
       ]
     )
   ]
