@@ -24,28 +24,29 @@
 - Easily manipulate timing values.
 - Output FCPXML files with proper text formatting.
 - Validate FCPXML documents with the DTD.
+- Works with FCPXML v1.6 through v1.8 files
 
 ## Table of contents
 
 - [Background](#background)
-- [Installation](#installation)
 - [Documentation](#documentation)
 - [Usage](#Usage)
 - [Examples](#examples)
+  - [Open an FCPXML File](#open-an-fcpxml-file)
+  - [List the Names of All Events](#list-the-names-of-all-events)
+  - [Create and Add a New Event](#create-and-add-a-new-event)
+  - [Get Clips That Match a Resource ID and Delete Them](#get-clips-that-match-a-resource-id-and-delete-them)
+  - [Display the Duration of a Clip](#display-the-duration-of-a-clip)
+  - [Save the FCPXML File](#save-the-fcpxml-file)
 - [Credits](#credits)
 - [License](#license)
 - [Reporting Bugs](#reporting-bugs)
 
 ## Background
 
-## About
 Pipeline extends the XMLDocument and XMLElement classes in the Foundation framework. It adds properties and methods that simplify the creation and management of FCPXML document structure.
 
-Converted from XCode project to Swift package. Minor fixes applied, see [changelog](https://github.com/TheAcharya/pipeline/blob/main/CHANGELOG.md).
-
 Pipeline also includes supplemental classes and a CMTime extension to help in the processing of FCPXML data. For example, you can easily convert a timing value that looks like "59983924/30000s" in the XML to "00:33:19,464" for display in an app.
-
-Pipeline currently works with FCPXML v1.6 through v1.8 files.
 
 ## Documentation
 The latest framework documentation is viewable at [reuelk.github.io/pipeline](https://reuelk.github.io/pipeline) and is also included in the project's `docs` folder as HTML files.
