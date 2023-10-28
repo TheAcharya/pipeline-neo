@@ -25,6 +25,19 @@
 - Output FCPXML files with proper text formatting.
 - Validate FCPXML documents with the DTD.
 
+## Table of contents
+
+- [Background](#background)
+- [Installation](#installation)
+- [Documentation](#documentation)
+- [Usage](#Usage)
+- [Examples](#examples)
+- [Credits](#credits)
+- [License](#license)
+- [Reporting Bugs](#reporting-bugs)
+
+## Background
+
 ## About
 Pipeline extends the XMLDocument and XMLElement classes in the Foundation framework. It adds properties and methods that simplify the creation and management of FCPXML document structure.
 
@@ -37,7 +50,7 @@ Pipeline currently works with FCPXML v1.6 through v1.8 files.
 ## Documentation
 The latest framework documentation is viewable at [reuelk.github.io/pipeline](https://reuelk.github.io/pipeline) and is also included in the project's `docs` folder as HTML files.
 
-## Using this package in your project
+## Usage
 
 To use this package in a SwiftPM project, you need to set it up as a package dependency:
 
@@ -64,7 +77,7 @@ let package = Package(
 )
 ```
 
-## Usage Examples
+## Examples
 
 ### Open an FCPXML File
 Subsequent examples use the `fcpxmlDoc` object declared here.
