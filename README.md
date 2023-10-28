@@ -170,6 +170,8 @@ do {
 
 Original Work by [Reuel Kim](https://github.com/reuelk) ([0.5 ... 0.6](https://github.com/reuelk/pipeline))
 
+Icon Design by [Bor Jen Goh](https://www.artstation.com/borjengoh)
+
 ## License
 
 Licensed under the MIT license. See [LICENSE](https://github.com/TheAcharya/pipeline-neo/blob/main/LICENSE) for details.
