@@ -1,6 +1,21 @@
-# Pipeline Neo
+<a href="https://github.com/TheAcharya/pipeline-neo"><img src="https://github.com/TheAcharya/pipeline-neo/blob/main/assets/Pipeline%20Neo_Icon.png?raw=true" width="200" alt="App icon" align="left"/>
 
-Pipeline is a Swift framework for working with FCPXML files easily.
+<div>
+<h1>Pipeline Neo</h1>
+<!-- license -->
+<a href="https://github.com/TheAcharya/pipeline-neo/blob/main/LICENSE">
+<img src="http://img.shields.io/badge/license-MIT-lightgrey.svg?style=flat" alt="license"/>
+</a>
+<!-- platform -->
+<a href="https://github.com/TheAcharya/pipeline-neo">
+<img src="https://img.shields.io/badge/platform-macOS-lightgrey.svg?style=flat" alt="platform"/>
+</a>
+<p>
+<p>A Swift framework for working with Final Cut Pro's FCPXML.</p>
+
+<br>
+<br>
+</div>
 
 ## About
 Pipeline extends the XMLDocument and XMLElement classes in the Foundation framework. It adds properties and methods that simplify the creation and management of FCPXML document structure.
