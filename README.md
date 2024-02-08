@@ -38,6 +38,7 @@
   - [Get Clips That Match a Resource ID and Delete Them](#get-clips-that-match-a-resource-id-and-delete-them)
   - [Display the Duration of a Clip](#display-the-duration-of-a-clip)
   - [Save the FCPXML File](#save-the-fcpxml-file)
+- [Understanding FCPXML](#understanding-fcpxml)
 - [Credits](#credits)
 - [License](#license)
 - [Reporting Bugs](#reporting-bugs)
@@ -165,6 +166,10 @@ do {
 	print("Error writing to file.")
 }
 ```
+
+## Understanding FCPXML
+
+Further information on FCPXML can be found [here](https://fcp.cafe/developers/fcpxml/).
 
 ## Credits
 
