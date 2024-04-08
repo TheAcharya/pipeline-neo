@@ -1,7 +1,10 @@
-<a href="https://github.com/TheAcharya/pipeline-neo"><img src="https://github.com/TheAcharya/pipeline-neo/blob/main/assets/Pipeline%20Neo_Icon.png?raw=true" width="200" alt="App icon" align="left"/>
+<p align="center">
+  <a href="https://github.com/TheAcharya/pipeline-neo"><img src="https://github.com/TheAcharya/pipeline-neo/blob/main/assets/Pipeline%20Neo_Icon.png?raw=true" height="200">
+  <h1 align="center">Pipeline Neo</h1>
+</p>
 
-<div>
-<h1>Pipeline Neo</h1>
+
+<p align="center">
 <!-- license -->
 <a href="https://github.com/TheAcharya/pipeline-neo/blob/main/LICENSE">
 <img src="http://img.shields.io/badge/license-MIT-lightgrey.svg?style=flat" alt="license"/>
@@ -10,12 +13,9 @@
 <a href="https://github.com/TheAcharya/pipeline-neo">
 <img src="https://img.shields.io/badge/platform-macOS-lightgrey.svg?style=flat" alt="platform"/>
 </a>
-<p>
-<p>A Swift framework for working with Final Cut Pro's FCPXML.</p>
+</p>
 
-<br>
-<br>
-</div>
+A Swift framework for working with Final Cut Pro's FCPXML.
 
 ## Core Features
 
@@ -25,6 +25,9 @@
 - Output FCPXML files with proper text formatting.
 - Validate FCPXML documents with the DTD.
 - Works with FCPXML v1.6 through v1.8 files
+
+> [!IMPORTANT]
+> Pipeline Neo is not in active development.
 
 ## Table of contents
 
