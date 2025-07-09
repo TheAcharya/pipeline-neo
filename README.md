@@ -1,266 +1,160 @@
 <p align="center">
-  <a href="https://github.com/TheAcharya/pipeline-neo"><img src="Assets/Pipeline Neo_Icon.png" height="200">
+  <a href="https://github.com/TheAcharya/pipeline-neo"><img src="https://github.com/TheAcharya/pipeline-neo/blob/main/assets/Pipeline%20Neo_Icon.png?raw=true" height="200">
   <h1 align="center">Pipeline Neo</h1>
 </p>
 
-<p align="center"><a href="https://github.com/TheAcharya/pipeline-neo/blob/main/LICENSE"><img src="http://img.shields.io/badge/license-MIT-lightgrey.svg?style=flat" alt="license"/></a>&nbsp;<a href="https://github.com/TheAcharya/pipeline-neo"><img src="https://img.shields.io/badge/platform-macOS-lightgrey.svg?style=flat" alt="platform"/></a>&nbsp;<a href="https://github.com/TheAcharya/pipeline-neo/actions/workflows/build.yml"><img src="https://github.com/TheAcharya/pipeline-neo/actions/workflows/build.yml/badge.svg" alt="build"/></a></p>
 
-A modern Swift framework for working with Final Cut Pro's FCPXML format, fully modernized for Swift 6. Pipeline Neo provides comprehensive tools for parsing, manipulating, and generating FCPXML documents with full TimecodeKit integration for accurate timecode handling. Built with Swift 6.0 and targeting macOS 12+, it offers type-safe operations, comprehensive error handling, and support for FCPXML versions 1.5 through 1.13.
+<p align="center">
+<!-- license -->
+<a href="https://github.com/TheAcharya/pipeline-neo/blob/main/LICENSE">
+<img src="http://img.shields.io/badge/license-MIT-lightgrey.svg?style=flat" alt="license"/>
+</a>
+<!-- platform -->
+<a href="https://github.com/TheAcharya/pipeline-neo">
+<img src="https://img.shields.io/badge/platform-macOS-lightgrey.svg?style=flat" alt="platform"/>
+</a>
+</p>
 
-Perfect for professional video editing workflows requiring precise timecode operations, FCPXML validation, and seamless integration with Final Cut Pro projects. Includes comprehensive error handling, performance optimization, and extensive test coverage for production use.
-
-This codebase is developed using AI agents.
-
-> [!IMPORTANT]
-> Pipeline Neo has yet to be extensively tested in production environments, real-world workflows, or enterprise scenarios. This library serves as a modernized foundation for AI-assisted development and experimentation with FCPXML processing capabilities. 
-
-## Table of Contents
-
-1. [What's New in Pipeline Neo](#whats-new-in-pipeline-neo)
-2. [Core Features](#core-features)
-3. [Requirements](#requirements)
-4. [Installation](#installation)
-5. [Platform Support](#platform-support)
-6. [Quick Start](#quick-start)
-7. [Modern Features](#modern-features)
-8. [Documentation](#documentation)
-9. [Examples](#examples)
-10. [Understanding FCPXML](#understanding-fcpxml)
-11. [Migration from Pipeline](#migration-from-pipeline)
-12. [Contributing](#contributing)
-13. [Testing](#testing)
-14. [Credits](#credits)
-15. [License](#license)
-16. [Reporting Bugs](#reporting-bugs)
-
-## What's New in Pipeline Neo
-
-Pipeline Neo has been completely modernized for Swift 6 with the following improvements:
-
-- Swift 6 Compatibility: Updated to use the latest Swift 6 features and best practices
-- Modern Concurrency: Full support for async/await and structured concurrency
-- Improved Performance: Optimized data structures and algorithms
-- Better Error Handling: Comprehensive error types with detailed descriptions
-- Type Safety: Enhanced type safety with modern Swift patterns
-- Documentation: Complete documentation with modern DocC support
-- Testing: Comprehensive test suite with performance benchmarks
-- Sendable Conformance: Thread-safe types for modern concurrent programming
+A Swift framework for working with Final Cut Pro's FCPXML.
 
 ## Core Features
 
-- Access an FCPXML document's resources, events, clips, and projects through simple object properties
-- Create and modify resources, events, clips, and projects with included properties and methods
-- Easily manipulate timing values with modern CMTime extensions
-- Output FCPXML files with proper text formatting
-- Validate FCPXML documents with the DTD
-- Works with FCPXML v1.5 through v1.13 files
-- NEW: Modern error handling with detailed error types
-- NEW: Structured time components for better data handling
-- NEW: Performance-optimized filtering and processing
+- Access an FCPXML document's resources, events, clips, and projects through simple object properties.
+- Create and modify resources, events, clips, and projects with included properties and methods.
+- Easily manipulate timing values.
+- Output FCPXML files with proper text formatting.
+- Validate FCPXML documents with the DTD.
+- Works with FCPXML v1.6 through v1.8 files
 
-## Requirements
+> [!IMPORTANT]
+> Pipeline Neo is not in active development.
 
-- Platform: macOS 12.0+ (Final Cut Pro XML is macOS-only)
-- Swift: 6.0+
-- Xcode: 16.0+
+## Table of contents
 
-## Installation
+- [Background](#background)
+- [Documentation](#documentation)
+- [Usage](#Usage)
+- [Examples](#examples)
+  - [Open an FCPXML File](#open-an-fcpxml-file)
+  - [List the Names of All Events](#list-the-names-of-all-events)
+  - [Create and Add a New Event](#create-and-add-a-new-event)
+  - [Get Clips That Match a Resource ID and Delete Them](#get-clips-that-match-a-resource-id-and-delete-them)
+  - [Display the Duration of a Clip](#display-the-duration-of-a-clip)
+  - [Save the FCPXML File](#save-the-fcpxml-file)
+- [Understanding FCPXML](#understanding-fcpxml)
+- [Credits](#credits)
+- [License](#license)
+- [Reporting Bugs](#reporting-bugs)
 
-### Swift Package Manager
+## Background
 
-Add Pipeline Neo to your project using Swift Package Manager:
+[Pipeline](https://github.com/reuelk/pipeline) was originally developed by [Reuel Kim](https://github.com/reuelk) and it is no longer maintained. **Pipeline Neo** was created as a spin-off project to fix and update the library when necessary.
+
+**Pipeline Neo** extends the XMLDocument and XMLElement classes in the Foundation framework. It adds properties and methods that simplify the creation and management of FCPXML document structure.
+
+**Pipeline Neo** also includes supplemental classes and a CMTime extension to help in the processing of FCPXML data. For example, you can easily convert a timing value that looks like `59983924/30000s` in the XML to `00:33:19,464` for display in an app.
+
+## Documentation
+The latest framework documentation is viewable at [reuelk.github.io/pipeline](https://reuelk.github.io/pipeline) and is also included in the project's `docs` folder as HTML files.
+
+## Usage
+
+To use this package in a SwiftPM project, you need to set it up as a package dependency:
 
 ```swift
-// swift-tools-version: 6.0
+// swift-tools-version:5.6
 import PackageDescription
 
 let package = Package(
-    name: "MyPackage",
-    platforms: [
-        .macOS(.v12)
-    ],
-    dependencies: [
-        .package(
-            url: "https://github.com/TheAcharya/pipeline-neo",
-            .upToNextMajor(from: "1.0.0")
-        )
-    ],
-    targets: [
-        .target(
-            name: "MyTarget",
-            dependencies: [
-                .product(name: "PipelineNeo", package: "pipeline-neo")
-            ]
-        )
-    ]
-)
-```
-
-## Platform Support
-
-Pipeline Neo is designed specifically for macOS applications that work with Final Cut Pro XML files. The library uses macOS-specific frameworks like `Cocoa` and `CoreMedia`, making it incompatible with other Apple platforms.
-
-## Quick Start
-
-```swift
-import PipelineNeo
-import Foundation
-
-// Load an FCPXML file
-let fileURL = URL(fileURLWithPath: "/path/to/your/project.fcpxml")
-
-do {
-    let fcpxmlDoc = try XMLDocument(contentsOfFCPXML: fileURL)
-    
-    // Get all event names
-    let eventNames = fcpxmlDoc.fcpxEventNames
-    print("Events: \(eventNames)")
-    
-    // Create a new event
-    let newEvent = XMLElement().fcpxEvent(name: "My New Event")
-    fcpxmlDoc.add(event: newEvent)
-    
-    // Work with time values using modern extensions
-    let time = CMTime(value: 1000, timescale: 30000)
-    let timeComponents = time.timeAsCounter()
-    print("Time: \(timeComponents.counterString)")
-    
-    // Use modern utility methods
-    let filteredClips = FCPXMLUtility.filter(
-        fcpxElements: fcpxmlDoc.fcpxEvents.flatMap { $0.eventClips ?? [] },
-        ofType: .clip
+  name: "MyPackage",
+  dependencies: [
+    .package(
+      url: "https://github.com/TheAcharya/pipeline-neo",
+      .upToNextMajor(from: "0.1.0") // or `.upToNextMinor
     )
-    
-    // Save the modified document
-    try fcpxmlDoc.fcpxmlString.write(
-        toFile: "/path/to/output.fcpxml",
-        atomically: false,
-        encoding: .utf8
+  ],
+  targets: [
+    .target(
+      name: "MyTarget",
+      dependencies: [
+        .product(name: "pipeline-neo", package: "pipeline-neo")
+      ]
     )
-    
-} catch {
-    print("Error: \(error)")
-}
-```
-
-## Modern Features
-
-### Structured Time Components
-
-```swift
-// Get structured time components
-let time = CMTime(value: 3661234, timescale: 1000)
-let components = time.timeAsCounter()
-print("\(components.hours):\(components.minutes):\(components.seconds),\(components.milliseconds)")
-
-// Work with SMPTE timecode
-let timecode = time.timeAsTimecode(usingFrameDuration: frameDuration, dropFrame: false)
-print("Timecode: \(timecode.timecodeString)")
-```
-
-### Modern Error Handling
-
-```swift
-do {
-    let time = try FCPXMLUtility.cmTime(fromFCPXMLTime: "1000/30000s")
-    // Use the time value
-} catch FCPXMLError.invalidTimeFormat(let timeString) {
-    print("Invalid time format: \(timeString)")
-} catch {
-    print("Unexpected error: \(error)")
-}
-```
-
-### Type-Safe Element Filtering
-
-```swift
-// Filter by multiple types
-let resources = FCPXMLUtility.filter(
-    fcpxElements: elements,
-    ofTypes: [.assetResource, .formatResource, .mediaResource]
+  ]
 )
-
-// Filter by single type
-let clips = FCPXMLUtility.filter(
-    fcpxElements: elements,
-    ofType: .clip
-)
-
-// Use convenience methods
-let resourceTypes = FCPXMLElementType.allCases.filter { $0.isResource }
 ```
-
-## Documentation
-
-The latest framework documentation is available at [reuelk.github.io/pipeline](https://reuelk.github.io/pipeline) and is also included in the project's `docs` folder as HTML files.
 
 ## Examples
 
 ### Open an FCPXML File
+Subsequent examples use the `fcpxmlDoc` object declared here.
 
 ```swift
-let fileURL = URL(fileURLWithPath: "/Users/[username]/Documents/sample.fcpxml")
+// Change the path below to your FCPXML file's path
+let fileURL = URL(fileURLWithPath: "/Users/[username]/Documents/sample.fcpxml")  // Create a new URL object that points to the FCPXML file's path.
 
 do {
-    try fileURL.checkResourceIsReachable()
+	try fileURL.checkResourceIsReachable()
 } catch {
-    print("The file cannot be found at the given path.")
-    return
+	print("The file cannot be found at the given path.")
+	return
 }
 
-let fcpxmlDoc: XMLDocument
+let fcpxmlDoc: XMLDocument  // Declare the fcpxmlDoc constant as an XMLDocument object
 
 do {
-    fcpxmlDoc = try XMLDocument(contentsOfFCPXML: fileURL)
+	fcpxmlDoc = try XMLDocument(contentsOfFCPXML: fileURL)  // Load the FCPXML file using the fileURL object
 } catch {
-    print("Error loading FCPXML file.")
-    return
+	print("Error loading FCPXML file.")
+	return
 }
 ```
 
 ### List the Names of All Events
 
 ```swift
-let eventNames = fcpxmlDoc.fcpxEventNames
-dump(eventNames)
+let eventNames = fcpxmlDoc.fcpxEventNames  // Get the event names in the FCPXML document
+dump(eventNames)  // Neatly display all of the event names
 ```
 
 ### Create and Add a New Event
 
 ```swift
-let newEvent = XMLElement().fcpxEvent(name: "My New Event")
-fcpxmlDoc.add(event: newEvent)
-dump(fcpxmlDoc.fcpxEventNames)
+let newEvent = XMLElement().fcpxEvent(name: "My New Event")  // Create a new empty event
+fcpxmlDoc.add(event: newEvent)  // Add the new event to the FCPXML document
+dump(fcpxmlDoc.fcpxEventNames) // Neatly display all of the event names
 ```
 
 ### Get Clips That Match a Resource ID and Delete Them
 
 ```swift
-let firstEvent = fcpxmlDoc.fcpxEvents[0]
-let matchingClips = try! firstEvent.eventClips(forResourceID: "r1")
+let firstEvent = fcpxmlDoc.fcpxEvents[0]  // Get the first event in the FCPXML document
+let matchingClips = try! firstEvent.eventClips(forResourceID: "r1")  // Get any clips that match resource ID "r1".
 
-try! firstEvent.removeFromEvent(items: matchingClips)
+// The eventClips(forResourceID:) method throws an error if the XMLElement that calls it is not an event. Since we know that firstEvent is an event, it is safe to use "try!" to override the error handling.
 
-guard let resource = fcpxmlDoc.resource(matchingID: "r1") else {
-    return
+try! firstEvent.removeFromEvent(items: matchingClips)  // Remove the clips that reference resource "r1".
+
+guard let resource = fcpxmlDoc.resource(matchingID: "r1") else {  // Get the "r1" resource
+	return
 }
-fcpxmlDoc.remove(resourceAtIndex: resource.index)
+fcpxmlDoc.remove(resourceAtIndex: resource.index)  // Remove the "r1" resource from the FCPXML document
 ```
 
 ### Display the Duration of a Clip
 
 ```swift
-let firstEvent = fcpxmlDoc.fcpxEvents[0]
+let firstEvent = fcpxmlDoc.fcpxEvents[0]  // Get the first event in the FCPXML document
 
-guard let eventClips = firstEvent.eventClips else {
-    return
+guard let eventClips = firstEvent.eventClips else {  // Get the event clips while guarding against a potential nil value
+	return
 }
 
-if eventClips.count > 0 {
-    let firstClip = eventClips[0]
-    let duration = firstClip.fcpxDuration
-    let timeDisplay = duration?.timeAsCounter().counterString
-    print(timeDisplay)
+if eventClips.count > 0 {  // Make sure there's at least one clip in the event
+	let firstClip = eventClips[0]  // Get the first clip in the event
+	let duration = firstClip.fcpxDuration  // Get the duration of the clip
+	let timeDisplay = duration?.timeAsCounter().counterString  // Convert the duration, which is a CMTime value, to a String formatted as HH:MM:SS,MMM
+	print(timeDisplay) 
 }
 ```
 
@@ -268,44 +162,17 @@ if eventClips.count > 0 {
 
 ```swift
 do {
-    try fcpxmlDoc.fcpxmlString.write(
-        toFile: "/Users/[username]/Documents/sample-output.fcpxml",
-        atomically: false,
-        encoding: .utf8
-    )
-    print("Wrote FCPXML file.")
+	// Change the path below to your new FCPXML file's path
+	try fcpxmlDoc.fcpxmlString.write(toFile: "/Users/[username]/Documents/sample-output.fcpxml", atomically: false, encoding: String.Encoding.utf8)
+	print("Wrote FCPXML file.")
 } catch {
-    print("Error writing to file.")
+	print("Error writing to file.")
 }
 ```
 
 ## Understanding FCPXML
 
 Further information on FCPXML can be found [here](https://fcp.cafe/developers/fcpxml/).
-
-## Migration from Pipeline
-
-If you're migrating from the original Pipeline library, here are the key changes:
-
-1. Package Name: Changed from `Pipeline` to `PipelineNeo`
-2. Swift Version: Requires Swift 6.0+
-3. Platform: Requires macOS 12.0+
-4. Xcode: Requires Xcode 16.0+
-5. Error Handling: Methods now throw errors instead of returning optionals
-6. Time Components: Use structured types instead of tuples
-7. Static Methods: Many utility methods are now static
-
-## Contributing
-
-We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details.
-
-## Testing
-
-Run the test suite:
-
-```bash
-swift test
-```
 
 ## Credits
 
@@ -315,7 +182,7 @@ Icon Design by [Bor Jen Goh](https://www.artstation.com/borjengoh)
 
 ## License
 
-Licensed under the MIT license. See [LICENSE](LICENSE) for details.
+Licensed under the MIT license. See [LICENSE](https://github.com/TheAcharya/pipeline-neo/blob/main/LICENSE) for details.
 
 ## Reporting Bugs
 

@@ -1,12 +1,13 @@
 //
 //  XMLElementExtension.swift
-//  Pipeline Neo • https://github.com/TheAcharya/pipeline-neo
-//  © 2025 • Licensed under MIT License
+//  Pipeline
+//
+//  Created by Reuel Kim on 1/15/17.
+//  Copyright © 2017 Reuel Kim. All rights reserved.
 //
 
 import Cocoa
 import CoreMedia
-import TimecodeKit
 
 #if canImport(Logging)
 import Logging
@@ -54,13 +55,13 @@ extension XMLElement {
 	///   - formatRef: The reference ID for the format resource that matches this project.
 	///   - duration: The duration of the clip as a CMTime value.
 	///   - tcStart: The starting timecode of the project timeline as a CMTime value.
-	///   - tcFormat: The TimecodeFrameRate enum value describing the project timecode format.
+	///   - tcFormat: The TimecodeFormat enum value describing whether the project timecode is drop-frame or non-drop-frame.
 	///   - audioLayout: The project audio channel layout as an AudioLayout enum value.
 	///   - audioRate: The project audio sampling rate as an AudioRate enum value.
 	///   - renderColorSpace: The project render color space as a RenderColorSpace enum value.
 	///   - clips: Clip XMLElement objects to add to the timeline of the project.
 	/// - Returns: The XMLElement object of the project.
-	public func fcpxProject(name: String, formatRef: String, duration: CMTime, tcStart: CMTime, tcFormat: TimecodeFrameRate, audioLayout: AudioLayout, audioRate: AudioRate, renderColorSpace: RenderColorSpace, clips: [XMLElement]) -> XMLElement {
+	public func fcpxProject(name: String, formatRef: String, duration: CMTime, tcStart: CMTime, tcFormat: TimecodeFormat, audioLayout: AudioLayout, audioRate: AudioRate, renderColorSpace: RenderColorSpace, clips: [XMLElement]) -> XMLElement {
 		
 		let element = XMLElement(name: "project")
 		element.fcpxName = name
@@ -93,7 +94,7 @@ extension XMLElement {
 	/// - Parameters:
 	///   - name: The name of the clip.
 	///   - ref: The reference ID for the resource that this clip refers to.
-	///   - offset: The clip's location in parent time as a CMTime value.
+	///   - offset: The clip’s location in parent time as a CMTime value.
 	///   - duration: The duration of the clip as a CMTime value.
 	///   - start: The start time of the clip's local timeline as a CMTime value.
 	///   - useAudioSubroles: A boolean value indicating if the clip's audio subroles are accessible.
@@ -126,11 +127,11 @@ extension XMLElement {
 	///   - id: The unique reference ID of this resource.
 	///   - formatRef: The reference ID of the format that this resource uses.
 	///   - tcStart: The starting timecode value of this resource.
-	///   - tcFormat: The timecode format as a TimecodeFrameRate enumeration value.
-	///   - renderColorSpace: The color space of this multicam as an XMLElement.RenderColorSpace enumeration value.
+	///   - tcFormat: The timecode format as an XMLElement.TimecodeFormat enumeration value.
+	///   - renderColorSpace: The color space of this multicam as an XMLElement.TimecodeFormat enumeration value.
 	///   - angles: The mc-angle elements to embed in this multicam resource.
 	/// - Returns: An XMLElement object of the multicam <media> resource.
-	public func fcpxMulticamResource(name: String, id: String, formatRef: String, tcStart: CMTime?, tcFormat: TimecodeFrameRate, renderColorSpace: XMLElement.RenderColorSpace, angles: [XMLElement]) -> XMLElement {
+	public func fcpxMulticamResource(name: String, id: String, formatRef: String, tcStart: CMTime?, tcFormat: XMLElement.TimecodeFormat, renderColorSpace: XMLElement.RenderColorSpace, angles: [XMLElement]) -> XMLElement {
 		
 		let element = XMLElement(name: "media")
 		
@@ -159,7 +160,7 @@ extension XMLElement {
 	/// - Parameters:
 	///   - name: The name of the clip.
 	///   - refID: The reference ID.
-	///   - offset: The clip's location in parent time as a CMTime value.
+	///   - offset: The clip’s location in parent time as a CMTime value.
 	///   - duration: The duration of the clip as a CMTime value.
 	///   - mcSources: An array of mc-source elements to place in this element.
 	/// - Returns: An XMLElement object of the multicam <mc-clip> resource.
@@ -186,7 +187,7 @@ extension XMLElement {
 	///
 	/// - Parameters:
 	///   - lane: The lane for the secondary storyline as an Int value.
-	///   - offset: The clip's location in parent time as a CMTime value.
+	///   - offset: The clip’s location in parent time as a CMTime value.
 	///   - formatRef: The reference ID of the format that this resource uses.
 	///   - clips: An array of XMLElement objects of the clips to be placed inside the secondary storyline.
 	/// - Returns: An XMLElement object of the secondary storyline <spine> element.
@@ -209,7 +210,7 @@ extension XMLElement {
 	/// Creates a new gap to be used in a timeline.
 	///
 	/// - Parameters:
-	///   - offset: The clip's location in parent time as a CMTime value.
+	///   - offset: The clip’s location in parent time as a CMTime value.
 	///   - duration: The duration of the clip as a CMTime value.
 	///   - start: The start time of the clip's local timeline as a CMTime value.
 	/// - Returns: An XMLElement object of the gap.
@@ -231,7 +232,7 @@ extension XMLElement {
 	/// - Parameters:
 	///   - titleName: The name of the title clip on the timeline.
 	///   - lane: The preferred timeline lane to place the clip into.
-	///   - offset: The clip's location in parent time as a CMTime value.
+	///   - offset: The clip’s location in parent time as a CMTime value.
 	///   - ref: The reference ID for the title effect resource that this clip refers to.
 	///   - duration: The duration of the clip as a CMTime value.
 	///   - start: The start time of the clip's local timeline as a CMTime value.
@@ -325,7 +326,7 @@ extension XMLElement {
 	/// - Parameters:
 	///   - captionName: The name of the caption clip on the timeline.
 	///   - lane: The preferred timeline lane to place the clip into.
-	///   - offset: The clip's location in parent time as a CMTime value.
+	///   - offset: The clip’s location in parent time as a CMTime value.
 	///   - duration: The duration of the clip as a CMTime value.
 	///   - start: The start time of the clip's local timeline as a CMTime value.
 	///   - roleName: The role name assigned to the clip.
@@ -488,13 +489,15 @@ extension XMLElement {
 	public var fcpxDuration: CMTime? {
 		get {
 			if let attributeString = getElementAttribute("duration") {
-				return try? FCPXMLUtility.cmTime(fromFCPXMLTime: attributeString)
+				return FCPXMLUtility().CMTime(fromFCPXMLTime: attributeString)
+			} else {
+				return nil
 			}
-			return nil
-		}
-		set {
-			if let value = newValue {
-				let valueAsString = FCPXMLUtility.fcpxmlTime(fromCMTime: value)
+		} // TODO: When this is a compound resource or multicam resource, or project, this should be the duration of the sequence element.
+		
+		set(value) {
+			if let value = value {
+				let valueAsString = FCPXMLUtility().fcpxmlTime(fromCMTime: value)
 				setElementAttribute("duration", value: valueAsString)
 			} else {
 				self.removeAttribute(forName: "duration")
@@ -505,13 +508,15 @@ extension XMLElement {
 	public var fcpxTCStart: CMTime? {
 		get {
 			if let attributeString = getElementAttribute("tcStart") {
-				return try? FCPXMLUtility.cmTime(fromFCPXMLTime: attributeString)
+				return FCPXMLUtility().CMTime(fromFCPXMLTime: attributeString)
+			} else {
+				return nil
 			}
-			return nil
 		}
-		set {
-			if let value = newValue {
-				let valueAsString = FCPXMLUtility.fcpxmlTime(fromCMTime: value)
+		
+		set(value) {
+			if let value = value {
+				let valueAsString = FCPXMLUtility().fcpxmlTime(fromCMTime: value)
 				setElementAttribute("tcStart", value: valueAsString)
 			} else {
 				self.removeAttribute(forName: "tcStart")
@@ -522,13 +527,15 @@ extension XMLElement {
 	public var fcpxStart: CMTime? {
 		get {
 			if let attributeString = getElementAttribute("start") {
-				return try? FCPXMLUtility.cmTime(fromFCPXMLTime: attributeString)
+				return FCPXMLUtility().CMTime(fromFCPXMLTime: attributeString)
+			} else {
+				return nil
 			}
-			return nil
 		}
-		set {
-			if let value = newValue {
-				let valueAsString = FCPXMLUtility.fcpxmlTime(fromCMTime: value)
+		
+		set(value) {
+			if let value = value {
+				let valueAsString = FCPXMLUtility().fcpxmlTime(fromCMTime: value)
 				setElementAttribute("start", value: valueAsString)
 			} else {
 				self.removeAttribute(forName: "start")
@@ -537,24 +544,29 @@ extension XMLElement {
 	}
 	
 	
-	/// If this element's fcpxStart property is nil, fcpxStartValue returns a CMTime value of zero. Otherwise, it returns the same value as fcpxStart. This property is used when you want the value of the "start" attribute whether or not it exists. Final Cut Pro X omits the "start" attribute when it equals zero.
+	/// If this element's fcpxStart property is nil, fcpxStartValue returns a CMTime value of zero. Otherwise, it returns the same value as fcpxStart. This property is used when you want the value of the "start" attribute whether or not it exists. Final Cut Pro X omits the "start" attribute when the element starts at 0.
 	public var fcpxStartValue: CMTime {
-		if let start = fcpxStart {
-			return start
+		get {
+			if let start = self.fcpxStart {
+				return start
+			} else {
+				return CMTime().zero()
+			}
 		}
-		return CMTime.zero
 	}
 	
 	public var fcpxOffset: CMTime? {
 		get {
 			if let attributeString = getElementAttribute("offset") {
-				return try? FCPXMLUtility.cmTime(fromFCPXMLTime: attributeString)
+				return FCPXMLUtility().CMTime(fromFCPXMLTime: attributeString)
+			} else {
+				return nil
 			}
-			return nil
 		}
-		set {
-			if let value = newValue {
-				let valueAsString = FCPXMLUtility.fcpxmlTime(fromCMTime: value)
+		
+		set(value) {
+			if let value = value {
+				let valueAsString = FCPXMLUtility().fcpxmlTime(fromCMTime: value)
 				setElementAttribute("offset", value: valueAsString)
 			} else {
 				self.removeAttribute(forName: "offset")
@@ -562,26 +574,25 @@ extension XMLElement {
 		}
 	}
 	
-	public var fcpxTCFormat: TimecodeFrameRate? {
+	public var fcpxTCFormat: TimecodeFormat? {
 		get {
 			if let attributeString = getElementAttribute("tcFormat") {
 				switch attributeString {
-				case "DF":
-					// Find a drop frame rate - default to 29.97 drop
-					return .fps29_97d
-				case "NDF":
-					// Find a non-drop frame rate - default to 30 non-drop
-					return .fps30
+				case TimecodeFormat.dropFrame.rawValue:
+					return TimecodeFormat.dropFrame
+				case TimecodeFormat.nonDropFrame.rawValue:
+					return TimecodeFormat.nonDropFrame
 				default:
 					return nil
 				}
+			} else {
+				return nil
 			}
-			return nil
 		}
-		set {
-			if let value = newValue {
-				let formatString = value.fcpXMLMetadata.tcFormat
-				setElementAttribute("tcFormat", value: formatString)
+		
+		set(value) {
+			if let value = value {
+				setElementAttribute("tcFormat", value: value.rawValue)
 			} else {
 				self.removeAttribute(forName: "tcFormat")
 			}
@@ -843,13 +854,15 @@ extension XMLElement {
 	public var fcpxFrameDuration: CMTime? {
 		get {
 			if let attributeString = getElementAttribute("frameDuration") {
-				return try? FCPXMLUtility.cmTime(fromFCPXMLTime: attributeString)
+				return FCPXMLUtility().CMTime(fromFCPXMLTime: attributeString)
+			} else {
+				return nil
 			}
-			return nil
 		}
-		set {
-			if let value = newValue {
-				let valueAsString = FCPXMLUtility.fcpxmlTime(fromCMTime: value)
+		
+		set(value) {
+			if let value = value {
+				let valueAsString = FCPXMLUtility().fcpxmlTime(fromCMTime: value)
 				setElementAttribute("frameDuration", value: valueAsString)
 			} else {
 				self.removeAttribute(forName: "frameDuration")
@@ -1120,17 +1133,16 @@ extension XMLElement {
 	/// The start of this element on its parent timeline. For example, if this is a video clip on the primary storyline, this value would be the in point of the clip on the project timeline. If this is a clip on a secondary storyline, this value would be the in point of the clip on the secondary storyline's timeline.
 	public var fcpxParentInPoint: CMTime? {
 		get {
-			if let attributeString = getElementAttribute("parentInPoint") {
-				return try? FCPXMLUtility.cmTime(fromFCPXMLTime: attributeString)
+			guard let inPoint = self.fcpxOffset else {
+				return nil
 			}
-			return nil
+			return inPoint
 		}
-		set {
-			if let value = newValue {
-				let valueAsString = FCPXMLUtility.fcpxmlTime(fromCMTime: value)
-				setElementAttribute("parentInPoint", value: valueAsString)
+		set(value) {
+			if let value = value {
+				self.fcpxOffset = value
 			} else {
-				self.removeAttribute(forName: "parentInPoint")
+				self.fcpxOffset = nil
 			}
 		}
 	}
@@ -1139,37 +1151,60 @@ extension XMLElement {
 	/// The end of this element on its parent timeline. For example, if this is a video clip on the primary storyline, this value would be the out point of the clip on the project timeline. If this is a clip on a secondary storyline, this value would be the out point of the clip on the secondary storyline's timeline.
 	public var fcpxParentOutPoint: CMTime? {
 		get {
-			if let inPoint = fcpxParentInPoint, let duration = fcpxDuration {
-				return CMTimeAdd(inPoint, duration)
+			guard let inPoint = self.fcpxOffset else {
+				return nil
 			}
-			return nil
+			guard let duration = self.fcpxDuration else {
+				return nil
+			}
+			return CMTimeAdd(inPoint, duration)
 		}
-		set {
-			if let value = newValue, let inPoint = fcpxParentInPoint {
+		
+		set(value) {
+			if let value = value {
+				guard let inPoint = self.fcpxOffset else {
+					self.fcpxDuration = nil
+					return
+				}
 				let newDuration = CMTimeSubtract(value, inPoint)
-				fcpxDuration = newDuration
+				self.fcpxDuration = newDuration
+				
+			} else {
+				self.fcpxDuration = nil
 			}
 		}
 	}
 	
 	/// The start of this element's local timeline. For example, if this is a video clip, this value would be the in point of the clip's source footage.
 	public var fcpxLocalInPoint: CMTime {
-		return fcpxStartValue
+		get {
+			return self.fcpxStartValue
+		}
+		set(value) {
+			self.fcpxStart = value
+		}
 	}
 	
 	/// The end of this element's local timeline. For example, if this is a video clip, this value would be the out point of the clip's source footage. If this element has no duration, this property will return nil.
 	public var fcpxLocalOutPoint: CMTime? {
 		get {
-			if let duration = fcpxDuration {
-				return CMTimeAdd(self.fcpxStartValue, duration)
+			guard let duration = self.fcpxDuration else {
+				return nil
 			}
-			return nil
+			return CMTimeAdd(self.fcpxStartValue, duration)
 		}
-		set {
-			if let value = newValue {
-				let inPoint = fcpxLocalInPoint
+		
+		set(value) {
+			if let value = value {
+				guard let inPoint = self.fcpxStart else {
+					self.fcpxDuration = nil
+					return
+				}
 				let newDuration = CMTimeSubtract(value, inPoint)
-				fcpxDuration = newDuration
+				self.fcpxDuration = newDuration
+				
+			} else {
+				self.fcpxDuration = nil
 			}
 		}
 	}
@@ -1938,7 +1973,7 @@ extension XMLElement {
 			
 			let itemElements = itemNodes as! [XMLElement]
 			
-							let items = FCPXMLUtility.filter(fcpxElements: itemElements, ofTypes: [.project])
+			let items = FCPXMLUtility().filter(fcpxElements: itemElements, ofTypes: [.project])
 			
 			return items
 		}
@@ -1958,7 +1993,7 @@ extension XMLElement {
 			
 			let clipElements = clipNodes as! [XMLElement]
 			
-							let clips = FCPXMLUtility.filter(fcpxElements: clipElements, ofTypes: [.assetClip, .clip, .compoundClip, .multicamClip, .synchronizedClip])
+			let clips = FCPXMLUtility().filter(fcpxElements: clipElements, ofTypes: [.assetClip, .clip, .compoundClip, .multicamClip, .synchronizedClip])
 			
 			return clips
 		}
@@ -1973,7 +2008,7 @@ extension XMLElement {
 	public func eventClips(forResourceID resourceID: String) throws -> [XMLElement] {
 		
 		guard self.fcpxType == .event else {
-			throw FCPXMLElementError.notAnEvent(elementName: self.name ?? "unnamed")
+			throw FCPXMLElementError.notAnEvent(element: self)
 		}
 		
 		var matchingClips: [XMLElement] = []
@@ -2012,7 +2047,7 @@ extension XMLElement {
 	public func eventClips(containingResource resource: XMLElement) throws -> [XMLElement] {
 		
 		guard self.fcpxType == .event else {
-			throw FCPXMLElementError.notAnEvent(elementName: self.name ?? "unnamed")
+			throw FCPXMLElementError.notAnEvent(element: self)
 		}
 		
 		var matchingItems: [XMLElement] = []
@@ -2259,7 +2294,7 @@ extension XMLElement {
 	public func addToEvent(item: XMLElement) throws {
 		
 		guard self.fcpxType == .event else {
-			throw FCPXMLElementError.notAnEvent(elementName: self.name ?? "unnamed")
+			throw FCPXMLElementError.notAnEvent(element: self)
 		}
 		
 		let itemCopy = item.copy() as! XMLElement
@@ -2276,7 +2311,7 @@ extension XMLElement {
 	public func addToEvent(items: [XMLElement]) throws {
 		
 		guard self.fcpxType == .event else {
-			throw FCPXMLElementError.notAnEvent(elementName: self.name ?? "unnamed")
+			throw FCPXMLElementError.notAnEvent(element: self)
 		}
 		
 		for item in items {
@@ -2293,7 +2328,7 @@ extension XMLElement {
 	/// - Throws: FCPXMLElementError.notAnEvent if the element is not an event.
 	public func removeFromEvent(itemIndex: Int) throws {
 		guard self.fcpxType == .event else {
-			throw FCPXMLElementError.notAnEvent(elementName: self.name ?? "unnamed")
+			throw FCPXMLElementError.notAnEvent(element: self)
 		}
 		
 		self.removeChild(at: itemIndex)
@@ -2306,7 +2341,7 @@ extension XMLElement {
 	/// - Throws: FCPXMLElementError.notAnEvent if the element is not an event.
 	public func removeFromEvent(itemIndexes: [Int]) throws {
 		guard self.fcpxType == .event else {
-			throw FCPXMLElementError.notAnEvent(elementName: self.name ?? "unnamed")
+			throw FCPXMLElementError.notAnEvent(element: self)
 		}
 		
 		for index in itemIndexes.sorted().reversed() {
@@ -2321,7 +2356,7 @@ extension XMLElement {
 	/// - Throws: FCPXMLElementError.notAnEvent if the element is not an event.
 	public func removeFromEvent(items: [XMLElement]) throws {
 		guard self.fcpxType == .event else {
-			throw FCPXMLElementError.notAnEvent(elementName: self.name ?? "unnamed")
+			throw FCPXMLElementError.notAnEvent(element: self)
 		}
 		
 		for item in items {
@@ -2338,7 +2373,7 @@ extension XMLElement {
 	public func addToClip(annotationElements elements: [XMLElement]) throws {
 		
 		guard self.fcpxType == .project || self.fcpxType == .synchronizedClip || self.fcpxType == .compoundClip || self.fcpxType == .multicamClip || self.fcpxType == .assetClip || self.fcpxType == .clip else {
-			throw FCPXMLElementError.notAnAnnotatableItem(elementName: self.name ?? "unnamed")
+			throw FCPXMLElementError.notAnAnnotatableItem(element: self)
 		}
 		
 		if let children = self.children {  // If there are children, insert the annotations at the appropriate point
@@ -2359,7 +2394,7 @@ extension XMLElement {
 			for element in elements {
 				
 				guard element.fcpxType == .note || element.fcpxType == .marker || element.fcpxType == .chapterMarker || element.fcpxType == .rating || element.fcpxType == .keyword || element.fcpxType == .analysisMarker else {
-					throw FCPXMLElementError.notAnAnnotation(elementName: element.name ?? "unnamed")
+					throw FCPXMLElementError.notAnAnnotation(element: element)
 				}
 				
 				element.detach()
@@ -2372,7 +2407,7 @@ extension XMLElement {
 			for element in elements {
 				
 				guard element.fcpxType == .note || element.fcpxType == .marker || element.fcpxType == .chapterMarker || element.fcpxType == .rating || element.fcpxType == .keyword || element.fcpxType == .analysisMarker else {
-					throw FCPXMLElementError.notAnAnnotation(elementName: element.name ?? "unnamed")
+					throw FCPXMLElementError.notAnAnnotation(element: element)
 				}
 				
 				element.detach()
@@ -3162,18 +3197,18 @@ extension XMLElement {
 	
 	// MARK: - Constants
 	enum FCPXMLElementError: Error, CustomStringConvertible {
-		case notAnEvent(elementName: String)
-		case notAnAnnotatableItem(elementName: String)
-		case notAnAnnotation(elementName: String)
+		case notAnEvent(element: XMLElement)
+		case notAnAnnotatableItem(element: XMLElement)
+		case notAnAnnotation(element: XMLElement)
 		
 		var description: String {
 			switch self {
-			case .notAnEvent(let elementName):
-				return "The \"\(elementName)\" element is not an event."
-			case .notAnAnnotatableItem(let elementName):
-				return "The \"\(elementName)\" element cannot be annotated."
-			case .notAnAnnotation(let elementName):
-				return "The \"\(elementName)\" element is not an annotation."
+			case .notAnEvent(let element):
+				return "The \"\(element.name ?? "unnamed")\" element is not an event."
+			case .notAnAnnotatableItem(let element):
+				return "The \"\(element.name ?? "unnamed")\" element cannot be annotated."
+			case .notAnAnnotation(let element):
+				return "The \"\(element.name ?? "unnamed")\" element is not an annotation."
 			}
 		}
 	}
@@ -3183,6 +3218,11 @@ extension XMLElement {
 		case Center = "center"
 		case Right = "right"
 		case Justified = "justified"
+	}
+	
+	public enum TimecodeFormat: String {
+		case dropFrame = "DF"
+		case nonDropFrame = "NDF"
 	}
 	
 	public enum AudioLayout: String {
