@@ -1,0 +1,205 @@
+# Pipeline Neo - Cursor Rules
+
+> **IMPORTANT**: This file must be kept synchronized with `AGENT.MD`. Any changes to project requirements, coding standards, or development guidelines must be updated in both files to maintain consistency across AI assistance tools.
+
+## Project Context
+
+Pipeline Neo is a modern Swift library for working with Final Cut Pro's FCPXML format. The project uses Swift 6, TimecodeKit for timecode operations, and follows modern Swift best practices.
+
+## Code Style and Standards
+
+- Use Swift 6 syntax and features
+- Follow Swift API Design Guidelines
+- Use descriptive variable and function names
+- Include comprehensive documentation comments
+- Maintain consistent indentation (4 spaces)
+- Use trailing closures where appropriate
+- Prefer value types over reference types when possible
+
+## File Headers
+
+All Swift files must use this standardized header format:
+
+```swift
+//
+//  Filename.swift
+//  Pipeline Neo • https://github.com/TheAcharya/pipeline-neo
+//  © 2025 • Licensed under MIT License
+//
+```
+
+## Architecture Guidelines
+
+- Maintain modular architecture with clear separation of concerns
+- Use TimecodeKit as the canonical source for all timecode operations
+- Implement comprehensive error handling with custom FCPXMLError types
+- Keep extensions focused and single-purpose
+- Use protocols for shared functionality when appropriate
+
+## TimecodeKit Integration
+
+- Always use TimecodeKit APIs for timecode operations
+- Use TimecodeFrameRate for frame rate handling
+- Implement drop frame vs non-drop frame support
+- Ensure precise timecode calculations using TimecodeKit's Timecode type
+- Convert between CMTime and TimecodeKit types as needed
+
+## Error Handling
+
+- Use custom FCPXMLError types for specific error scenarios
+- Provide meaningful error messages with recovery suggestions
+- Use Swift's Result type for operations that can fail
+- Include error handling tests for all public APIs
+
+## Testing Requirements
+
+- Write unit tests for all public APIs
+- Include integration tests for FCPXML operations
+- Test error handling scenarios
+- Ensure comprehensive test coverage
+- Use descriptive test names that explain the scenario
+
+## Performance Considerations
+
+- Avoid repeated XML parsing operations
+- Cache frequently accessed properties
+- Use efficient data structures for large documents
+- Profile performance-critical operations
+- Consider memory usage for large FCPXML files
+
+## Dependencies
+
+- TimecodeKit: For timecode operations
+- CoreMedia: For CMTime integration
+- Foundation: For XMLDocument and XMLElement
+- XCTest: For testing framework
+
+## File Organization
+
+- Keep related functionality together
+- Use appropriate directory structure (Classes, Extensions, Delegates)
+- Maintain clear separation between public and internal APIs
+- Group related tests in the same test file
+
+## Documentation
+
+- Include comprehensive documentation comments for all public APIs
+- Use Swift's documentation comment format
+- Provide usage examples for complex operations
+- Document error conditions and recovery strategies
+
+## Version Management
+
+- Support FCPXML versions 1.5 through 1.13
+- Use semantic versioning for releases
+- Track TimecodeKit version compatibility
+- Maintain backward compatibility when possible
+
+## Common Patterns
+
+- Use computed properties for derived values
+- Implement convenience initializers where helpful
+- Use static methods for utility functions
+- Prefer immutable properties when possible
+- Use optionals appropriately for optional values
+
+## Debugging and Logging
+
+- Use debug logging for complex operations
+- Include meaningful print statements for troubleshooting
+- Validate XML structure before processing
+- Verify timecode calculations manually when debugging
+
+## Security Considerations
+
+- Validate all input data
+- Handle malformed XML gracefully
+- Avoid potential injection attacks
+- Use secure file operations
+
+## Accessibility
+
+- Ensure error messages are clear and actionable
+- Provide recovery suggestions where possible
+- Use descriptive variable names for clarity
+- Include comprehensive documentation
+
+## Migration and Compatibility
+
+- Maintain Swift 6 compatibility
+- Consider future Swift version upgrades
+- Track TimecodeKit API changes
+- Maintain FCPXML version support
+
+## Code Review Checklist
+
+When reviewing or suggesting code changes, ensure:
+
+- All tests pass
+- Documentation is updated
+- Error handling is implemented
+- Performance is considered
+- Swift 6 compatibility is maintained
+- TimecodeKit integration is correct
+- File headers are standardized
+- Code follows project conventions
+
+## Common Tasks
+
+### Adding New FCPXML Element Types
+
+1. Add to FCPXMLElementType enum
+2. Update filtering logic in FCPXMLUtility
+3. Add corresponding tests
+4. Update documentation
+
+### Implementing Timecode Operations
+
+1. Use TimecodeKit APIs
+2. Add convenience methods to CMTimeExtension
+3. Include comprehensive tests
+4. Update FCPXMLUtility if needed
+
+### Error Handling
+
+1. Define new error types in FCPXMLError
+2. Implement error recovery strategies
+3. Add tests for error scenarios
+4. Update error documentation
+
+### Performance Optimization
+
+1. Profile with Instruments
+2. Identify bottlenecks
+3. Implement caching strategies
+4. Optimize data structures
+5. Add performance tests
+
+## Build and Test Commands
+
+```bash
+# Build project
+swift build
+
+# Run tests
+swift test
+
+# Build for release
+swift build -c release
+
+# Run specific test
+swift test --filter TestName.testMethod
+```
+
+## Project-Specific Notes
+
+- All timecode operations must use TimecodeKit
+- FCPXML DTDs are included as resources
+- Support for multiple FCPXML versions
+- Comprehensive error handling required
+- Extensive test coverage expected
+- Modern Swift 6 features encouraged
+- Performance optimization for large files
+- Clear separation of concerns in architecture
+- Use "Pipeline Neo" for marketing/descriptive text
+- Use "PipelineNeo" for technical references (package names, imports, etc.) 
