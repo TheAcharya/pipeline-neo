@@ -1,17 +1,29 @@
-// swift-tools-version: 5.4
+// swift-tools-version: 6.0
 
 import PackageDescription
 
 let package = Package(
-    name: "Pipeline",
+    name: "PipelineNeo",
+    platforms: [
+        .macOS(.v12)
+    ],
     products: [
         .library(
-            name: "Pipeline",
-            targets: ["Pipeline"]),
+            name: "PipelineNeo",
+            targets: ["PipelineNeo"]),
+    ],
+    dependencies: [
+        .package(url: "https://github.com/orchetect/TimecodeKit", from: "2.3.1")
     ],
     targets: [
         .target(
-            name: "Pipeline",
-            dependencies: []),
+            name: "PipelineNeo",
+            dependencies: ["TimecodeKit"],
+            resources: [
+                .copy("FCPXML DTDs")
+            ]),
+        .testTarget(
+            name: "PipelineNeoTests",
+            dependencies: ["PipelineNeo"]),
     ]
 )
