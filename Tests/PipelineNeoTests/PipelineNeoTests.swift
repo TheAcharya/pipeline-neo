@@ -10,7 +10,7 @@ import TimecodeKit
 @testable import PipelineNeo
 
 @available(macOS 12.0, *)
-final class PipelineNeoTests: XCTestCase {
+final class PipelineNeoTests: XCTestCase, @unchecked Sendable {
     
     // MARK: - Test Dependencies
     
