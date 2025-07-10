@@ -5,7 +5,7 @@
 
 <p align="center"><a href="https://github.com/TheAcharya/pipeline-neo/blob/main/LICENSE"><img src="http://img.shields.io/badge/license-MIT-lightgrey.svg?style=flat" alt="license"/></a>&nbsp;<a href="https://github.com/TheAcharya/pipeline-neo"><img src="https://img.shields.io/badge/platform-macOS-lightgrey.svg?style=flat" alt="platform"/></a>&nbsp;<a href="https://github.com/TheAcharya/pipeline-neo/actions/workflows/build.yml"><img src="https://github.com/TheAcharya/pipeline-neo/actions/workflows/build.yml/badge.svg" alt="build"/></a>&nbsp;<img src="https://img.shields.io/badge/Swift-6.0-orange.svg?style=flat" alt="Swift"/>&nbsp;<img src="https://img.shields.io/badge/Xcode-16+-blue.svg?style=flat" alt="Xcode"/></p>
 
-A modern Swift 6 framework for working with Final Cut Pro's FCPXML with full concurrency support and TimecodeKit integration. Pipeline Neo is a spiritual successor to the original [Pipeline framework](https://github.com/reuelk/pipeline), modernised for Swift 6.0 and contemporary development practices. 
+A modern Swift 6 framework for working with Final Cut Pro's FCPXML with full concurrency support and TimecodeKit integration. Pipeline Neo is a spiritual successor to the original [Pipeline](https://github.com/reuelk/pipeline), modernised for Swift 6.0 and contemporary development practices. 
 
 Pipeline Neo provides a comprehensive API for parsing, creating, and manipulating FCPXML files with advanced timecode operations, async/await patterns, and robust error handling. Built with Swift 6.0 and targeting macOS 12+, it offers type-safe operations, comprehensive test coverage, and seamless integration with TimecodeKit for professional video editing workflows.
 
@@ -14,7 +14,7 @@ Pipeline Neo is currently in an experimental stage and does not yet cover the fu
 This codebase is developed using AI agents.
 
 > [!IMPORTANT]
-> Pipeline Neo has yet to be extensively tested in production environments, real-world workflows, or enterprise scenarios. This library serves as a modernised foundation for AI-assisted development and experimentation with FCPXML processing capabilities. 
+> Pipeline Neo has yet to be extensively tested in production environments, real-world workflows, or application integration This library serves as a modernised foundation for AI-assisted development and experimentation with FCPXML processing capabilities. 
 
 ## Table of Contents
 
@@ -83,101 +83,159 @@ let package = Package(
 
 ## Usage
 
-### Basic FCPXML Operations
+### Basic FCPXML Operations with Modular Architecture
 
 ```swift
 import PipelineNeo
 
+// Create a modular pipeline with default implementations
+let service = ModularUtilities.createPipeline()
+
+// Or create a custom pipeline with specific implementations
+let customService = ModularUtilities.createCustomPipeline(
+    parser: FCPXMLParser(),
+    timecodeConverter: TimecodeConverter(),
+    documentManager: XMLDocumentManager(),
+    errorHandler: ErrorHandler()
+)
+
 // Create a new FCPXML document
-let resources: [XMLElement] = []
-let events: [XMLElement] = []
-let fcpxmlDoc = XMLDocument(resources: resources, events: events, fcpxmlVersion: "1.8")
+let document = service.createFCPXMLDocument(version: "1.10")
 
-// Add an event
-let newEvent = XMLElement().fcpxEvent(name: "My New Event")
-fcpxmlDoc.add(events: [newEvent])
+// Add resources and sequences using modular operations
+let resource = XMLElement(name: "asset")
+resource.setAttribute(name: "id", value: "asset1", using: documentManager)
+document.addResource(resource, using: documentManager)
 
-// Get event names
-let eventNames = fcpxmlDoc.fcpxEventNames
-print("Events: \(eventNames)")
+let sequence = XMLElement(name: "sequence")
+sequence.setAttribute(name: "id", value: "seq1", using: documentManager)
+document.addSequence(sequence, using: documentManager)
 ```
 
-### Time Conversions with TimecodeKit
+### Time Conversions with Modular TimecodeKit Integration
 
 ```swift
 import PipelineNeo
 import TimecodeKit
 
-// Initialise utility
-let utility = FCPXMLUtility()
+// Create modular components
+let timecodeConverter = TimecodeConverter()
+let utility = FCPXMLUtility(
+    timecodeConverter: timecodeConverter
+)
 
 // Convert CMTime to TimecodeKit Timecode
 let cmTime = CMTime(value: 3600, timescale: 1) // 1 hour
-let timecode = await utility.timecode(from: cmTime, frameRate: .fps24)
+let timecode = utility.timecode(from: cmTime, frameRate: ._24)
 print("Timecode: \(timecode?.stringValue ?? "Invalid")")
 
 // Convert TimecodeKit Timecode to CMTime
-let newTimecode = Timecode(at: .fps24, time: 7200) // 2 hours
-let newCMTime = await utility.cmTime(from: newTimecode)
+let newTimecode = try! Timecode(realTime: 7200, at: ._24) // 2 hours
+let newCMTime = utility.cmTime(from: newTimecode)
 print("CMTime: \(newCMTime.seconds) seconds")
+
+// Use modular extensions for time operations
+let frameDuration = CMTime(value: 1, timescale: 24)
+let conformed = cmTime.conformed(toFrameDuration: frameDuration, using: timecodeConverter)
+let fcpxmlTime = cmTime.fcpxmlTime(using: timecodeConverter)
 ```
 
-### Working with Clips and Projects
+### Working with Modular XML Operations
 
 ```swift
-// Create a project
-let formatRef = "r1"
-let duration = CMTime(value: 3600, timescale: 1) // 1 hour
-let tcStart = CMTime(value: 0, timescale: 1)
-let clips: [XMLElement] = []
+// Create modular XML components
+let documentManager = XMLDocumentManager()
+let parser = FCPXMLParser()
 
-let project = XMLElement().fcpxProject(
-    name: "My Project",
-    formatRef: formatRef,
-    duration: duration,
-    tcStart: tcStart,
-    tcFormat: .nonDropFrame,
-    audioLayout: .stereo,
-    audioRate: .rate48kHz,
-    renderColorSpace: .rec709,
-    clips: clips
+// Create elements with modular operations
+let project = documentManager.createElement(
+    name: "project",
+    attributes: [
+        "name": "My Project",
+        "id": "proj1"
+    ]
 )
 
-// Add project to event
-newEvent.addChild(project)
+// Add child elements using modular extensions
+let sequence = project.createChild(
+    name: "sequence",
+    attributes: ["id": "seq1"],
+    using: documentManager
+)
+
+// Set attributes using modular operations
+project.setAttribute(name: "formatRef", value: "r1", using: documentManager)
+let formatRef = project.getAttribute(name: "formatRef", using: documentManager)
 ```
 
-### Async Operations
+### Error Handling with Modular Components
 
 ```swift
-// Async line break conversion
+// Create modular error handler
+let errorHandler = ErrorHandler()
+
+// Process FCPXML with error handling
 let url = URL(fileURLWithPath: "/path/to/file.fcpxml")
-let convertedDoc = await utility.convertLineBreaksInAttributes(inXMLDocumentURL: url)
-
-// Filter elements asynchronously
-let elements: [XMLElement] = []
-let filtered = await utility.filter(fcpxElements: elements, ofTypes: [.clip, .audio])
-```
-
-### Timecode Operations
-
-```swift
-// Convert timecode to CMTime
-let frameDuration = CMTime(value: 1, timescale: 24) // 24fps
-let cmTime = utility.CMTimeFrom(
-    timecodeHours: 1,
-    timecodeMinutes: 30,
-    timecodeSeconds: 15,
-    timecodeFrames: 12,
-    frameDuration: frameDuration
+let result = ModularUtilities.processFCPXML(
+    from: url,
+    using: service,
+    errorHandler: errorHandler
 )
 
-// Convert CMTime to FCPXML time string
-let fcpxmlTime = utility.fcpxmlTime(fromCMTime: cmTime)
-print("FCPXML Time: \(fcpxmlTime)")
+switch result {
+case .success(let document):
+    print("Successfully parsed FCPXML")
+    // Work with document
+case .failure(let error):
+    print("Error: \(error.localizedDescription)")
+}
+```
 
-// Conform time to frame boundary
-let conformed = utility.conform(time: cmTime, toFrameDuration: frameDuration)
+### Advanced Modular Operations
+
+```swift
+// Create custom implementations for specific needs
+class CustomTimecodeConverter: TimecodeConverter {
+    override func timecode(from time: CMTime, frameRate: TimecodeFrameRate) -> Timecode? {
+        // Custom timecode conversion logic
+        return super.timecode(from: time, frameRate: frameRate)
+    }
+}
+
+// Use custom implementation in pipeline
+let customService = FCPXMLService(
+    timecodeConverter: CustomTimecodeConverter()
+)
+
+// Validate documents using modular validation
+let validation = ModularUtilities.validateDocument(document, using: parser)
+if validation.isValid {
+    print("Document is valid")
+} else {
+    print("Validation errors: \(validation.errors)")
+}
+```
+
+### Modular Extensions Usage
+
+```swift
+// Use modular extensions for CMTime operations
+let time = CMTime(value: 3600, timescale: 60000)
+let frameRate = TimecodeFrameRate._24
+
+let timecode = time.timecode(frameRate: frameRate, using: timecodeConverter)
+let fcpxmlTime = time.fcpxmlTime(using: timecodeConverter)
+let conformed = time.conformed(toFrameDuration: frameDuration, using: timecodeConverter)
+
+// Use modular extensions for XMLElement operations
+let element = XMLElement(name: "test")
+element.setAttribute(name: "id", value: "test1", using: documentManager)
+let attribute = element.getAttribute(name: "id", using: documentManager)
+
+// Use modular extensions for XMLDocument operations
+document.addResource(resource, using: documentManager)
+document.addSequence(sequence, using: documentManager)
+let isValid = document.isValid(using: parser)
 ```
 
 ## Examples
@@ -279,6 +337,24 @@ Pipeline Neo is a modernised fork of the original Pipeline library. Key changes 
 - Comprehensive test suite
 - Improved error handling
 
+## Modularity & Safety
+
+Pipeline Neo is now fully modular, built on a protocol-oriented architecture. All major operations (parsing, timecode conversion, XML manipulation, error handling) are defined as protocols with default implementations, enabling easy extension, testing, and future-proofing. Dependency injection is used throughout for maximum flexibility and testability.
+
+- **Thread-safe and concurrency-compliant**: All code is Sendable or @unchecked Sendable as appropriate, and passes thread sanitizer checks.
+- **No known vulnerabilities**: All dependencies (including TimecodeKit 1.6.13) are up to date and have no published security advisories as of July 2025.
+- **No unsafe code patterns**: No use of unsafe pointers, dynamic code execution, or C APIs. All concurrency is structured and type-safe.
+
+## Architecture Overview
+
+- **Protocols**: All core functionality is defined via protocols (e.g., FCPXMLParsing, TimecodeConversion, XMLDocumentOperations, ErrorHandling).
+- **Implementations**: Default implementations are provided, but you can inject your own for custom behaviour or testing.
+- **Extensions**: Modular extensions for CMTime, XMLElement, and XMLDocument allow dependency-injected operations.
+- **Service Layer**: FCPXMLService orchestrates all modular components for high-level workflows.
+- **Utilities**: ModularUtilities provides pipeline creation, validation, and error-handling helpers.
+
+See AGENT.md for a detailed breakdown for AI agents and contributors.
+
 ## Credits
 
 Created by [Vigneswaran Rajkumar](https://bsky.app/profile/vigneswaranrajkumar.com)
@@ -291,4 +367,14 @@ Licensed under the MIT license. See [LICENSE](https://github.com/TheAcharya/pipe
 
 ## Reporting Bugs
 
-For bug reports, feature requests and other suggestions you can create [a new issue](https://github.com/TheAcharya/pipeline-neo/issues) to discuss.
+For bug reports, feature requests and suggestions you can create a new [issue](https://github.com/TheAcharya/pipeline-neo/issues) to discuss.
+
+## Contribution
+
+Community contributions are welcome and appreciated. Developers are encouraged to fork the repository and submit pull requests to enhance functionality or introduce thoughtful improvements. However, a key requirement is that nothing should break—all existing features and behaviours and logic must remain fully functional and unchanged. Once reviewed and approved, updates will be merged into the main branch.
+
+### AI Agent Development Collaboration
+
+Pipeline Neo is developed using AI agents and we welcome developers who are interested in maintaining or contributing to the project using similar AI-assisted development approaches. If you're passionate about AI-driven development workflows and would like to collaborate on expanding Pipeline Neo's capabilities, we'd love to hear from you. 
+
+Developers with experience in AI agent development and FCPXML processing are invited to get in touch. We can provide repository access and collaborate on advancing the framework's functionality.

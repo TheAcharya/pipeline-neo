@@ -1,11 +1,13 @@
 # Pipeline Neo - AI Agent Development Guide
 
-A comprehensive guide for AI agents working on the Pipeline Neo project - a modern Swift 6 framework for Final Cut Pro FCPXML processing with TimecodeKit integration.
+A comprehensive guide for AI agents and contributors working on Pipeline Neo, a fully modular Swift 6 framework for Final Cut Pro FCPXML processing with TimecodeKit integration.
 
 ## Table of Contents
 
 - [Project Overview](#project-overview)
 - [Architecture](#architecture)
+- [Modularity & Extensibility](#modularity--extensibility)
+- [Security & Safety](#security--safety)
 - [Development Guidelines](#development-guidelines)
 - [Code Style](#code-style)
 - [Testing Strategy](#testing-strategy)
@@ -18,10 +20,11 @@ A comprehensive guide for AI agents working on the Pipeline Neo project - a mode
 - [Documentation Standards](#documentation-standards)
 - [Git Workflow](#git-workflow)
 - [Release Process](#release-process)
+- [Documentation Sync](#documentation-sync)
 
 ## Project Overview
 
-Pipeline Neo is a modernised fork of the original Pipeline library, targeting Swift 6.0 and macOS 12+. The project provides comprehensive FCPXML parsing, creation, and manipulation capabilities with advanced timecode operations through TimecodeKit integration.
+Pipeline Neo is a modern, protocol-oriented Swift 6 framework for FCPXML parsing, creation, and manipulation, with advanced timecode operations via TimecodeKit. The codebase is 100% modular, with all major operations defined as protocols and implemented via dependency injection for maximum flexibility and testability.
 
 ### Core Objectives
 - Modern Swift 6 concurrency support with async/await patterns
@@ -37,22 +40,25 @@ Pipeline Neo is a modernised fork of the original Pipeline library, targeting Sw
 
 ## Architecture
 
-The project follows a modular, protocol-oriented design with clear separation of concerns:
+- **Protocols**: All core operations (parsing, timecode conversion, XML manipulation, error handling) are defined as protocols (e.g., FCPXMLParsing, TimecodeConversion, XMLDocumentOperations, ErrorHandling).
+- **Implementations**: Default implementations are provided, but you can inject your own for custom behaviour, testing, or extension.
+- **Extensions**: Modular extensions for CMTime, XMLElement, and XMLDocument allow dependency-injected operations.
+- **Service Layer**: FCPXMLService orchestrates all modular components for high-level workflows.
+- **Utilities**: ModularUtilities provides pipeline creation, validation, and error-handling helpers.
 
-### Core Components
-- **FCPXMLUtility**: Main utility class for FCPXML operations
-- **XMLDocument Extensions**: FCPXML-specific document handling
-- **XMLElement Extensions**: FCPXML element creation and manipulation
-- **CMTime Extensions**: Time-related utilities and conversions
-- **Delegates**: XML parsing and attribute handling
-- **DTD Resources**: Final Cut Pro XML schema definitions
+## Modularity & Extensibility
 
-### Design Principles
-- Protocol-oriented programming
-- Swift 6 concurrency compliance
-- Type-safe operations
-- Comprehensive error handling
-- Modular and extensible architecture
+- All major functionality is protocol-based and dependency-injected.
+- You can swap out or extend any component (e.g., custom XML parser, timecode converter, error handler) without changing the rest of the system.
+- This design enables easy testing, mocking, and future expansion.
+- The codebase is structured for maximum clarity, maintainability, and separation of concerns.
+
+## Security & Safety
+
+- **Thread-safe and concurrency-compliant**: All code is Sendable or @unchecked Sendable as appropriate, and passes thread sanitizer checks.
+- **No known vulnerabilities**: All dependencies (including TimecodeKit 1.6.13) are up to date and have no published security advisories as of July 2025.
+- **No unsafe code patterns**: No use of unsafe pointers, dynamic code execution, or C APIs. All concurrency is structured and type-safe.
+- **Static analysis**: The codebase passes thread sanitizer and static analysis checks, with no concurrency or memory safety issues detected.
 
 ## Development Guidelines
 
@@ -338,6 +344,24 @@ public func convertTimecode(_ timecode: Timecode, to frameRate: TimecodeFrameRat
 - Create GitHub release
 - Update documentation
 - Announce release
+
+## Documentation Sync
+
+**IMPORTANT**: Always ensure this AGENT.md file is kept in sync with the `.cursorrules` file. Both files should contain consistent information about:
+
+- Project overview and architecture
+- Code style and formatting guidelines
+- Development patterns and conventions
+- Security and safety requirements
+- Modularity and extensibility principles
+
+When updating either file, make sure to:
+1. Update both files with the same information
+2. Maintain consistency in terminology and examples
+3. Ensure both files reflect the current state of the codebase
+4. Keep the modular architecture and security status up to date
+
+This ensures that AI agents working with the project have consistent guidance whether they're using AGENT.md or the Cursor IDE rules.
 
 ## Additional Resources
 

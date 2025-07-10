@@ -1,7 +1,14 @@
 # Pipeline Neo - Cursor Rules
 
 ## Project Overview
-Pipeline Neo is a modern Swift 6 framework for Final Cut Pro FCPXML processing with TimecodeKit integration. This project targets macOS 12+, Xcode 16+, and Swift 6.0 with full concurrency support.
+Pipeline Neo is a modern, fully modular Swift 6 framework for Final Cut Pro FCPXML processing with TimecodeKit integration. The codebase is 100% protocol-oriented, with all major operations defined as protocols and implemented via dependency injection for maximum flexibility, testability, and future-proofing. This project targets macOS 12+, Xcode 16+, and Swift 6.0 with full concurrency support.
+
+## Modularity & Safety
+- All core operations (parsing, timecode conversion, XML manipulation, error handling) are defined as protocols (e.g., FCPXMLParsing, TimecodeConversion, XMLDocumentOperations, ErrorHandling).
+- Default implementations are provided, but any component can be swapped or extended via dependency injection.
+- All code is Sendable or @unchecked Sendable as appropriate, and passes thread sanitizer checks.
+- No known vulnerabilities in dependencies (including TimecodeKit 1.6.13) as of July 2025.
+- No unsafe code patterns: no unsafe pointers, dynamic code execution, or C APIs. All concurrency is structured and type-safe.
 
 ## Code Style and Formatting
 

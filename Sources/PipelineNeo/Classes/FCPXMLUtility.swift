@@ -16,11 +16,26 @@ import Logging
 @available(macOS 12.0, *)
 public class FCPXMLUtility {
 	
+	// MARK: - Dependencies
+	
+	private let parser: FCPXMLParsing & FCPXMLElementFiltering
+	private let timecodeConverter: TimecodeConversion & FCPXMLTimeStringConversion & TimeConforming
+	private let documentManager: XMLDocumentOperations & XMLElementOperations
+	private let errorHandler: ErrorHandling
+	
 	// MARK: - Initializing
 	
-	/// Initializer
-	public init() {
-		
+	/// Initializer with dependency injection
+	public init(
+		parser: FCPXMLParsing & FCPXMLElementFiltering = FCPXMLParser(),
+		timecodeConverter: TimecodeConversion & FCPXMLTimeStringConversion & TimeConforming = TimecodeConverter(),
+		documentManager: XMLDocumentOperations & XMLElementOperations = XMLDocumentManager(),
+		errorHandler: ErrorHandling = ErrorHandler()
+	) {
+		self.parser = parser
+		self.timecodeConverter = timecodeConverter
+		self.documentManager = documentManager
+		self.errorHandler = errorHandler
 	}
 	
 	// MARK: - Retrieval Methods
@@ -32,9 +47,7 @@ public class FCPXMLUtility {
 	///   - types: An array of FCPXMLElementType enumeration values
 	/// - Returns: A filtered array of XMLElement objects
 	public func filter(fcpxElements elements: [XMLElement], ofTypes types: [FCPXMLElementType]) -> [XMLElement] {
-		elements.filter { element in
-			types.contains(element.fcpxType)
-		}
+		return parser.filter(elements: elements, ofTypes: types)
 	}
 	
 	// MARK: - Time Conversion Methods
@@ -49,28 +62,7 @@ public class FCPXMLUtility {
 	///   - frameDuration: The duration of a single frame as a CMTime value.
 	/// - Returns: A CMTime value equivalent to the timecode value in real time.
 	public func CMTimeFrom(timecodeHours: Int, timecodeMinutes: Int, timecodeSeconds: Int, timecodeFrames: Int, frameDuration: CMTime) -> CMTime {
-		
-		let framerate: Double
-		if frameDuration == CMTimeMake(value: 1001, timescale: 24000) { // If the framerate is 23.976, make the framerate 24 per SMPTE
-			framerate = 24.0
-		} else {
-			framerate = 1 / (frameDuration.seconds)
-		}
-		
-		let hourFrames = 3600 * framerate * Double(timecodeHours)
-		let minuteFrames = 60 * framerate * Double(timecodeMinutes)
-		let secondFrames = framerate * Double(timecodeSeconds)
-		
-		let totalFrames = hourFrames + minuteFrames + secondFrames + Double(timecodeFrames)
-		
-		let totalSeconds = totalFrames * frameDuration.seconds
-		
-		let timescale = Int32(framerate * 1000)
-		let value = Int64(Double(timescale) * totalSeconds)
-		
-		let totalSecondsCMTime = CMTimeMake(value: value, timescale: timescale)
-		
-		return totalSecondsCMTime
+		return timecodeConverter.cmTimeFrom(timecodeHours: timecodeHours, timecodeMinutes: timecodeMinutes, timecodeSeconds: timecodeSeconds, timecodeFrames: timecodeFrames, frameDuration: frameDuration)
 	}
 
 	/// Converts an FCPXML time value to a CMTime value.
@@ -78,24 +70,7 @@ public class FCPXMLUtility {
 	/// - Parameter timeString: The FCPXML time value as a string.
 	/// - Returns: The equivalent CMTime value.
 	public func CMTime(fromFCPXMLTime timeString: String) -> CMTime {
-		var timeValues = timeString.components(separatedBy: "/")
-		if timeValues.count > 1 {
-			timeValues[1] = String(timeValues[1].dropLast())
-			if let value = Int64(timeValues[0]), let timescale = Int32(timeValues[1]) {
-				return CMTimeMake(value: value, timescale: timescale)
-			} else {
-				return CoreMedia.CMTime(value: 0, timescale: 1)
-			}
-		} else {
-			if timeValues[0].hasSuffix("s") {
-				timeValues[0] = String(timeValues[0].dropLast())
-			}
-			if let value = Int64(timeValues[0]) {
-				return CMTimeMake(value: value, timescale: 1)
-			} else {
-				return CoreMedia.CMTime(value: 0, timescale: 1)
-			}
-		}
+		return timecodeConverter.cmTime(fromFCPXMLTime: timeString)
 	}
 	
 	/// Converts a CMTime value to an FCPXML time value.
@@ -103,7 +78,7 @@ public class FCPXMLUtility {
 	/// - Parameter time: A CMTime value to convert.
 	/// - Returns: The FCPXML time value as a string.
 	public func fcpxmlTime(fromCMTime time: CMTime) -> String {
-		return time.fcpxmlString
+		return timecodeConverter.fcpxmlTime(fromCMTime: time)
 	}
 	
 	/// Conforms a given CMTime value to the frameDuration so that the value falls on an edit frame boundary. The function rounds the edit frame down.
@@ -113,11 +88,7 @@ public class FCPXMLUtility {
 	///   - frameDuration: The frame duration to conform to, represented as a CMTime.
 	/// - Returns: A CMTime of the conformed value.
 	public func conform(time: CMTime, toFrameDuration frameDuration: CMTime) -> CMTime {
-		let numberOfFrames = time.seconds / frameDuration.seconds
-		let numberOfFramesRounded = floor(Double(numberOfFrames))
-		let conformedTime = CMTimeMake(value: Int64(numberOfFramesRounded * Double(frameDuration.value)), timescale: frameDuration.timescale)
-		
-		return conformedTime
+		return timecodeConverter.conform(time: time, toFrameDuration: frameDuration)
 	}
 	
 	/// Converts a project counter value to the project's timecode.
