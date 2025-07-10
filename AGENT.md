@@ -21,7 +21,7 @@ A comprehensive guide for AI agents working on the Pipeline Neo project - a mode
 
 ## Project Overview
 
-Pipeline Neo is a modernized fork of the original Pipeline library, targeting Swift 6.0 and macOS 12+. The project provides comprehensive FCPXML parsing, creation, and manipulation capabilities with advanced timecode operations through TimecodeKit integration.
+Pipeline Neo is a modernised fork of the original Pipeline library, targeting Swift 6.0 and macOS 12+. The project provides comprehensive FCPXML parsing, creation, and manipulation capabilities with advanced timecode operations through TimecodeKit integration.
 
 ### Core Objectives
 - Modern Swift 6 concurrency support with async/await patterns
@@ -88,11 +88,11 @@ The project follows a modular, protocol-oriented design with clear separation of
 - Provide usage examples in documentation
 - Document all parameters, return values, and exceptions
 
-### File Organization
+### File Organisation
 - Group related functionality in extensions
 - Keep files focused on single responsibilities
 - Use clear file naming conventions
-- Organize imports logically
+- Organise imports logically
 
 ## Testing Strategy
 
@@ -102,7 +102,7 @@ The project follows a modular, protocol-oriented design with clear separation of
 - Performance tests for time-critical operations
 - Concurrency tests for async operations
 
-### Test Organization
+### Test Organisation
 - One test file per main component
 - Descriptive test method names
 - Comprehensive test data
@@ -168,7 +168,7 @@ Main utility class providing FCPXML operations:
 
 ### XMLDocument Extensions
 Extensions for FCPXML-specific document operations:
-- FCPXML initialization and parsing
+- FCPXML initialisation and parsing
 - Event and resource management
 - Document validation and output
 - Version-specific handling
@@ -185,7 +185,7 @@ Time-related utilities and conversions:
 - FCPXML time string formatting
 - Timecode conversion utilities
 - Frame duration calculations
-- Time validation and normalization
+- Time validation and normalisation
 
 ## Common Patterns
 

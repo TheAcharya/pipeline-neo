@@ -65,13 +65,13 @@ All Swift files must include the standard header format:
 - Xcode: 16.0+
 - macOS: 12.0+
 
-## File Organization
+## File Organisation
 
 ### Source Structure
 - Group related functionality in extensions
 - Keep files focused on single responsibilities
 - Use clear file naming conventions
-- Organize imports logically
+- Organise imports logically
 - Maintain the existing directory structure
 
 ### Test Structure
@@ -137,7 +137,7 @@ do {
 - Test all supported frame rates
 - Validate against actual Final Cut Pro output
 
-### Test Organization
+### Test Organisation
 - Use descriptive test method names
 - Group related tests logically
 - Include proper setup and teardown
