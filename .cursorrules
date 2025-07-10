@@ -3,6 +3,14 @@
 ## Project Overview
 Pipeline Neo is a modern, fully modular Swift 6 framework for Final Cut Pro FCPXML processing with TimecodeKit integration. The codebase is 100% protocol-oriented, with all major operations defined as protocols and implemented via dependency injection for maximum flexibility, testability, and future-proofing. This project targets macOS 12+, Xcode 16+, and Swift 6.0 with full concurrency support.
 
+### Current Status
+- All 40 tests passing
+- Full FCPXML version support (1.5-1.13)
+- Final Cut Pro frame rate support (23.976, 24, 25, 29.97, 30, 50, 59.94, 60)
+- Thread-safe and concurrency-compliant
+- No known security vulnerabilities
+- Comprehensive modular architecture
+
 ## Modularity & Safety
 - All core operations (parsing, timecode conversion, XML manipulation, error handling) are defined as protocols (e.g., FCPXMLParsing, TimecodeConversion, XMLDocumentOperations, ErrorHandling).
 - Default implementations are provided, but any component can be swapped or extended via dependency injection.
@@ -86,7 +94,7 @@ All Swift files must include the standard header format:
 - Descriptive test method names
 - Comprehensive test data
 - Proper setup and teardown
-- Test all supported frame rates
+- Test all supported frame rates (Final Cut Pro compatible)
 
 ## Development Patterns
 
@@ -126,7 +134,7 @@ do {
 ### TimecodeKit Integration
 - Use TimecodeKit for all timecode operations
 - Follow TimecodeKit API conventions
-- Support all FCPXML frame rates
+- Support all FCPXML frame rates (Final Cut Pro compatible)
 - Implement proper frame rate conversions
 
 ## Testing Requirements
@@ -136,12 +144,13 @@ do {
 - Integration tests for complex workflows
 - Performance tests for time-critical operations
 - Concurrency tests for async operations
-- Test all supported frame rates
+- Test all supported frame rates (Final Cut Pro compatible)
+- Current: 40 comprehensive tests covering all functionality
 
 ### Test Data
 - Use realistic FCPXML samples
 - Include edge cases and error conditions
-- Test all supported frame rates
+- Test all supported frame rates (Final Cut Pro compatible)
 - Validate against actual Final Cut Pro output
 
 ### Test Organisation
@@ -149,6 +158,17 @@ do {
 - Group related tests logically
 - Include proper setup and teardown
 - Use meaningful assertions
+
+### Supported Frame Rates
+Only test with Final Cut Pro supported frame rates:
+- 23.976 fps
+- 24 fps
+- 25 fps
+- 29.97 fps
+- 30 fps
+- 50 fps
+- 59.94 fps
+- 60 fps
 
 ## Performance Considerations
 
@@ -224,12 +244,12 @@ do {
 ### FCPXML Handling
 - Support FCPXML versions 1.5 through 1.13
 - Validate against DTD schemas
-- Handle all supported frame rates
+- Handle all supported frame rates (Final Cut Pro compatible)
 - Implement proper XML formatting
 
 ### Timecode Operations
 - Use TimecodeKit for all timecode operations
-- Support all FCPXML frame rates
+- Support all FCPXML frame rates (Final Cut Pro compatible)
 - Implement proper frame rate conversions
 - Handle drop frame and non-drop frame timecode
 

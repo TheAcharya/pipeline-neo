@@ -36,7 +36,7 @@ This codebase is developed using AI agents.
 - Easily manipulate timing values with modern Swift concurrency
 - Output FCPXML files with proper text formatting
 - Validate FCPXML documents with the DTD
-- Works with FCPXML v1.6 through v1.8 files
+- Works with FCPXML v1.5 through v1.13 files
 - Full TimecodeKit integration for advanced timecode operations
 - Swift 6 concurrency support with async/await patterns
 - macOS 12+ support with modern Swift features
@@ -327,11 +327,11 @@ Further information on FCPXML can be found [here](https://fcp.cafe/developers/fc
 
 ## FCPXML Version Support
 
-Pipeline Neo supports FCPXML versions **1.5 through 1.13**. All DTDs for these versions are included in the codebase, ensuring compatibility with the latest Final Cut Pro XML workflows.
+Pipeline Neo supports FCPXML versions 1.5 through 1.13. All DTDs for these versions are included in the codebase, ensuring compatibility with the latest Final Cut Pro XML workflows.
 
 ## Migration from Original Pipeline
 
-Pipeline Neo is a modernised fork of the original Pipeline library. Key changes include:
+Pipeline Neo is a modernised successor to [Pipeline](https://github.com/reuelk/pipeline). Key changes include:
 
 - Swift 6 concurrency support with async/await
 - TimecodeKit integration for advanced timecode operations
@@ -345,17 +345,17 @@ Pipeline Neo is a modernised fork of the original Pipeline library. Key changes 
 
 Pipeline Neo is now fully modular, built on a protocol-oriented architecture. All major operations (parsing, timecode conversion, XML manipulation, error handling) are defined as protocols with default implementations, enabling easy extension, testing, and future-proofing. Dependency injection is used throughout for maximum flexibility and testability.
 
-- **Thread-safe and concurrency-compliant**: All code is Sendable or @unchecked Sendable as appropriate, and passes thread sanitizer checks.
-- **No known vulnerabilities**: All dependencies (including TimecodeKit 1.6.13) are up to date and have no published security advisories as of July 2025.
-- **No unsafe code patterns**: No use of unsafe pointers, dynamic code execution, or C APIs. All concurrency is structured and type-safe.
+- Thread-safe and concurrency-compliant: All code is Sendable or @unchecked Sendable as appropriate, and passes thread sanitizer checks.
+- No known vulnerabilities: All dependencies (including TimecodeKit 1.6.13) are up to date and have no published security advisories as of July 2025.
+- No unsafe code patterns: No use of unsafe pointers, dynamic code execution, or C APIs. All concurrency is structured and type-safe.
 
 ## Architecture Overview
 
-- **Protocols**: All core functionality is defined via protocols (e.g., FCPXMLParsing, TimecodeConversion, XMLDocumentOperations, ErrorHandling).
-- **Implementations**: Default implementations are provided, but you can inject your own for custom behaviour or testing.
-- **Extensions**: Modular extensions for CMTime, XMLElement, and XMLDocument allow dependency-injected operations.
-- **Service Layer**: FCPXMLService orchestrates all modular components for high-level workflows.
-- **Utilities**: ModularUtilities provides pipeline creation, validation, and error-handling helpers.
+- Protocols: All core functionality is defined via protocols (e.g., FCPXMLParsing, TimecodeConversion, XMLDocumentOperations, ErrorHandling).
+- Implementations: Default implementations are provided, but you can inject your own for custom behaviour or testing.
+- Extensions: Modular extensions for CMTime, XMLElement, and XMLDocument allow dependency-injected operations.
+- Service Layer: FCPXMLService orchestrates all modular components for high-level workflows.
+- Utilities: ModularUtilities provides pipeline creation, validation, and error-handling helpers.
 
 See AGENT.md for a detailed breakdown for AI agents and contributors.
 
