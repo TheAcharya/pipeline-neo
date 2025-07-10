@@ -3,6 +3,6 @@
 ### 1.0.0
 
 **🎉 Released:**
-- TBA
+- 10th July 2025
 
-This is the first public release of **XLKit**!
+This is the first public release of **Pipeline Neo**!
