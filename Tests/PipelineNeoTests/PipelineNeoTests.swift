@@ -74,7 +74,7 @@ final class PipelineNeoTests: XCTestCase {
         XCTAssertNotNil(utility)
     }
     
-    func testFilterFCPXElements() async throws {
+    func testFilterFCPXElements() throws {
         let utility = FCPXMLUtility()
         
         // Create test elements
@@ -85,13 +85,13 @@ final class PipelineNeoTests: XCTestCase {
         let elements = [eventElement, clipElement, audioElement]
         
         // Test filtering
-        let filtered = await utility.filter(fcpxElements: elements, ofTypes: [.event, .clip])
+        let filtered = utility.filter(fcpxElements: elements, ofTypes: [.event, .clip])
         XCTAssertEqual(filtered.count, 2)
         XCTAssertTrue(filtered.contains { $0.name == "event" })
         XCTAssertTrue(filtered.contains { $0.name == "clip" })
     }
     
-    func testCMTimeFromTimecode() async throws {
+    func testCMTimeFromTimecode() throws {
         let utility = FCPXMLUtility()
         
         // Test 24fps timecode conversion
@@ -108,7 +108,7 @@ final class PipelineNeoTests: XCTestCase {
         XCTAssertEqual(cmTime.seconds, 5415.5, accuracy: 0.1)
     }
     
-    func testCMTimeFromFCPXMLTime() async throws {
+    func testCMTimeFromFCPXMLTime() throws {
         let utility = FCPXMLUtility()
         
         // Test FCPXML time string conversion
@@ -117,7 +117,7 @@ final class PipelineNeoTests: XCTestCase {
         XCTAssertEqual(cmTime.timescale, 30000)
     }
     
-    func testFCPXMLTimeFromCMTime() async throws {
+    func testFCPXMLTimeFromCMTime() throws {
         let utility = FCPXMLUtility()
         
         let cmTime = CMTime(value: 1500, timescale: 30000)
@@ -125,7 +125,7 @@ final class PipelineNeoTests: XCTestCase {
         XCTAssertEqual(fcpxmlTime, "1500/30000s")
     }
     
-    func testConformTimeToFrameDuration() async throws {
+    func testConformTimeToFrameDuration() throws {
         let utility = FCPXMLUtility()
         
         let time = CMTime(value: 1501, timescale: 30000) // 0.050033... seconds
@@ -137,7 +137,7 @@ final class PipelineNeoTests: XCTestCase {
         XCTAssertEqual(conformed.seconds, 0.041666666666666664, accuracy: 0.0001)
     }
     
-    func testTimecodeKitIntegration() async throws {
+    func testTimecodeKitIntegration() throws {
         let utility = FCPXMLUtility()
         
         // Test CMTime to Timecode conversion
@@ -510,7 +510,7 @@ final class PipelineNeoTests: XCTestCase {
                 group.addTask {
                     let utility = FCPXMLUtility()
                     let frameDuration = CMTime(value: 1, timescale: 24)
-                    _ = await utility.CMTimeFrom(
+                    _ = utility.CMTimeFrom(
                         timecodeHours: 1,
                         timecodeMinutes: 30,
                         timecodeSeconds: 15,

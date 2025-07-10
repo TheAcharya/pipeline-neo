@@ -5,9 +5,16 @@
 
 <p align="center"><a href="https://github.com/TheAcharya/pipeline-neo/blob/main/LICENSE"><img src="http://img.shields.io/badge/license-MIT-lightgrey.svg?style=flat" alt="license"/></a>&nbsp;<a href="https://github.com/TheAcharya/pipeline-neo"><img src="https://img.shields.io/badge/platform-macOS-lightgrey.svg?style=flat" alt="platform"/></a>&nbsp;<a href="https://github.com/TheAcharya/pipeline-neo/actions/workflows/build.yml"><img src="https://github.com/TheAcharya/pipeline-neo/actions/workflows/build.yml/badge.svg" alt="build"/></a>&nbsp;<img src="https://img.shields.io/badge/Swift-6.0-orange.svg?style=flat" alt="Swift"/>&nbsp;<img src="https://img.shields.io/badge/Xcode-16+-blue.svg?style=flat" alt="Xcode"/></p>
 
-A modern Swift 6 framework for working with Final Cut Pro's FCPXML with full concurrency support and TimecodeKit integration. Pipeline Neo provides a comprehensive API for parsing, creating, and manipulating FCPXML files with advanced timecode operations, async/await patterns, and robust error handling. Built with Swift 6.0 and targeting macOS 12+, it offers type-safe operations, comprehensive test coverage, and seamless integration with TimecodeKit for professional video editing workflows.
+A modern Swift 6 framework for working with Final Cut Pro's FCPXML with full concurrency support and TimecodeKit integration. Pipeline Neo is a spiritual successor to the original [Pipeline framework](https://github.com/reuelk/pipeline) by Reuel Kim, modernized for Swift 6.0 and contemporary development practices. 
+
+Pipeline Neo provides a comprehensive API for parsing, creating, and manipulating FCPXML files with advanced timecode operations, async/await patterns, and robust error handling. Built with Swift 6.0 and targeting macOS 12+, it offers type-safe operations, comprehensive test coverage, and seamless integration with TimecodeKit for professional video editing workflows.
+
+Pipeline Neo is currently in an experimental stage and does not yet cover the full range of FCPXML attributes and parameters. It focuses on core functionality while providing a foundation for future expansion and feature completeness.
 
 This codebase is developed using AI agents.
+
+> [!IMPORTANT]
+> Pipeline Neo has yet to be extensively tested in production environments, real-world workflows, or enterprise scenarios. This library serves as a modernized foundation for AI-assisted development and experimentation with FCPXML processing capabilities. 
 
 ## Table of Contents
 
@@ -274,7 +281,7 @@ Pipeline Neo is a modernized fork of the original Pipeline library. Key changes 
 
 ## Credits
 
-Original Work by [Reuel Kim](https://github.com/reuelk) ([0.5 ... 0.6](https://github.com/reuelk/pipeline))
+Created by [Vigneswaran Rajkumar](https://bsky.app/profile/vigneswaranrajkumar.com)
 
 Icon Design by [Bor Jen Goh](https://www.artstation.com/borjengoh)
 
