@@ -26,7 +26,7 @@ public final class TimecodeConverter: TimecodeConversion, FCPXMLTimeStringConver
     }
     
     public func cmTime(from timecode: Timecode) -> CMTime {
-        let seconds = Double(timecode.seconds)
+        let seconds = timecode.realTimeValue
         return CMTime(seconds: seconds, preferredTimescale: 600)
     }
     
