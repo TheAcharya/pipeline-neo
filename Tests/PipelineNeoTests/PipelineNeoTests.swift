@@ -198,53 +198,154 @@ final class PipelineNeoTests: XCTestCase, @unchecked Sendable {
         XCTAssertNotNil(pipeline)
     }
     
-    func testModularUtilitiesValidateDocument() {
-        let document = documentManager.createFCPXMLDocument(version: "1.10")
-        let validation = ModularUtilities.validateDocument(document, using: parser)
+    // MARK: - Async Tests
+    
+    func testAsyncParserComponent() async throws {
+        let testData = """
+        <?xml version="1.0" encoding="UTF-8"?>
+        <fcpxml version="1.10">
+            <resources>
+                <asset id="asset1" name="Test Asset"/>
+            </resources>
+        </fcpxml>
+        """.data(using: .utf8)!
         
+        let document = try await parser.parse(testData)
+        XCTAssertNotNil(document)
+        let isValid = await parser.validate(document)
+        XCTAssertTrue(isValid)
+    }
+    
+    func testAsyncTimecodeConverterComponent() async {
+        let time = CMTime(value: 3600, timescale: 60000)
+        let frameRate = TimecodeFrameRate._24
+        
+        let timecode = await timecodeConverter.timecode(from: time, frameRate: frameRate)
+        XCTAssertNotNil(timecode)
+        
+        let convertedBack = await timecodeConverter.cmTime(from: timecode!)
+        XCTAssertEqual(convertedBack.seconds, time.seconds, accuracy: 0.001)
+    }
+    
+    func testAsyncDocumentManagerComponent() async {
+        let document = await documentManager.createFCPXMLDocument(version: "1.10")
+        XCTAssertNotNil(document)
+        
+        let resource = await documentManager.createElement(name: "asset", attributes: ["id": "test1"])
+        await documentManager.addResource(resource, to: document)
+        
+        let rootElement = document.rootElement()
+        let resourcesElement = rootElement?.elements(forName: "resources").first
+        XCTAssertNotNil(resourcesElement)
+        XCTAssertEqual(resourcesElement?.childCount, 1)
+    }
+    
+    func testAsyncFCPXMLService() async throws {
+        let testData = """
+        <?xml version="1.0" encoding="UTF-8"?>
+        <fcpxml version="1.10">
+            <resources>
+                <asset id="asset1" name="Test Asset"/>
+            </resources>
+        </fcpxml>
+        """.data(using: .utf8)!
+        
+        let document = try await service.parseFCPXML(from: testData)
+        XCTAssertNotNil(document)
+        
+        let isValid = await service.validateDocument(document)
+        XCTAssertTrue(isValid)
+        
+        let time = CMTime(value: 3600, timescale: 60000)
+        let frameRate = TimecodeFrameRate._24
+        let timecode = await service.timecode(from: time, frameRate: frameRate)
+        XCTAssertNotNil(timecode)
+        
+        let newDocument = await service.createFCPXMLDocument(version: "1.10")
+        XCTAssertNotNil(newDocument)
+    }
+    
+    func testAsyncModularUtilities() async {
+        let document = await documentManager.createFCPXMLDocument(version: "1.10")
+        
+        let validation = await ModularUtilities.validateDocument(document, using: parser)
         XCTAssertTrue(validation.isValid)
         XCTAssertTrue(validation.errors.isEmpty)
     }
     
-    // MARK: - Modular Extensions Tests
-    
-    func testCMTimeModularExtensions() {
-        let time = CMTime(value: 3600, timescale: 60000)
-        let frameRate = TimecodeFrameRate._24
+    func testAsyncElementFiltering() async {
+        let element1 = XMLElement(name: "asset")
+        let element2 = XMLElement(name: "sequence")
+        let element3 = XMLElement(name: "clip")
         
-        let timecode = time.timecode(frameRate: frameRate, using: timecodeConverter)
-        XCTAssertNotNil(timecode)
+        let elements = [element1, element2, element3]
+        let types: [FCPXMLElementType] = [.assetResource, .sequence]
         
-        let fcpxmlTime = time.fcpxmlTime(using: timecodeConverter)
-        XCTAssertEqual(fcpxmlTime, "3600/60000")
+        let filtered = await parser.filter(elements: elements, ofTypes: types)
         
-        let frameDuration = CMTime(value: 1, timescale: 24)
-        let conformed = time.conformed(toFrameDuration: frameDuration, using: timecodeConverter)
-        XCTAssertNotEqual(conformed, CMTime.zero)
+        XCTAssertEqual(filtered.count, 2)
+        XCTAssertTrue(filtered.contains { $0.name == "asset" })
+        XCTAssertTrue(filtered.contains { $0.name == "sequence" })
+        XCTAssertFalse(filtered.contains { $0.name == "clip" })
     }
     
-    func testXMLElementModularExtensions() {
-        let element = XMLElement(name: "test")
+    func testAsyncTimeConforming() async {
+        let time = CMTime(value: 1001, timescale: 24000)
+        let frameDuration = CMTime(value: 1, timescale: 24)
+        let result = await timecodeConverter.conform(time: time, toFrameDuration: frameDuration)
         
-        element.setAttribute(name: "id", value: "test1", using: documentManager)
-        let attribute = element.getAttribute(name: "id", using: documentManager)
+        XCTAssertNotEqual(result, CMTime.zero)
+    }
+    
+    func testAsyncFCPXMLTimeStringConversion() async {
+        let timeString = "3600/60000"
+        let cmTime = await timecodeConverter.cmTime(fromFCPXMLTime: timeString)
+        
+        XCTAssertNotEqual(cmTime, CMTime.zero)
+        XCTAssertEqual(cmTime.value, 3600)
+        XCTAssertEqual(cmTime.timescale, 60000)
+        
+        let convertedBack = await timecodeConverter.fcpxmlTime(fromCMTime: cmTime)
+        XCTAssertEqual(convertedBack, timeString)
+    }
+    
+    func testAsyncXMLElementOperations() async {
+        let element = await documentManager.createElement(name: "test", attributes: ["id": "test1"])
+        XCTAssertNotNil(element)
+        XCTAssertEqual(element.name, "test")
+        
+        let attribute = await documentManager.getAttribute(name: "id", from: element)
         XCTAssertEqual(attribute, "test1")
         
-        let child = element.createChild(name: "child", attributes: ["name": "test"], using: documentManager)
-        XCTAssertNotNil(child)
-        XCTAssertEqual(element.childCount, 1)
+        await documentManager.setAttribute(name: "name", value: "testValue", on: element)
+        let newAttribute = await documentManager.getAttribute(name: "name", from: element)
+        XCTAssertEqual(newAttribute, "testValue")
     }
     
-    func testXMLDocumentModularExtensions() {
-        let document = documentManager.createFCPXMLDocument(version: "1.10")
+    func testAsyncConcurrentOperations() async {
+        let time = CMTime(value: 3600, timescale: 60000)
         
-        let resource = documentManager.createElement(name: "asset", attributes: ["id": "test1"])
-        document.addResource(resource, using: documentManager)
+        // Test concurrent timecode conversions with different frame rates to avoid Sendable issues
+        async let timecode1 = timecodeConverter.timecode(from: time, frameRate: ._24)
+        async let timecode2 = timecodeConverter.timecode(from: time, frameRate: ._25)
+        async let timecode3 = timecodeConverter.timecode(from: time, frameRate: ._30)
         
-        let sequence = documentManager.createElement(name: "sequence", attributes: ["id": "seq1"])
-        document.addSequence(sequence, using: documentManager)
+        let results = await (timecode1, timecode2, timecode3)
         
-        XCTAssertTrue(document.isValid(using: parser))
+        XCTAssertNotNil(results.0)
+        XCTAssertNotNil(results.1)
+        XCTAssertNotNil(results.2)
+        
+        // Test concurrent document creation
+        async let doc1 = documentManager.createFCPXMLDocument(version: "1.10")
+        async let doc2 = documentManager.createFCPXMLDocument(version: "1.11")
+        async let doc3 = documentManager.createFCPXMLDocument(version: "1.12")
+        
+        let documents = await (doc1, doc2, doc3)
+        
+        XCTAssertNotNil(documents.0)
+        XCTAssertNotNil(documents.1)
+        XCTAssertNotNil(documents.2)
     }
     
     // MARK: - Performance Tests

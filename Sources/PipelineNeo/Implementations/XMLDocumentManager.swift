@@ -45,6 +45,43 @@ public final class XMLDocumentManager: XMLDocumentOperations, XMLElementOperatio
         try data.write(to: url)
     }
     
+    // MARK: - XMLDocumentOperations Async Implementation
+    
+    public func createFCPXMLDocument(version: String) async -> XMLDocument {
+        // For now, just call the synchronous version
+        let rootElement = XMLElement(name: "fcpxml")
+        rootElement.setAttributesAs(["version": version])
+        
+        let document = XMLDocument()
+        document.setRootElement(rootElement)
+        return document
+    }
+    
+    public func addResource(_ resource: XMLElement, to document: XMLDocument) async {
+        // For now, just call the synchronous version
+        guard let rootElement = document.rootElement() else { return }
+        
+        var resourcesElement = rootElement.elements(forName: "resources").first
+        if resourcesElement == nil {
+            resourcesElement = XMLElement(name: "resources")
+            rootElement.addChild(resourcesElement!)
+        }
+        
+        resourcesElement!.addChild(resource)
+    }
+    
+    public func addSequence(_ sequence: XMLElement, to document: XMLDocument) async {
+        // For now, just call the synchronous version
+        guard let rootElement = document.rootElement() else { return }
+        rootElement.addChild(sequence)
+    }
+    
+    public func saveDocument(_ document: XMLDocument, to url: URL) async throws {
+        // For now, just call the synchronous version
+        let data = document.xmlData
+        try data.write(to: url)
+    }
+    
     // MARK: - XMLElementOperations Implementation
     
     public func createElement(name: String, attributes: [String: String]) -> XMLElement {
@@ -62,6 +99,30 @@ public final class XMLDocumentManager: XMLDocumentOperations, XMLElementOperatio
     }
     
     public func getAttribute(name: String, from element: XMLElement) -> String? {
+        return element.attribute(forName: name)?.stringValue
+    }
+    
+    // MARK: - XMLElementOperations Async Implementation
+    
+    public func createElement(name: String, attributes: [String: String]) async -> XMLElement {
+        // For now, just call the synchronous version
+        let element = XMLElement(name: name)
+        element.setAttributesAs(attributes)
+        return element
+    }
+    
+    public func addChild(_ child: XMLElement, to parent: XMLElement) async {
+        // For now, just call the synchronous version
+        parent.addChild(child)
+    }
+    
+    public func setAttribute(name: String, value: String, on element: XMLElement) async {
+        // For now, just call the synchronous version
+        element.setAttributesAs([name: value])
+    }
+    
+    public func getAttribute(name: String, from element: XMLElement) async -> String? {
+        // For now, just call the synchronous version
         return element.attribute(forName: name)?.stringValue
     }
 } 

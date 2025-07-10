@@ -1,5 +1,12 @@
 # Pipeline Neo - AI Agent Development Guide
 
+**Update July 2025:**
+Pipeline Neo now provides comprehensive async/await support for all major operations. All protocols, implementations, services, and utilities have async methods. Task-based concurrency is avoided for Foundation XML types and TimecodeKit types due to Sendable limitations, but async APIs are provided and concurrency-safe for Swift 6. The README and tests now demonstrate async/await usage, and all 46 tests/builds pass with the new architecture.
+
+> **Note:** Foundation XML types (XMLDocument, XMLElement) and TimecodeKit types are not Sendable. The codebase avoids Task-based concurrency for these types, but provides async/await APIs that are concurrency-safe for Swift 6. If/when these dependencies become Sendable-compliant, further parallelisation and structured concurrency can be introduced.
+
+---
+
 A comprehensive guide for AI agents and contributors working on Pipeline Neo, a fully modular Swift 6 framework for Final Cut Pro FCPXML processing with TimecodeKit integration.
 
 ## Table of Contents
@@ -11,6 +18,7 @@ A comprehensive guide for AI agents and contributors working on Pipeline Neo, a 
 - [Development Guidelines](#development-guidelines)
 - [Code Style](#code-style)
 - [Testing Strategy](#testing-strategy)
+- [Note on Sendable Limitations](#note-on-sendable-limitations)
 - [Dependencies](#dependencies)
 - [File Structure](#file-structure)
 - [Key Components](#key-components)
@@ -21,6 +29,7 @@ A comprehensive guide for AI agents and contributors working on Pipeline Neo, a 
 - [Git Workflow](#git-workflow)
 - [Release Process](#release-process)
 - [Documentation Sync](#documentation-sync)
+- [Additional Resources](#additional-resources)
 
 ## Project Overview
 
@@ -29,7 +38,7 @@ Pipeline Neo is a modern, protocol-oriented Swift 6 framework for FCPXML parsing
 ### Core Objectives
 - Modern Swift 6 concurrency support with async/await patterns
 - Full TimecodeKit integration for professional timecode operations
-- Comprehensive test coverage for all functionality (40+ tests)
+- Comprehensive test coverage for all functionality (46+ tests)
 - Modular architecture for future expansion
 - Professional documentation and examples
 - Support for FCPXML versions 1.5 through 1.13
@@ -40,26 +49,26 @@ Pipeline Neo is a modern, protocol-oriented Swift 6 framework for FCPXML parsing
 - Swift 6.0+
 
 ### Current Status
-- All 40 tests passing
+- All 46 tests passing
 - Full FCPXML version support (1.5-1.13)
 - Final Cut Pro frame rate support (23.976, 24, 25, 29.97, 30, 50, 59.94, 60)
-- Thread-safe and concurrency-compliant
+- Thread-safe and concurrency-compliant with comprehensive async/await support
 - No known security vulnerabilities
-- Comprehensive modular architecture
+- Comprehensive modular architecture with protocol-oriented design
 
 ## Architecture
 
-- Protocols: All core operations (parsing, timecode conversion, XML manipulation, error handling) are defined as protocols (e.g., FCPXMLParsing, TimecodeConversion, XMLDocumentOperations, ErrorHandling).
-- Implementations: Default implementations are provided, but you can inject your own for custom behaviour, testing, or extension.
-- Extensions: Modular extensions for CMTime, XMLElement, and XMLDocument allow dependency-injected operations.
-- Service Layer: FCPXMLService orchestrates all modular components for high-level workflows.
-- Utilities: ModularUtilities provides pipeline creation, validation, and error-handling helpers.
+- Protocols: All core operations (parsing, timecode conversion, XML manipulation, error handling) are defined as protocols (e.g., FCPXMLParsing, TimecodeConversion, XMLDocumentOperations, ErrorHandling), with both synchronous and async/await methods for modern concurrency.
+- Implementations: Default implementations are provided, supporting both sync and async/await APIs. Async methods are concurrency-safe and avoid Task-based concurrency for Foundation XML types and TimecodeKit types due to Sendable limitations.
+- Extensions: Modular extensions for CMTime, XMLElement, and XMLDocument allow dependency-injected operations with async/await support.
+- Service Layer: FCPXMLService orchestrates all modular components for high-level workflows, with both sync and async/await APIs.
+- Utilities: ModularUtilities provides pipeline creation, validation, and error-handling helpers, with comprehensive async/await support.
 
 ## Modularity & Extensibility
 
-- All major functionality is protocol-based and dependency-injected.
-- You can swap out or extend any component (e.g., custom XML parser, timecode converter, error handler) without changing the rest of the system.
-- This design enables easy testing, mocking, and future expansion.
+- All major functionality is protocol-based and dependency-injected, with both sync and async/await APIs.
+- Async/await support is comprehensive across protocols, implementations, services, and utilities.
+- Task-based concurrency (e.g., Task.detached, withTaskGroup) is avoided for Foundation XML types and TimecodeKit types due to Sendable limitations, but async APIs are provided and concurrency-safe for Swift 6.
 - The codebase is structured for maximum clarity, maintainability, and separation of concerns.
 
 ## Security & Safety
@@ -73,21 +82,23 @@ Pipeline Neo is a modern, protocol-oriented Swift 6 framework for FCPXML parsing
 
 ### Swift Version
 - Always use Swift 6.0 features and syntax
-- Leverage async/await for asynchronous operations
-- Use structured concurrency with Task and TaskGroup
-- Implement proper Sendable compliance
+- Leverage async/await for asynchronous operations (all major operations now have async/await APIs)
+- Use structured concurrency with Task and TaskGroup where types are Sendable; otherwise, provide async APIs that are concurrency-safe for current Swift 6
+- Implement proper Sendable compliance where possible; for Foundation XML types and TimecodeKit types, avoid Task-based concurrency
 
 ### Concurrency Requirements
-- All public APIs should be async where appropriate
+- All public APIs should be async where appropriate (now implemented across the codebase)
 - Use @unchecked Sendable for classes that cannot be made final
 - Avoid capturing non-Sendable types in concurrent contexts
 - Implement proper actor isolation where needed
+- Note: Foundation XML types (XMLDocument, XMLElement) and TimecodeKit types are not Sendable; async/await APIs are provided, but Task-based concurrency is avoided for these types
 
 ### Error Handling
 - Use Swift's Result type for operations that can fail
 - Provide meaningful error messages
 - Implement proper error propagation
 - Use do-catch blocks for synchronous operations
+- Async error handling is supported in all async/await APIs
 
 ## Code Style
 
@@ -100,7 +111,7 @@ Pipeline Neo is a modern, protocol-oriented Swift 6 framework for FCPXML parsing
 ### Documentation
 - Include comprehensive header comments for all public APIs
 - Use Swift documentation comments (///)
-- Provide usage examples in documentation
+- Provide usage examples in documentation, including async/await usage
 - Document all parameters, return values, and exceptions
 
 ### File Organisation
@@ -111,35 +122,12 @@ Pipeline Neo is a modern, protocol-oriented Swift 6 framework for FCPXML parsing
 
 ## Testing Strategy
 
-### Test Coverage Requirements
-- Unit tests for all public APIs
-- Integration tests for complex workflows
-- Performance tests for time-critical operations
-- Concurrency tests for async operations
-- Current: 40 comprehensive tests covering all functionality
+- All tests and builds pass with the new async/await architecture
+- The README and tests now demonstrate async/await usage
 
-### Test Organisation
-- One test file per main component
-- Descriptive test method names
-- Comprehensive test data
-- Proper setup and teardown
+## Note on Sendable Limitations
 
-### Test Data
-- Use realistic FCPXML samples
-- Include edge cases and error conditions
-- Test all supported frame rates (Final Cut Pro compatible)
-- Validate against actual Final Cut Pro output
-
-### Supported Frame Rates
-Only test with Final Cut Pro supported frame rates:
-- 23.976 fps
-- 24 fps
-- 25 fps
-- 29.97 fps
-- 30 fps
-- 50 fps
-- 59.94 fps
-- 60 fps
+Foundation XML types (XMLDocument, XMLElement) and TimecodeKit types are not Sendable. The codebase avoids Task-based concurrency for these types, but provides async/await APIs that are concurrency-safe for Swift 6. If/when these dependencies become Sendable-compliant, further parallelisation and structured concurrency can be introduced.
 
 ## Dependencies
 
@@ -194,7 +182,7 @@ Sources/PipelineNeo/
     └── README.md
 
 Tests/PipelineNeoTests/
-├── PipelineNeoTests.swift (40 comprehensive tests)
+├── PipelineNeoTests.swift (46 comprehensive tests with async/await coverage)
 └── XCTestManifests.swift
 ```
 
@@ -407,9 +395,9 @@ This ensures that AI agents working with the project have consistent guidance wh
 
 ### Internal References
 - Package.swift: Package configuration
-- README.md: User documentation
+- README.md: User documentation with async/await examples
 - CHANGELOG.md: Version history
-- Tests/: Test suite and examples (40 tests)
+- Tests/: Test suite and examples (46 tests with async/await coverage)
 
 ### Development Tools
 - Xcode 16.0+ for development

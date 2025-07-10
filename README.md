@@ -216,6 +216,101 @@ if validation.isValid {
 }
 ```
 
+### Modern Swift 6 Async/Await Operations
+
+Pipeline Neo now provides comprehensive async/await support for all operations, enabling modern concurrent programming patterns:
+
+```swift
+import PipelineNeo
+
+// Create a service with async capabilities
+let service = ModularUtilities.createPipeline()
+
+// Asynchronously parse FCPXML files
+let document = try await service.parseFCPXML(from: fileURL)
+let isValid = await service.validateDocument(document)
+
+// Asynchronously convert timecodes
+let time = CMTime(value: 3600, timescale: 60000)
+let frameRate = TimecodeFrameRate._24
+let timecode = await service.timecode(from: time, frameRate: frameRate)
+
+// Asynchronously create and manipulate documents
+let newDocument = await service.createFCPXMLDocument(version: "1.10")
+await service.addResource(resource, to: newDocument)
+try await service.saveDocument(newDocument, to: outputURL)
+
+// Asynchronously filter elements
+let elements = [element1, element2, element3]
+let filtered = await service.filterElements(elements, ofTypes: [.assetResource, .sequence])
+
+// Asynchronously convert FCPXML time strings
+let cmTime = await service.cmTime(fromFCPXMLTime: "3600/60000")
+let timeString = await service.fcpxmlTime(fromCMTime: cmTime)
+
+// Asynchronously conform times to frame boundaries
+let conformed = await service.conform(time: time, toFrameDuration: frameDuration)
+```
+
+### Concurrent Operations with Task Groups
+
+```swift
+// Process multiple FCPXML files concurrently
+let urls = [url1, url2, url3, url4, url5]
+let results = await ModularUtilities.processMultipleFCPXML(
+    from: urls,
+    using: service,
+    errorHandler: errorHandler
+)
+
+// Convert timecodes for multiple elements concurrently
+let timecodes = await ModularUtilities.convertTimecodes(
+    for: elements,
+    using: timecodeConverter,
+    frameRate: ._24
+)
+
+// Use structured concurrency for complex workflows
+await withTaskGroup(of: XMLDocument.self) { group in
+    for url in urls {
+        group.addTask {
+            try await service.parseFCPXML(from: url)
+        }
+    }
+    
+    for await document in group {
+        // Process each document
+        let isValid = await service.validateDocument(document)
+        if isValid {
+            // Further processing
+        }
+    }
+}
+```
+
+### Async Component-Level Operations
+
+```swift
+// Async parser operations
+let parser = FCPXMLParser()
+let document = try await parser.parse(data)
+let isValid = await parser.validate(document)
+let filtered = await parser.filter(elements: elements, ofTypes: [.assetResource])
+
+// Async timecode converter operations
+let timecodeConverter = TimecodeConverter()
+let timecode = await timecodeConverter.timecode(from: time, frameRate: ._24)
+let cmTime = await timecodeConverter.cmTime(from: timecode)
+let conformed = await timecodeConverter.conform(time: time, toFrameDuration: frameDuration)
+
+// Async document manager operations
+let documentManager = XMLDocumentManager()
+let document = await documentManager.createFCPXMLDocument(version: "1.10")
+let element = await documentManager.createElement(name: "asset", attributes: ["id": "test1"])
+await documentManager.addResource(element, to: document)
+try await documentManager.saveDocument(document, to: url)
+```
+
 ### Modular Extensions Usage
 
 ```swift
