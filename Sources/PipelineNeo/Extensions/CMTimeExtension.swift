@@ -1,76 +1,67 @@
 //
 //  CMTimeExtension.swift
-//  Pipeline
-//
-//  Created by Reuel Kim on 1/15/17.
-//  Copyright © 2017 Reuel Kim. All rights reserved.
+//  Pipeline Neo • https://github.com/TheAcharya/pipeline-neo
+//  © 2025 • Licensed under MIT License
 //
 
-import Cocoa
+import Foundation
 import CoreMedia
 
-
+@available(macOS 12.0, *)
 extension CMTime {
-	
 	
 	/// The CMTime value as an FCPXML time string using the format "[value]/[timescale]s" or "0s" if the value is zero.
 	public var fcpxmlString: String {
-		get {
-			if self.value == 0 {
-				return "0s"
-			} else {
-				return "\(self.value)/\(self.timescale)s"
-			}
+		if self.value == 0 {
+			return "0s"
+		} else {
+			return "\(self.value)/\(self.timescale)s"
 		}
 	}
-	
 	
 	/// Returns a CMTime value with a value of zero and timescale of 1000.
 	///
 	/// - Returns: A CMTime object.
 	public func zero() -> CMTime {
-		
-		let newCMTime = CMTime(value: 0, timescale: 1000)
-		
-		return newCMTime
+		CMTime(value: 0, timescale: 1000)
 	}
-	
 	
 	/// Returns the CMTime value as a tuple containing components of time as separate values.
 	///
 	/// - Returns: A tuple with hours, minutes, seconds, and milliseconds as Int, Double, and String values.
 	public func timeAsCounter() -> (hours: Int, minutes: Int, seconds: Int, milliseconds: Double, hoursString: String, minutesString: String, secondsString: String, framesString: String, counterString: String) {
 		
-			let hours = Int((self.seconds / 60.0) / 60.0)
-			let minutes = Int((self.seconds / 60).truncatingRemainder(dividingBy: 60))
-			let seconds = Int(self.seconds.truncatingRemainder(dividingBy: 60))
-			let milliseconds = ((self.seconds.truncatingRemainder(dividingBy: 60.0)).truncatingRemainder(dividingBy: 1))
-			
-			let formatter = NumberFormatter()
-			formatter.paddingCharacter = "0"
-			formatter.minimumIntegerDigits = 2
-			formatter.maximumIntegerDigits = 2
-			
-			let msFormatter = NumberFormatter()
-			msFormatter.paddingCharacter = "0"
-			msFormatter.minimumFractionDigits = 3
-			msFormatter.maximumFractionDigits = 3
-			msFormatter.decimalSeparator = ""
-			
-			let hoursString = formatter.string(from: NSNumber(value: hours))!
-			let minutesString = formatter.string(from: NSNumber(value: minutes))!
-			let secondsString = formatter.string(from: NSNumber(value: seconds))!
-			let millisecondsString = msFormatter.string(from: NSNumber(value: milliseconds))!
-			
-			let counter: String = hoursString + ":" + minutesString + ":" + secondsString + "," + millisecondsString
-			
-			return (hours, minutes, seconds, milliseconds, hoursString, minutesString, secondsString, millisecondsString, counter)
+		let hours = Int((self.seconds / 60.0) / 60.0)
+		let minutes = Int((self.seconds / 60).truncatingRemainder(dividingBy: 60))
+		let seconds = Int(self.seconds.truncatingRemainder(dividingBy: 60))
+		let milliseconds = ((self.seconds.truncatingRemainder(dividingBy: 60.0)).truncatingRemainder(dividingBy: 1))
+		
+		let formatter = NumberFormatter()
+		formatter.paddingCharacter = "0"
+		formatter.minimumIntegerDigits = 2
+		formatter.maximumIntegerDigits = 2
+		
+		let msFormatter = NumberFormatter()
+		msFormatter.paddingCharacter = "0"
+		msFormatter.minimumFractionDigits = 3
+		msFormatter.maximumFractionDigits = 3
+		msFormatter.decimalSeparator = ""
+		
+		let hoursString = formatter.string(from: NSNumber(value: hours))!
+		let minutesString = formatter.string(from: NSNumber(value: minutes))!
+		let secondsString = formatter.string(from: NSNumber(value: seconds))!
+		let millisecondsString = msFormatter.string(from: NSNumber(value: milliseconds))!
+		
+		let counter: String = hoursString + ":" + minutesString + ":" + secondsString + "," + millisecondsString
+		
+		return (hours, minutes, seconds, milliseconds, hoursString, minutesString, secondsString, millisecondsString, counter)
 	}
-	
 	
 	/// Returns the CMTime value as a tuple containing components of SMPTE timecode as separate values.
 	///
-	/// - Parameter frameDuration: The duration of a single frame as a CMTime value.
+	/// - Parameters:
+	///   - frameDuration: The duration of a single frame as a CMTime value.
+	///   - dropFrame: Whether to use drop frame timecode format.
 	/// - Returns: A tuple with hours, minutes, seconds, and frames as Int and String values.
 	public func timeAsTimecode(usingFrameDuration frameDuration: CMTime, dropFrame: Bool) -> (hours: Int, minutes: Int, seconds: Int, frames: Int, hoursString: String, minutesString: String, secondsString: String, framesString: String, timecodeString: String, timecodeInSeconds: Double) {
 		
@@ -115,7 +106,7 @@ extension CMTime {
 		let framesString = formatter.string(from: NSNumber(value: frames))!
 		
 		let counter: String
-		if dropFrame == true {
+		if dropFrame {
 			counter = hoursString + ":" + minutesString + ":" + secondsString + ";" + framesString
 		} else {
 			counter = hoursString + ":" + minutesString + ":" + secondsString + ":" + framesString
@@ -125,5 +116,4 @@ extension CMTime {
 		
 		return (Int(hours), Int(minutes), Int(seconds), Int(frames), hoursString, minutesString, secondsString, framesString, counter, timecodeInSeconds)
 	}
-	
 }

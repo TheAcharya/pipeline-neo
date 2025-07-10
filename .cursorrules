@@ -1,0 +1,301 @@
+# Pipeline Neo - Cursor Rules
+
+## Project Overview
+Pipeline Neo is a modern Swift 6 framework for Final Cut Pro FCPXML processing with TimecodeKit integration. This project targets macOS 12+, Xcode 16+, and Swift 6.0 with full concurrency support.
+
+## Code Style and Formatting
+
+### Swift Conventions
+- Use Swift 6.0 syntax and features
+- Follow Swift API Design Guidelines
+- Use camelCase for variables and functions
+- Use PascalCase for types and protocols
+- Use descriptive, clear names for all identifiers
+
+### Documentation
+- Include comprehensive header comments for all public APIs
+- Use Swift documentation comments (///) for public interfaces
+- Provide usage examples in documentation
+- Document all parameters, return values, and exceptions
+- Follow the established header format in existing files
+
+### File Headers
+All Swift files must include the standard header format:
+```swift
+//
+//  [FileName].swift
+//  PipelineNeo
+//
+//  Created by [Your Name] on [Date].
+//  Copyright © [Year] [Your Name]. All rights reserved.
+//
+```
+
+## Architecture Guidelines
+
+### Concurrency Requirements
+- Use async/await for asynchronous operations
+- Implement proper Sendable compliance
+- Use @unchecked Sendable for classes that cannot be made final
+- Avoid capturing non-Sendable types in concurrent contexts
+- Use structured concurrency with Task and TaskGroup
+
+### Error Handling
+- Use Swift's Result type for operations that can fail
+- Provide meaningful error messages
+- Implement proper error propagation
+- Use do-catch blocks for synchronous operations
+- Create specific error types for different failure scenarios
+
+### Type Safety
+- Use strongly typed enums for FCPXML elements
+- Implement type-safe timecode operations
+- Use optionals appropriately
+- Avoid force unwrapping unless absolutely necessary
+
+## Dependencies
+
+### Primary Dependencies
+- TimecodeKit: 1.6.0 to 2.0.0 for timecode operations
+- Foundation: Core XML and data handling
+- CoreMedia: CMTime operations and conversions
+
+### Version Requirements
+- Swift: 6.0+
+- Xcode: 16.0+
+- macOS: 12.0+
+
+## File Organization
+
+### Source Structure
+- Group related functionality in extensions
+- Keep files focused on single responsibilities
+- Use clear file naming conventions
+- Organize imports logically
+- Maintain the existing directory structure
+
+### Test Structure
+- One test file per main component
+- Descriptive test method names
+- Comprehensive test data
+- Proper setup and teardown
+- Test all supported frame rates
+
+## Development Patterns
+
+### Async Operations
+```swift
+// Standard async pattern for time conversions
+public func timecode(from time: CMTime, frameRate: TimecodeFrameRate) async -> Timecode? {
+    // Implementation
+}
+
+// Task-based concurrent operations
+await withTaskGroup(of: Void.self) { group in
+    for element in elements {
+        group.addTask {
+            // Process element
+        }
+    }
+}
+```
+
+### Error Handling
+```swift
+// Result-based error handling
+public func parseFCPXML(from url: URL) -> Result<XMLDocument, FCPXMLError> {
+    // Implementation with proper error types
+}
+
+// Async error handling
+do {
+    let document = try await loadFCPXML(from: url)
+    return document
+} catch {
+    throw FCPXMLError.parsingFailed(error)
+}
+```
+
+### TimecodeKit Integration
+- Use TimecodeKit for all timecode operations
+- Follow TimecodeKit API conventions
+- Support all FCPXML frame rates
+- Implement proper frame rate conversions
+
+## Testing Requirements
+
+### Test Coverage
+- Unit tests for all public APIs
+- Integration tests for complex workflows
+- Performance tests for time-critical operations
+- Concurrency tests for async operations
+- Test all supported frame rates
+
+### Test Data
+- Use realistic FCPXML samples
+- Include edge cases and error conditions
+- Test all supported frame rates
+- Validate against actual Final Cut Pro output
+
+### Test Organization
+- Use descriptive test method names
+- Group related tests logically
+- Include proper setup and teardown
+- Use meaningful assertions
+
+## Performance Considerations
+
+### Memory Management
+- Use value types where appropriate
+- Implement proper resource cleanup
+- Avoid retain cycles in closures
+- Use weak references for delegates
+
+### Concurrency Performance
+- Use appropriate concurrency levels
+- Implement proper task cancellation
+- Avoid blocking operations on main thread
+- Use structured concurrency for complex operations
+
+### XML Processing
+- Stream large documents when possible
+- Use efficient XML parsing techniques
+- Implement proper memory management for large files
+- Cache frequently accessed data
+
+## Documentation Standards
+
+### Code Documentation
+- Comprehensive header comments for all public APIs
+- Parameter and return value documentation
+- Usage examples in comments
+- Exception documentation
+
+### README Updates
+- Update README.md when adding new features
+- Include usage examples
+- Document breaking changes
+- Keep installation instructions current
+
+### Inline Comments
+- Explain complex algorithms
+- Document business logic
+- Clarify non-obvious code
+- Reference external specifications
+
+## Git Workflow
+
+### Commit Messages
+- Use clear, descriptive commit messages
+- Reference issue numbers when applicable
+- Separate subject from body with blank line
+- Use imperative mood in commit messages
+
+### Branch Strategy
+- main: Production-ready code
+- dev: Development branch
+- feature/*: Feature development
+- bugfix/*: Bug fixes
+
+## Quality Assurance
+
+### Code Review Checklist
+- All tests passing
+- Documentation updated
+- Error handling implemented
+- Performance considerations addressed
+- Concurrency requirements met
+
+### Build Requirements
+- Swift build successful
+- All tests passing
+- No warnings or errors
+- Proper dependency resolution
+
+## Project-Specific Rules
+
+### FCPXML Handling
+- Support FCPXML versions 1.5 through 1.13
+- Validate against DTD schemas
+- Handle all supported frame rates
+- Implement proper XML formatting
+
+### Timecode Operations
+- Use TimecodeKit for all timecode operations
+- Support all FCPXML frame rates
+- Implement proper frame rate conversions
+- Handle drop frame and non-drop frame timecode
+
+### Platform Support
+- Target macOS 12.0+
+- Use Xcode 16.0+ features
+- Implement Swift 6.0 concurrency
+- Follow Apple's platform guidelines
+
+## External References
+
+### Documentation
+- [Final Cut Pro XML Documentation](https://fcp.cafe/developers/fcpxml/)
+- [TimecodeKit Documentation](https://github.com/orchetect/TimecodeKit)
+- [Swift Concurrency Documentation](https://docs.swift.org/swift-book/documentation/the-swift-programming-language/concurrency/)
+
+### Standards
+- Swift API Design Guidelines
+- Apple's Human Interface Guidelines
+- Final Cut Pro XML specifications
+- TimecodeKit API conventions
+
+## Common Tasks
+
+### Adding New Features
+1. Create feature branch
+2. Implement functionality with tests
+3. Update documentation
+4. Ensure all tests pass
+5. Create pull request
+
+### Bug Fixes
+1. Create bugfix branch
+2. Implement fix with regression tests
+3. Update documentation if needed
+4. Ensure all tests pass
+5. Create pull request
+
+### Performance Improvements
+1. Measure current performance
+2. Implement improvements
+3. Add performance tests
+4. Measure improvement
+5. Document changes
+
+## Code Generation Guidelines
+
+### When Generating Code
+- Follow existing patterns and conventions
+- Include comprehensive tests
+- Add proper documentation
+- Ensure concurrency compliance
+- Validate against project requirements
+
+### Code Review Process
+- Review for Swift 6.0 compliance
+- Check concurrency implementation
+- Validate error handling
+- Ensure test coverage
+- Verify documentation quality
+
+## Maintenance
+
+### Regular Tasks
+- Update dependencies as needed
+- Review and update documentation
+- Monitor test coverage
+- Address any warnings or deprecations
+- Keep build configuration current
+
+### Long-term Considerations
+- Plan for future Swift versions
+- Consider new FCPXML versions
+- Monitor TimecodeKit updates
+- Plan for platform changes
+- Maintain backward compatibility where possible 

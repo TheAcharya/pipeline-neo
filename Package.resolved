@@ -1,0 +1,15 @@
+{
+  "originHash" : "1c36f5a85a2ae2599099fdd6b184d2e880829278842920ed244218719597bef2",
+  "pins" : [
+    {
+      "identity" : "timecodekit",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/orchetect/TimecodeKit",
+      "state" : {
+        "revision" : "c58818266bdfac3980b15b048bee5a19db56fe27",
+        "version" : "1.6.13"
+      }
+    }
+  ],
+  "version" : 3
+}

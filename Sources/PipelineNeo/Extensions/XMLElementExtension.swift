@@ -1,9 +1,7 @@
 //
 //  XMLElementExtension.swift
-//  Pipeline
-//
-//  Created by Reuel Kim on 1/15/17.
-//  Copyright © 2017 Reuel Kim. All rights reserved.
+//  Pipeline Neo • https://github.com/TheAcharya/pipeline-neo
+//  © 2025 • Licensed under MIT License
 //
 
 import Cocoa
@@ -94,7 +92,7 @@ extension XMLElement {
 	/// - Parameters:
 	///   - name: The name of the clip.
 	///   - ref: The reference ID for the resource that this clip refers to.
-	///   - offset: The clip’s location in parent time as a CMTime value.
+	///   - offset: The clip's location in parent time as a CMTime value.
 	///   - duration: The duration of the clip as a CMTime value.
 	///   - start: The start time of the clip's local timeline as a CMTime value.
 	///   - useAudioSubroles: A boolean value indicating if the clip's audio subroles are accessible.
@@ -160,7 +158,7 @@ extension XMLElement {
 	/// - Parameters:
 	///   - name: The name of the clip.
 	///   - refID: The reference ID.
-	///   - offset: The clip’s location in parent time as a CMTime value.
+	///   - offset: The clip's location in parent time as a CMTime value.
 	///   - duration: The duration of the clip as a CMTime value.
 	///   - mcSources: An array of mc-source elements to place in this element.
 	/// - Returns: An XMLElement object of the multicam <mc-clip> resource.
@@ -187,7 +185,7 @@ extension XMLElement {
 	///
 	/// - Parameters:
 	///   - lane: The lane for the secondary storyline as an Int value.
-	///   - offset: The clip’s location in parent time as a CMTime value.
+	///   - offset: The clip's location in parent time as a CMTime value.
 	///   - formatRef: The reference ID of the format that this resource uses.
 	///   - clips: An array of XMLElement objects of the clips to be placed inside the secondary storyline.
 	/// - Returns: An XMLElement object of the secondary storyline <spine> element.
@@ -210,7 +208,7 @@ extension XMLElement {
 	/// Creates a new gap to be used in a timeline.
 	///
 	/// - Parameters:
-	///   - offset: The clip’s location in parent time as a CMTime value.
+	///   - offset: The clip's location in parent time as a CMTime value.
 	///   - duration: The duration of the clip as a CMTime value.
 	///   - start: The start time of the clip's local timeline as a CMTime value.
 	/// - Returns: An XMLElement object of the gap.
@@ -232,7 +230,7 @@ extension XMLElement {
 	/// - Parameters:
 	///   - titleName: The name of the title clip on the timeline.
 	///   - lane: The preferred timeline lane to place the clip into.
-	///   - offset: The clip’s location in parent time as a CMTime value.
+	///   - offset: The clip's location in parent time as a CMTime value.
 	///   - ref: The reference ID for the title effect resource that this clip refers to.
 	///   - duration: The duration of the clip as a CMTime value.
 	///   - start: The start time of the clip's local timeline as a CMTime value.
@@ -326,7 +324,7 @@ extension XMLElement {
 	/// - Parameters:
 	///   - captionName: The name of the caption clip on the timeline.
 	///   - lane: The preferred timeline lane to place the clip into.
-	///   - offset: The clip’s location in parent time as a CMTime value.
+	///   - offset: The clip's location in parent time as a CMTime value.
 	///   - duration: The duration of the clip as a CMTime value.
 	///   - start: The start time of the clip's local timeline as a CMTime value.
 	///   - roleName: The role name assigned to the clip.
@@ -2753,10 +2751,11 @@ extension XMLElement {
 				continue
 			}
 			
-			let sourceParser = AttributeParserDelegate(element: resource, attribute: "src", inElementsWithName: nil)
+							let sourceParser = AttributeParserDelegate(element: resource, attribute: "src", inElementsWithName: nil)
 			
-			if sourceParser.values.count > 0 {
-				for source in sourceParser.values {
+					let values = sourceParser.getValues()
+		if values.count > 0 {
+			for source in values {
 					let URL = Foundation.URL(string: source)
 					
 					if URL != nil {
@@ -2777,8 +2776,8 @@ extension XMLElement {
 	*/
 	public func allReferenceIDs() -> [String]? {
 		let refParser = AttributeParserDelegate(element: self, attribute: "ref", inElementsWithName: nil)
-		let references = refParser.values
-		
+				let references = refParser.getValues()
+
 		if references.count > 0 {
 			return references
 		} else {
@@ -3190,13 +3189,13 @@ extension XMLElement {
 		// Parse the attributes using XMLParserDelegate
 		xmlParser.parse()
 		
-		return parserDelegate.roles
+		return parserDelegate.getRoles()
 		
 	}
 	
 	
 	// MARK: - Constants
-	enum FCPXMLElementError: Error, CustomStringConvertible {
+	enum FCPXMLElementError: Error, CustomStringConvertible, @unchecked Sendable {
 		case notAnEvent(element: XMLElement)
 		case notAnAnnotatableItem(element: XMLElement)
 		case notAnAnnotation(element: XMLElement)

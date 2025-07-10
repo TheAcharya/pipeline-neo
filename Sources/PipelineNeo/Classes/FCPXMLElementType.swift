@@ -1,15 +1,14 @@
 //
 //  FCPXMLElementType.swift
-//  Pipeline
-//
-//  Created by Reuel Kim on 1/15/17.
-//  Copyright © 2017 Reuel Kim. All rights reserved.
+//  Pipeline Neo • https://github.com/TheAcharya/pipeline-neo
+//  © 2025 • Licensed under MIT License
 //
 
 import Foundation
 
 /// Defines the element types that can exist in FCPXML documents.
-public enum FCPXMLElementType: String {
+@available(macOS 12.0, *)
+public enum FCPXMLElementType: String, CaseIterable, Sendable {
 	/// This element is not from an FCPXML document.
 	case none
 	
@@ -65,6 +64,5 @@ public enum FCPXMLElementType: String {
 	case folder = "collection-folder"
 	case keywordCollection = "keyword-collection"
 	case smartCollection = "smart-collection"
-	
 }
 
