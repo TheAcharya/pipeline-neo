@@ -325,6 +325,10 @@ do {
 
 Further information on FCPXML can be found [here](https://fcp.cafe/developers/fcpxml/).
 
+## FCPXML Version Support
+
+Pipeline Neo supports FCPXML versions **1.5 through 1.13**. All DTDs for these versions are included in the codebase, ensuring compatibility with the latest Final Cut Pro XML workflows.
+
 ## Migration from Original Pipeline
 
 Pipeline Neo is a modernised fork of the original Pipeline library. Key changes include:
