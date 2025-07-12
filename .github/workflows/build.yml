@@ -20,7 +20,7 @@ on:
   workflow_dispatch:
     
   schedule:
-    - cron: '0 0 * * *'   # once a day @ 12:00am UTC (8:00am Singapore time)
+    - cron: '0 21 * * 5'     # Runs at 5 AM Singapore time (21:00 UTC) every Saturday
 
 env:
   SCHEME: "PipelineNeo-CI"
