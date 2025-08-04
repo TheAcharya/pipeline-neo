@@ -14,7 +14,7 @@ Pipeline Neo is currently in an experimental stage and does not yet cover the fu
 This codebase is developed using AI agents.
 
 > [!IMPORTANT]
-> Pipeline Neo has yet to be extensively tested in production environments, real-world workflows, or application integration. This library serves as a modernised foundation for AI-assisted development and experimentation with FCPXML processing capabilities. 
+> Pipeline Neo has yet to be extensively tested in production environments, real-world workflows, or application integration. This library serves as a modernised foundation for AI-assisted development and experimentation with FCPXML processing capabilities. Additionally, this project would not be actively maintained, so please consider this when planning long-term integrations.
 
 ## Table of Contents
 
