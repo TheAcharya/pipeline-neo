@@ -70,7 +70,7 @@ let package = Package(
         .macOS(.v12)
     ],
     dependencies: [
-        .package(url: "https://github.com/TheAcharya/pipeline-neo", from: "1.0.0")
+        .package(url: "https://github.com/TheAcharya/pipeline-neo", from: "1.0.3")
     ],
     targets: [
         .target(
