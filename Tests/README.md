@@ -20,8 +20,8 @@ Tests/
 - XMLElement Extension Tests - FCPXML element creation and manipulation
 - CMTime Extension Tests - Time-related utilities and conversions
 
-### TimecodeKit Integration Tests
-- TimecodeKit Integration - CMTime ↔ TimecodeKit conversions
+### SwiftTimecode Integration Tests
+- SwiftTimecode Integration - CMTime ↔ SwiftTimecode conversions
 - All FCPXML Supported Frame Rates - Comprehensive frame rate testing
 - Timecode Operations - Advanced timecode manipulations
 
@@ -236,4 +236,4 @@ if someCondition {
 
 ### External References
 - [Final Cut Pro XML Documentation](https://fcp.cafe/developers/fcpxml/)
-- [TimecodeKit Documentation](https://github.com/orchetect/TimecodeKit)
+- [SwiftTimecode Documentation](https://github.com/orchetect/swift-timecode)

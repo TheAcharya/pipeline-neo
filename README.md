@@ -5,9 +5,9 @@
 
 <p align="center"><a href="https://github.com/TheAcharya/pipeline-neo/blob/main/LICENSE"><img src="http://img.shields.io/badge/license-MIT-lightgrey.svg?style=flat" alt="license"/></a>&nbsp;<a href="https://github.com/TheAcharya/pipeline-neo"><img src="https://img.shields.io/badge/platform-macOS-lightgrey.svg?style=flat" alt="platform"/></a>&nbsp;<a href="https://github.com/TheAcharya/pipeline-neo/actions/workflows/build.yml"><img src="https://github.com/TheAcharya/pipeline-neo/actions/workflows/build.yml/badge.svg" alt="build"/></a>&nbsp;<img src="https://img.shields.io/badge/Swift-6.0-orange.svg?style=flat" alt="Swift"/>&nbsp;<img src="https://img.shields.io/badge/Xcode-16+-blue.svg?style=flat" alt="Xcode"/></p>
 
-A modern Swift 6 framework for working with Final Cut Pro's FCPXML with full concurrency support and TimecodeKit integration. Pipeline Neo is a spiritual successor to the original [Pipeline](https://github.com/reuelk/pipeline), modernised for Swift 6.0 and contemporary development practices. 
+A modern Swift 6 framework for working with Final Cut Pro's FCPXML with full concurrency support and SwiftTimecode integration. Pipeline Neo is a spiritual successor to the original [Pipeline](https://github.com/reuelk/pipeline), modernised for Swift 6.0 and contemporary development practices. 
 
-Pipeline Neo provides a comprehensive API for parsing, creating, and manipulating FCPXML files with advanced timecode operations, async/await patterns, and robust error handling. Built with Swift 6.0 and targeting macOS 12+, it offers type-safe operations, comprehensive test coverage, and seamless integration with TimecodeKit for professional video editing workflows.
+Pipeline Neo provides a comprehensive API for parsing, creating, and manipulating FCPXML files with advanced timecode operations, async/await patterns, and robust error handling. Built with Swift 6.0 and targeting macOS 12+, it offers type-safe operations, comprehensive test coverage, and seamless integration with SwiftTimecode for professional video editing workflows.
 
 Pipeline Neo is currently in an experimental stage and does not yet cover the full range of FCPXML attributes and parameters. It focuses on core functionality while providing a foundation for future expansion and feature completeness.
 
@@ -37,7 +37,7 @@ This codebase is developed using AI agents.
 - Output FCPXML files with proper text formatting
 - Validate FCPXML documents with the DTD
 - Works with FCPXML v1.5 through v1.13 files
-- Full TimecodeKit integration for advanced timecode operations
+- Full SwiftTimecode integration for advanced timecode operations
 - Swift 6 concurrency support with async/await patterns
 - macOS 12+ support with modern Swift features
 
@@ -112,11 +112,11 @@ sequence.setAttribute(name: "id", value: "seq1", using: documentManager)
 document.addSequence(sequence, using: documentManager)
 ```
 
-### Time Conversions with Modular TimecodeKit Integration
+### Time Conversions with Modular SwiftTimecode Integration
 
 ```swift
 import PipelineNeo
-import TimecodeKit
+import SwiftTimecode
 
 // Create modular components
 let timecodeConverter = TimecodeConverter()
@@ -124,13 +124,13 @@ let utility = FCPXMLUtility(
     timecodeConverter: timecodeConverter
 )
 
-// Convert CMTime to TimecodeKit Timecode
+// Convert CMTime to SwiftTimecode Timecode
 let cmTime = CMTime(value: 3600, timescale: 1) // 1 hour
-let timecode = utility.timecode(from: cmTime, frameRate: ._24)
+let timecode = utility.timecode(from: cmTime, frameRate: .fps24)
 print("Timecode: \(timecode?.stringValue ?? "Invalid")")
 
-// Convert TimecodeKit Timecode to CMTime
-let newTimecode = try! Timecode(realTime: 7200, at: ._24) // 2 hours
+// Convert SwiftTimecode Timecode to CMTime
+let newTimecode = try! Timecode(.realTime(seconds: 7200), at: .fps24) // 2 hours
 let newCMTime = utility.cmTime(from: newTimecode)
 print("CMTime: \(newCMTime.seconds) seconds")
 
@@ -232,7 +232,7 @@ let isValid = await service.validateDocument(document)
 
 // Asynchronously convert timecodes
 let time = CMTime(value: 3600, timescale: 60000)
-let frameRate = TimecodeFrameRate._24
+let frameRate = TimecodeFrameRate.fps24
 let timecode = await service.timecode(from: time, frameRate: frameRate)
 
 // Asynchronously create and manipulate documents
@@ -267,7 +267,7 @@ let results = await ModularUtilities.processMultipleFCPXML(
 let timecodes = await ModularUtilities.convertTimecodes(
     for: elements,
     using: timecodeConverter,
-    frameRate: ._24
+    frameRate: .fps24
 )
 
 // Use structured concurrency for complex workflows
@@ -299,7 +299,7 @@ let filtered = await parser.filter(elements: elements, ofTypes: [.assetResource]
 
 // Async timecode converter operations
 let timecodeConverter = TimecodeConverter()
-let timecode = await timecodeConverter.timecode(from: time, frameRate: ._24)
+let timecode = await timecodeConverter.timecode(from: time, frameRate: .fps24)
 let cmTime = await timecodeConverter.cmTime(from: timecode)
 let conformed = await timecodeConverter.conform(time: time, toFrameDuration: frameDuration)
 
@@ -316,7 +316,7 @@ try await documentManager.saveDocument(document, to: url)
 ```swift
 // Use modular extensions for CMTime operations
 let time = CMTime(value: 3600, timescale: 60000)
-let frameRate = TimecodeFrameRate._24
+let frameRate = TimecodeFrameRate.fps24
 
 let timecode = time.timecode(frameRate: frameRate, using: timecodeConverter)
 let fcpxmlTime = time.fcpxmlTime(using: timecodeConverter)
@@ -429,7 +429,7 @@ Pipeline Neo supports FCPXML versions 1.5 through 1.13. All DTDs for these versi
 Pipeline Neo is a modernised successor to [Pipeline](https://github.com/reuelk/pipeline). Key changes include:
 
 - Swift 6 concurrency support with async/await
-- TimecodeKit integration for advanced timecode operations
+- SwiftTimecode integration for advanced timecode operations
 - Modern Swift patterns and syntax
 - macOS 12+ requirement
 - Updated package name to `PipelineNeo`
@@ -441,7 +441,7 @@ Pipeline Neo is a modernised successor to [Pipeline](https://github.com/reuelk/p
 Pipeline Neo is now fully modular, built on a protocol-oriented architecture. All major operations (parsing, timecode conversion, XML manipulation, error handling) are defined as protocols with default implementations, enabling easy extension, testing, and future-proofing. Dependency injection is used throughout for maximum flexibility and testability.
 
 - Thread-safe and concurrency-compliant: All code is Sendable or @unchecked Sendable as appropriate, and passes thread sanitizer checks.
-- No known vulnerabilities: All dependencies (including TimecodeKit 1.6.13) are up to date and have no published security advisories as of July 2025.
+- No known vulnerabilities: All dependencies (including SwiftTimecode 3.0.0) are up to date and have no published security advisories as of July 2025.
 - No unsafe code patterns: No use of unsafe pointers, dynamic code execution, or C APIs. All concurrency is structured and type-safe.
 
 ## Architecture Overview

@@ -6,7 +6,7 @@
 
 import Foundation
 import CoreMedia
-import TimecodeKit
+import SwiftTimecode
 
 #if canImport(Logging)
 import Logging
@@ -304,9 +304,9 @@ public class FCPXMLUtility {
 		return (parentIn, parentOut, parentClip)
 	}
 	
-	// MARK: - TimecodeKit Integration
+	// MARK: - SwiftTimecode Integration
 	
-	/// Converts a CMTime to a TimecodeKit Timecode object.
+	/// Converts a CMTime to a SwiftTimecode Timecode object.
 	///
 	/// - Parameters:
 	///   - time: The CMTime to convert
@@ -316,13 +316,13 @@ public class FCPXMLUtility {
 		do {
 			// Convert CMTime to real time (seconds) and create Timecode
 			let realTime = time.seconds
-			return try Timecode(realTime: realTime, at: frameRate)
+			return try Timecode(.realTime(seconds: realTime), at: frameRate)
 		} catch {
 			return nil
 		}
 	}
 	
-	/// Converts a TimecodeKit Timecode object to CMTime.
+	/// Converts a SwiftTimecode Timecode object to CMTime.
 	///
 	/// - Parameter timecode: The Timecode object to convert
 	/// - Returns: A CMTime value

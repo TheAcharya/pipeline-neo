@@ -6,7 +6,7 @@
 
 import Foundation
 import CoreMedia
-import TimecodeKit
+import SwiftTimecode
 
 /// Utility functions for modular FCPXML operations
 @available(macOS 12.0, *)

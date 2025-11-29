@@ -1,7 +1,7 @@
 # Pipeline Neo - Cursor Rules
 
 ## Project Overview
-Pipeline Neo is a modern, fully modular Swift 6 framework for Final Cut Pro FCPXML processing with TimecodeKit integration. The codebase is 100% protocol-oriented, with all major operations defined as protocols and implemented via dependency injection for maximum flexibility, testability, and future-proofing. This project targets macOS 12+, Xcode 16+, and Swift 6.0 with full concurrency support.
+Pipeline Neo is a modern, fully modular Swift 6 framework for Final Cut Pro FCPXML processing with SwiftTimecode integration. The codebase is 100% protocol-oriented, with all major operations defined as protocols and implemented via dependency injection for maximum flexibility, testability, and future-proofing. This project targets macOS 12+, Xcode 16+, and Swift 6.0 with full concurrency support.
 
 ### Current Status
 - All 46 tests passing
@@ -15,7 +15,7 @@ Pipeline Neo is a modern, fully modular Swift 6 framework for Final Cut Pro FCPX
 - All core operations (parsing, timecode conversion, XML manipulation, error handling) are defined as protocols (e.g., FCPXMLParsing, TimecodeConversion, XMLDocumentOperations, ErrorHandling), with both sync and async/await APIs.
 - Default implementations are provided, but any component can be swapped or extended via dependency injection.
 - All code is Sendable or @unchecked Sendable as appropriate, and passes thread sanitizer checks.
-- No known vulnerabilities in dependencies (including TimecodeKit 1.6.13) as of July 2025.
+- No known vulnerabilities in dependencies (including SwiftTimecode 3.0.0) as of July 2025.
 - No unsafe code patterns: no unsafe pointers, dynamic code execution, or C APIs. All concurrency is structured and type-safe.
 - Async/await support is comprehensive across all protocols, implementations, services, and utilities.
 
@@ -55,7 +55,7 @@ All Swift files must include the standard header format:
 - Use @unchecked Sendable for classes that cannot be made final
 - Avoid capturing non-Sendable types in concurrent contexts
 - Use structured concurrency with Task and TaskGroup where types are Sendable
-- Note: Foundation XML types (XMLDocument, XMLElement) and TimecodeKit types are not Sendable; async/await APIs are provided, but Task-based concurrency is avoided for these types
+- Note: Foundation XML types (XMLDocument, XMLElement) and SwiftTimecode types are not Sendable; async/await APIs are provided, but Task-based concurrency is avoided for these types
 
 ### Error Handling
 - Use Swift's Result type for operations that can fail
@@ -73,7 +73,7 @@ All Swift files must include the standard header format:
 ## Dependencies
 
 ### Primary Dependencies
-- TimecodeKit: 1.6.0 to 2.0.0 for timecode operations
+- SwiftTimecode: 3.0.0+ for timecode operations
 - Foundation: Core XML and data handling
 - CoreMedia: CMTime operations and conversions
 
@@ -133,11 +133,13 @@ do {
 }
 ```
 
-### TimecodeKit Integration
-- Use TimecodeKit for all timecode operations
-- Follow TimecodeKit API conventions
+### SwiftTimecode Integration
+- Use SwiftTimecode for all timecode operations
+- Follow SwiftTimecode API conventions
 - Support all FCPXML frame rates (Final Cut Pro compatible)
 - Implement proper frame rate conversions
+- Use the new API: `Timecode(.realTime(seconds: seconds), at: frameRate)` instead of the old `Timecode(realTime:seconds, at: frameRate)`
+- Use updated frame rate enum cases: `.fps24`, `.fps25`, `.fps29_97`, `.fps30`, `.fps50`, `.fps59_94`, `.fps60`, `.fps23_976` instead of `._24`, `._25`, etc.
 
 ## Testing Requirements
 
@@ -250,7 +252,7 @@ Only test with Final Cut Pro supported frame rates:
 - Implement proper XML formatting
 
 ### Timecode Operations
-- Use TimecodeKit for all timecode operations
+- Use SwiftTimecode for all timecode operations
 - Support all FCPXML frame rates (Final Cut Pro compatible)
 - Implement proper frame rate conversions
 - Handle drop frame and non-drop frame timecode
@@ -265,14 +267,14 @@ Only test with Final Cut Pro supported frame rates:
 
 ### Documentation
 - [Final Cut Pro XML Documentation](https://fcp.cafe/developers/fcpxml/)
-- [TimecodeKit Documentation](https://github.com/orchetect/TimecodeKit)
+- [SwiftTimecode Documentation](https://github.com/orchetect/swift-timecode)
 - [Swift Concurrency Documentation](https://docs.swift.org/swift-book/documentation/the-swift-programming-language/concurrency/)
 
 ### Standards
 - Swift API Design Guidelines
 - Apple's Human Interface Guidelines
 - Final Cut Pro XML specifications
-- TimecodeKit API conventions
+- SwiftTimecode API conventions
 
 ## Common Tasks
 
@@ -325,6 +327,6 @@ Only test with Final Cut Pro supported frame rates:
 ### Long-term Considerations
 - Plan for future Swift versions
 - Consider new FCPXML versions
-- Monitor TimecodeKit updates
+- Monitor SwiftTimecode updates
 - Plan for platform changes
 - Maintain backward compatibility where possible 

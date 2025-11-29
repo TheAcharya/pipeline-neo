@@ -6,7 +6,7 @@
 
 import XCTest
 import CoreMedia
-import TimecodeKit
+import SwiftTimecode
 @testable import PipelineNeo
 
 @available(macOS 12.0, *)
@@ -123,7 +123,7 @@ final class PipelineNeoTests: XCTestCase, @unchecked Sendable {
     
     func testTimecodeConversion() {
         let time = CMTime(value: 3600, timescale: 60000)
-        let frameRate = TimecodeFrameRate._24
+        let frameRate = TimecodeFrameRate.fps24
         
         let timecode = service.timecode(from: time, frameRate: frameRate)
         
@@ -131,7 +131,7 @@ final class PipelineNeoTests: XCTestCase, @unchecked Sendable {
     }
     
     func testCMTimeFromTimecode() {
-        let timecode = try! Timecode(realTime: 60, at: TimecodeFrameRate._24)
+        let timecode = try! Timecode(.realTime(seconds: 60), at: TimecodeFrameRate.fps24)
         let result = service.cmTime(from: timecode)
         
         XCTAssertNotEqual(result, CMTime.zero)
@@ -161,7 +161,7 @@ final class PipelineNeoTests: XCTestCase, @unchecked Sendable {
     
     func testTimecodeConverterComponent() {
         let time = CMTime(value: 3600, timescale: 60000)
-        let frameRate = TimecodeFrameRate._24
+        let frameRate = TimecodeFrameRate.fps24
         
         let timecode = timecodeConverter.timecode(from: time, frameRate: frameRate)
         XCTAssertNotNil(timecode)
@@ -218,7 +218,7 @@ final class PipelineNeoTests: XCTestCase, @unchecked Sendable {
     
     func testAsyncTimecodeConverterComponent() async {
         let time = CMTime(value: 3600, timescale: 60000)
-        let frameRate = TimecodeFrameRate._24
+        let frameRate = TimecodeFrameRate.fps24
         
         let timecode = await timecodeConverter.timecode(from: time, frameRate: frameRate)
         XCTAssertNotNil(timecode)
@@ -257,7 +257,7 @@ final class PipelineNeoTests: XCTestCase, @unchecked Sendable {
         XCTAssertTrue(isValid)
         
         let time = CMTime(value: 3600, timescale: 60000)
-        let frameRate = TimecodeFrameRate._24
+        let frameRate = TimecodeFrameRate.fps24
         let timecode = await service.timecode(from: time, frameRate: frameRate)
         XCTAssertNotNil(timecode)
         
@@ -326,9 +326,9 @@ final class PipelineNeoTests: XCTestCase, @unchecked Sendable {
         let time = CMTime(value: 3600, timescale: 60000)
         
         // Test concurrent timecode conversions with different frame rates to avoid Sendable issues
-        async let timecode1 = timecodeConverter.timecode(from: time, frameRate: ._24)
-        async let timecode2 = timecodeConverter.timecode(from: time, frameRate: ._25)
-        async let timecode3 = timecodeConverter.timecode(from: time, frameRate: ._30)
+        async let timecode1 = timecodeConverter.timecode(from: time, frameRate: .fps24)
+        async let timecode2 = timecodeConverter.timecode(from: time, frameRate: .fps25)
+        async let timecode3 = timecodeConverter.timecode(from: time, frameRate: .fps30)
         
         let results = await (timecode1, timecode2, timecode3)
         
@@ -361,7 +361,7 @@ final class PipelineNeoTests: XCTestCase, @unchecked Sendable {
     
     func testPerformanceTimecodeConversion() {
         let time = CMTime(value: 3600, timescale: 60000)
-        let frameRate = TimecodeFrameRate._24
+        let frameRate = TimecodeFrameRate.fps24
         
         measure {
             _ = service.timecode(from: time, frameRate: frameRate)
@@ -373,7 +373,7 @@ final class PipelineNeoTests: XCTestCase, @unchecked Sendable {
     // MARK: - Frame Rate Tests
     // Only use frame rates supported by Final Cut Pro
     let fcpSupportedFrameRates: [TimecodeFrameRate] = [
-        ._23_976, ._24, ._25, ._29_97, ._30, ._50, ._59_94, ._60
+        .fps23_976, .fps24, .fps25, .fps29_97, .fps30, .fps50, .fps59_94, .fps60
     ]
 
     func testAllSupportedFrameRates() {
@@ -383,14 +383,14 @@ final class PipelineNeoTests: XCTestCase, @unchecked Sendable {
             XCTAssertNotNil(timecode, "Timecode conversion failed for frame rate: \(frameRate)")
             if let timecode = timecode {
                 let convertedBack = timecodeConverter.cmTime(from: timecode)
-                let accuracy = (frameRate == ._23_976 || frameRate == ._29_97 || frameRate == ._59_94) ? 0.01 : 0.001
+                let accuracy = (frameRate == .fps23_976 || frameRate == .fps29_97 || frameRate == .fps59_94) ? 0.01 : 0.001
                 XCTAssertEqual(convertedBack.seconds, testTime.seconds, accuracy: accuracy, "Frame rate conversion accuracy failed for: \(frameRate)")
             }
         }
     }
 
     func testDropFrameTimecode() {
-        let frameRates: [TimecodeFrameRate] = [._29_97, ._59_94]
+        let frameRates: [TimecodeFrameRate] = [.fps29_97, .fps59_94]
         let testTime = CMTime(value: 3600, timescale: 60000)
         for frameRate in frameRates {
             let timecode = timecodeConverter.timecode(from: testTime, frameRate: frameRate)
@@ -415,7 +415,7 @@ final class PipelineNeoTests: XCTestCase, @unchecked Sendable {
         
         for (value, timescale, expectedSeconds) in timeValues {
             let time = CMTime(value: value, timescale: timescale)
-            let timecode = timecodeConverter.timecode(from: time, frameRate: ._24)
+            let timecode = timecodeConverter.timecode(from: time, frameRate: .fps24)
             
             XCTAssertNotNil(timecode, "Timecode conversion failed for time: \(value)/\(timescale)")
             
@@ -435,7 +435,7 @@ final class PipelineNeoTests: XCTestCase, @unchecked Sendable {
         ]
         
         for time in largeTimes {
-            let timecode = timecodeConverter.timecode(from: time, frameRate: ._24)
+            let timecode = timecodeConverter.timecode(from: time, frameRate: .fps24)
             XCTAssertNotNil(timecode, "Large time conversion failed for: \(time.seconds) seconds")
             
             if let timecode = timecode {
@@ -766,7 +766,7 @@ final class PipelineNeoTests: XCTestCase, @unchecked Sendable {
         
         for (value, timescale, description) in edgeCases {
             let time = CMTime(value: value, timescale: timescale)
-            let timecode = timecodeConverter.timecode(from: time, frameRate: ._24)
+            let timecode = timecodeConverter.timecode(from: time, frameRate: .fps24)
             // Only assert for large CMTime value and one frame, which are reasonable
             if description == "Large CMTime value" || description == "One frame" {
                 if timecode != nil {
@@ -790,7 +790,7 @@ final class PipelineNeoTests: XCTestCase, @unchecked Sendable {
             queue.async { [weak self] in
                 guard let self = self else { return }
                 let time = CMTime(value: 3600, timescale: 60000)
-                let timecode = self.timecodeConverter.timecode(from: time, frameRate: ._24)
+                let timecode = self.timecodeConverter.timecode(from: time, frameRate: .fps24)
                 XCTAssertNotNil(timecode, "Concurrent timecode conversion failed")
                 group.leave()
             }

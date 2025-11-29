@@ -6,19 +6,19 @@
 
 import Foundation
 import CoreMedia
-import TimecodeKit
+import SwiftTimecode
 
 /// Protocol defining timecode conversion operations
 @available(macOS 12.0, *)
 public protocol TimecodeConversion: Sendable {
-    /// Converts CMTime to TimecodeKit Timecode
+    /// Converts CMTime to SwiftTimecode Timecode
     /// - Parameters:
     ///   - time: The CMTime to convert
     ///   - frameRate: The target frame rate
-    /// - Returns: TimecodeKit Timecode or nil if conversion fails
+    /// - Returns: SwiftTimecode Timecode or nil if conversion fails
     func timecode(from time: CMTime, frameRate: TimecodeFrameRate) -> Timecode?
     
-    /// Converts TimecodeKit Timecode to CMTime
+    /// Converts SwiftTimecode Timecode to CMTime
     /// - Parameter timecode: The Timecode to convert
     /// - Returns: CMTime representation
     func cmTime(from timecode: Timecode) -> CMTime
@@ -39,7 +39,7 @@ public protocol TimecodeConversion: Sendable {
     /// - Parameters:
     ///   - time: The CMTime to convert
     ///   - frameRate: The target frame rate
-    /// - Returns: TimecodeKit Timecode or nil if conversion fails
+    /// - Returns: SwiftTimecode Timecode or nil if conversion fails
     func timecode(from time: CMTime, frameRate: TimecodeFrameRate) async -> Timecode?
     
     /// Asynchronously converts TimecodeKit Timecode to CMTime
