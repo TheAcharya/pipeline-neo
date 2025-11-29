@@ -1,5 +1,21 @@
 # Changelog
 
+### 1.0.2
+
+**Released:**
+- 30th November  2025
+
+**🔧 Improvements:**
+- Migrated from TimecodeKit to SwiftTimecode 3.0.0
+- Updated package dependency to new repository: `https://github.com/orchetect/swift-timecode`
+- Updated all import statements from `import TimecodeKit` to `import SwiftTimecode`
+- Updated Timecode initializer API to new SwiftTimecode 3.0 syntax: `Timecode(.realTime(seconds: seconds), at: frameRate)`
+- Updated frame rate enum cases to new naming convention: `.fps24`, `.fps25`, `.fps29_97`, `.fps30`, `.fps50`, `.fps59_94`, `.fps60`, `.fps23_976` (replacing `._24`, `._25`, etc.)
+- Updated all documentation references from TimecodeKit to SwiftTimecode
+- Updated version references from 1.6.13 to 3.0.0
+- All 46 tests passing with SwiftTimecode 3.0.0
+- Task-based concurrency avoided for Foundation XML types and SwiftTimecode types due to Sendable limitations
+
 ### 1.0.1
 
 **Released:**

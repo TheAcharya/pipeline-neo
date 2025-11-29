@@ -6,7 +6,7 @@
 
 import Foundation
 import CoreMedia
-import TimecodeKit
+import SwiftTimecode
 
 /// Main service for FCPXML operations, orchestrating modular components
 @available(macOS 12.0, *)
@@ -61,7 +61,7 @@ public final class FCPXMLService: Sendable {
         }
     }
     
-    /// Converts CMTime to TimecodeKit Timecode
+    /// Converts CMTime to SwiftTimecode Timecode
     /// - Parameters:
     ///   - time: CMTime to convert
     ///   - frameRate: Target frame rate
@@ -70,7 +70,7 @@ public final class FCPXMLService: Sendable {
         return timecodeConverter.timecode(from: time, frameRate: frameRate)
     }
     
-    /// Converts TimecodeKit Timecode to CMTime
+    /// Converts SwiftTimecode Timecode to CMTime
     /// - Parameter timecode: Timecode to convert
     /// - Returns: CMTime
     public func cmTime(from timecode: Timecode) -> CMTime {

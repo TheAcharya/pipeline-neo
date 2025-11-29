@@ -1,13 +1,13 @@
 {
-  "originHash" : "1c36f5a85a2ae2599099fdd6b184d2e880829278842920ed244218719597bef2",
+  "originHash" : "83f87e594e10cd80237b502906ac1dff51db5f501166612299436526d0df1f2f",
   "pins" : [
     {
-      "identity" : "timecodekit",
+      "identity" : "swift-timecode",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/orchetect/TimecodeKit",
+      "location" : "https://github.com/orchetect/swift-timecode",
       "state" : {
-        "revision" : "c58818266bdfac3980b15b048bee5a19db56fe27",
-        "version" : "1.6.13"
+        "revision" : "f9a9e88c8e4c38b1b29d3db8130e1f07112e8b9e",
+        "version" : "3.0.0"
       }
     }
   ],

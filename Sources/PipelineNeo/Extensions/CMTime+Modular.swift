@@ -6,13 +6,13 @@
 
 import Foundation
 import CoreMedia
-import TimecodeKit
+import SwiftTimecode
 
 /// Modular CMTime extensions using dependency injection
 @available(macOS 12.0, *)
 public extension CMTime {
     
-    /// Converts CMTime to TimecodeKit Timecode using injected converter
+    /// Converts CMTime to SwiftTimecode Timecode using injected converter
     /// - Parameters:
     ///   - frameRate: Target frame rate
     ///   - converter: Timecode converter service

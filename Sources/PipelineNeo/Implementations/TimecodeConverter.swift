@@ -6,7 +6,7 @@
 
 import Foundation
 import CoreMedia
-import TimecodeKit
+import SwiftTimecode
 
 /// Implementation of timecode conversion operations
 @available(macOS 12.0, *)
@@ -19,7 +19,7 @@ public final class TimecodeConverter: TimecodeConversion, FCPXMLTimeStringConver
     public func timecode(from time: CMTime, frameRate: TimecodeFrameRate) -> Timecode? {
         let seconds = CMTimeGetSeconds(time)
         do {
-            return try Timecode(realTime: seconds, at: frameRate)
+            return try Timecode(.realTime(seconds: seconds), at: frameRate)
         } catch {
             return nil
         }
@@ -42,7 +42,7 @@ public final class TimecodeConverter: TimecodeConversion, FCPXMLTimeStringConver
         // For now, just call the synchronous version
         let seconds = CMTimeGetSeconds(time)
         do {
-            return try Timecode(realTime: seconds, at: frameRate)
+            return try Timecode(.realTime(seconds: seconds), at: frameRate)
         } catch {
             return nil
         }
