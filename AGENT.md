@@ -1,7 +1,6 @@
 # Pipeline Neo - AI Agent Development Guide
 
-**Update July 2025:**
-Pipeline Neo now provides comprehensive async/await support for all major operations. All protocols, implementations, services, and utilities have async methods. Task-based concurrency is avoided for Foundation XML types and SwiftTimecode types due to Sendable limitations, but async APIs are provided and concurrency-safe for Swift 6. The README and tests now demonstrate async/await usage, and all 46 tests/builds pass with the new architecture.
+Pipeline Neo now provides comprehensive async/await support for all major operations. All protocols, implementations, services, and utilities have async methods. Task-based concurrency is avoided for Foundation XML types and SwiftTimecode types due to Sendable limitations, but async APIs are provided and concurrency-safe for Swift 6. The README and tests now demonstrate async/await usage, and all 66 tests/builds pass with the new architecture.
 
 > **Note:** Foundation XML types (XMLDocument, XMLElement) and SwiftTimecode types are not Sendable. The codebase avoids Task-based concurrency for these types, but provides async/await APIs that are concurrency-safe for Swift 6. If/when these dependencies become Sendable-compliant, further parallelisation and structured concurrency can be introduced.
 
@@ -12,24 +11,60 @@ A comprehensive guide for AI agents and contributors working on Pipeline Neo, a 
 ## Table of Contents
 
 - [Project Overview](#project-overview)
+  - [Core Objectives](#core-objectives)
+  - [Target Platforms](#target-platforms)
+  - [Current Status](#current-status)
 - [Architecture](#architecture)
 - [Modularity & Extensibility](#modularity--extensibility)
 - [Security & Safety](#security--safety)
 - [Development Guidelines](#development-guidelines)
+  - [Swift Version](#swift-version)
+  - [Concurrency Requirements](#concurrency-requirements)
+  - [Error Handling](#error-handling)
 - [Code Style](#code-style)
+  - [Naming Conventions](#naming-conventions)
+  - [Documentation](#documentation)
+  - [File Organisation](#file-organisation)
 - [Testing Strategy](#testing-strategy)
 - [Note on Sendable Limitations](#note-on-sendable-limitations)
 - [Dependencies](#dependencies)
+  - [Primary Dependencies](#primary-dependencies)
+  - [Version Requirements](#version-requirements)
 - [File Structure](#file-structure)
 - [Key Components](#key-components)
+  - [FCPXMLService](#fcpxmlservice)
+  - [Modular Components](#modular-components)
+  - [Modular Extensions](#modular-extensions)
+  - [ModularUtilities](#modularutilities)
 - [Common Patterns](#common-patterns)
+  - [Async Operations](#async-operations)
+  - [Error Handling](#error-handling)
+  - [Type Safety](#type-safety)
 - [Error Handling](#error-handling)
+  - [Error Types](#error-types)
+  - [Error Propagation](#error-propagation)
+  - [Error Recovery](#error-recovery)
 - [Performance Considerations](#performance-considerations)
+  - [Memory Management](#memory-management)
+  - [Concurrency Performance](#concurrency-performance)
+  - [XML Processing](#xml-processing)
 - [Documentation Standards](#documentation-standards)
+  - [Code Documentation](#code-documentation)
+  - [README Documentation](#readme-documentation)
+  - [Inline Comments](#inline-comments)
 - [Git Workflow](#git-workflow)
+  - [Branch Strategy](#branch-strategy)
+  - [Commit Messages](#commit-messages)
+  - [Pull Request Process](#pull-request-process)
 - [Release Process](#release-process)
+  - [Version Management](#version-management)
+  - [Release Checklist](#release-checklist)
+  - [Distribution](#distribution)
 - [Documentation Sync](#documentation-sync)
 - [Additional Resources](#additional-resources)
+  - [External References](#external-references)
+  - [Internal References](#internal-references)
+  - [Development Tools](#development-tools)
 
 ## Project Overview
 
@@ -38,10 +73,10 @@ Pipeline Neo is a modern, protocol-oriented Swift 6 framework for FCPXML parsing
 ### Core Objectives
 - Modern Swift 6 concurrency support with async/await patterns
 - Full SwiftTimecode integration for professional timecode operations
-- Comprehensive test coverage for all functionality (46+ tests)
+- Comprehensive test coverage for all functionality (66 tests)
 - Modular architecture for future expansion
 - Professional documentation and examples
-- Support for FCPXML versions 1.5 through 1.13
+- Support for FCPXML versions 1.5 through 1.14 (DTD validation and parsing for all; typed element-type coverage for all DTD elements via FCPXMLElementType)
 
 ### Target Platforms
 - macOS 12.0+
@@ -49,8 +84,8 @@ Pipeline Neo is a modern, protocol-oriented Swift 6 framework for FCPXML parsing
 - Swift 6.0+
 
 ### Current Status
-- All 46 tests passing
-- Full FCPXML version support (1.5-1.13)
+- All 66 tests passing
+- FCPXML 1.5–1.14: DTDs included for validation; full parsing; typed element-type coverage for all DTD elements (FCPXMLElementType)
 - Final Cut Pro frame rate support (23.976, 24, 25, 29.97, 30, 50, 59.94, 60)
 - Thread-safe and concurrency-compliant with comprehensive async/await support
 - No known security vulnerabilities
@@ -77,6 +112,7 @@ Pipeline Neo is a modern, protocol-oriented Swift 6 framework for FCPXML parsing
 - No known vulnerabilities: All dependencies (including SwiftTimecode 3.0.0) are up to date and have no published security advisories as of July 2025.
 - No unsafe code patterns: No use of unsafe pointers, dynamic code execution, or C APIs. All concurrency is structured and type-safe.
 - Static analysis: The codebase passes thread sanitizer and static analysis checks, with no concurrency or memory safety issues detected.
+- Swift 6 strict concurrency: The codebase follows Swift 6 standards and builds with `-strict-concurrency=complete`. CI runs a dedicated job (macOS-swift6-strict-concurrency) that builds and tests with this flag. Public protocols and concrete types are Sendable where possible; @unchecked Sendable is used only for NSObject-based delegates and for types that hold non-Sendable dependencies with documented safe usage.
 
 ## Development Guidelines
 
@@ -133,17 +169,20 @@ Foundation XML types (XMLDocument, XMLElement) and SwiftTimecode types are not S
 
 ### Primary Dependencies
 - SwiftTimecode: Advanced timecode operations and conversions
+- SwiftExtensions: [orchetect/swift-extensions](https://github.com/orchetect/swift-extensions) — extensions on String, Collection, Optional, XMLElement, XMLNode, and other standard library types; use where it improves clarity or safety (e.g. safe subscript, string helpers)
 - Foundation: Core XML and data handling
 - CoreMedia: CMTime operations and conversions
 
 ### Version Requirements
 - SwiftTimecode: 3.0.0+
+- SwiftExtensions: 2.0.0+
 - Swift: 6.0+
 - Xcode: 16.0+
 
 ## File Structure
 
 ```
+Pipeline Neo source and test directory layout:
 Sources/PipelineNeo/
 ├── Classes/
 │   ├── FCPXMLElementType.swift
@@ -151,9 +190,14 @@ Sources/PipelineNeo/
 ├── Delegates/
 │   ├── AttributeParserDelegate.swift
 │   └── FCPXMLParserDelegate.swift
+├── Errors/
+│   └── FCPXMLError.swift
 ├── Extensions/
+│   ├── CMTime+Modular.swift
 │   ├── CMTimeExtension.swift
+│   ├── XMLDocument+Modular.swift
 │   ├── XMLDocumentExtension.swift
+│   ├── XMLElement+Modular.swift
 │   └── XMLElementExtension.swift
 ├── Implementations/
 │   ├── FCPXMLParser.swift
@@ -179,10 +223,11 @@ Sources/PipelineNeo/
     ├── Final_Cut_Pro_XML_DTD_version_1.11.dtd
     ├── Final_Cut_Pro_XML_DTD_version_1.12.dtd
     ├── Final_Cut_Pro_XML_DTD_version_1.13.dtd
+    ├── Final_Cut_Pro_XML_DTD_version_1.14.dtd
     └── README.md
 
 Tests/PipelineNeoTests/
-├── PipelineNeoTests.swift (46 comprehensive tests with async/await coverage)
+├── PipelineNeoTests.swift (66 comprehensive tests with async/await coverage)
 └── XCTestManifests.swift
 ```
 
@@ -202,27 +247,28 @@ Main service class orchestrating all modular components:
 - ErrorHandler: Comprehensive error handling
 
 ### Modular Extensions
-- CMTime Extensions: Time-related utilities and conversions
-- XMLElement Extensions: Element creation and manipulation
-- XMLDocument Extensions: Document-level operations
+- CMTime Extensions (CMTimeExtension, CMTime+Modular): Time-related utilities and conversions
+- XMLElement Extensions (XMLElementExtension, XMLElement+Modular): Element creation and manipulation
+- XMLDocument Extensions (XMLDocumentExtension, XMLDocument+Modular): Document-level operations
+- Extension APIs that cannot take parameters (e.g. `element.fcpxDuration`, `document.fcpxAssetResources`) use `FCPXMLUtility.defaultForExtensions` (single injection point; no hidden concrete types). For custom pipelines, use the modular API with `using:` parameter.
 
 ### ModularUtilities
 Utility functions for:
-- Pipeline creation and configuration
-- Document validation
-- Error handling helpers
-- Performance monitoring
+- Pipeline creation and configuration (createPipeline, createCustomPipeline)
+- Document validation (validateDocument sync/async)
+- Error handling helpers (processFCPXML, processMultipleFCPXML)
+- convertTimecodes (async)
 
 ## Common Patterns
 
 ### Async Operations
 ```swift
-// Standard async pattern for time conversions
+// Standard async pattern for time conversions (implementation returns Timecode or nil).
 public func timecode(from time: CMTime, frameRate: TimecodeFrameRate) async -> Timecode? {
     // Implementation
 }
 
-// Task-based concurrent operations
+// Task-based concurrent operations: only when element types are Sendable.
 await withTaskGroup(of: Void.self) { group in
     for element in elements {
         group.addTask {
@@ -234,12 +280,12 @@ await withTaskGroup(of: Void.self) { group in
 
 ### Error Handling
 ```swift
-// Result-based error handling
+// Result-based error handling for sync APIs.
 public func parseFCPXML(from url: URL) -> Result<XMLDocument, FCPXMLError> {
     // Implementation with proper error types
 }
 
-// Async error handling
+// Async error handling: propagate FCPXMLError from underlying errors.
 do {
     let document = try await loadFCPXML(from: url)
     return document
@@ -250,7 +296,7 @@ do {
 
 ### Type Safety
 ```swift
-// Strongly typed enums for FCPXML elements
+// Strongly typed enums for FCPXML elements; use for element-type APIs.
 public enum FCPXMLElementType: String, CaseIterable {
     case clip = "clip"
     case audio = "audio"
@@ -267,10 +313,7 @@ public func convertTimecode(_ timecode: Timecode, to frameRate: TimecodeFrameRat
 ## Error Handling
 
 ### Error Types
-- FCPXMLError: Main error type for FCPXML operations
-- TimecodeError: Timecode conversion errors
-- ValidationError: Document validation errors
-- ParsingError: XML parsing errors
+- FCPXMLError (Sendable): Main error type with cases — invalidFormat, parsingFailed(Error), unsupportedVersion, validationFailed(String), timecodeConversionFailed(String), documentOperationFailed(String). See Errors/FCPXMLError.swift.
 
 ### Error Propagation
 - Use Swift's error handling system
@@ -373,16 +416,18 @@ IMPORTANT: Always ensure this AGENT.md file is kept in sync with the `.cursorrul
 - Code style and formatting guidelines
 - Development patterns and conventions
 - Security and safety requirements
-- Modularity and extensibility principles
-- FCPXML version support (1.5-1.13)
+- Modularity and extensibility principles (including FCPXMLUtility.defaultForExtensions and single injection point)
+- FCPXML version support (1.5–1.14) and typed element-type coverage (FCPXMLElementType)
 - Final Cut Pro frame rate support
-- Current test coverage status
+- Current test coverage status (66 tests)
+- Swift 6 concurrency (Sendable, async/await, CI strict-concurrency job)
+- Source layout: Classes, Delegates, Errors, Extensions (including +Modular), Implementations, Protocols, Services, Utilities, FCPXML DTDs
 
 When updating either file, make sure to:
 1. Update both files with the same information
 2. Maintain consistency in terminology and examples
 3. Ensure both files reflect the current state of the codebase
-4. Keep the modular architecture and security status up to date
+4. Keep the modular architecture, security status, and file structure up to date
 
 This ensures that AI agents working with the project have consistent guidance whether they're using AGENT.md or the Cursor IDE rules.
 
@@ -394,13 +439,14 @@ This ensures that AI agents working with the project have consistent guidance wh
 - [Swift Concurrency Documentation](https://docs.swift.org/swift-book/documentation/the-swift-programming-language/concurrency/)
 
 ### Internal References
-- Package.swift: Package configuration
-- README.md: User documentation with async/await examples
+- Package.swift: Package configuration (Swift 6, strict concurrency noted in comments)
+- README.md: User documentation with async/await examples and modularity details
+- .cursorrules: Cursor IDE rules; keep in sync with this AGENT.md (same overview, concurrency, modularity, test count, file structure)
 - CHANGELOG.md: Version history
-- Tests/: Test suite and examples (46 tests with async/await coverage)
+- Tests/: Test suite and examples (66 tests with async/await coverage)
 
 ### Development Tools
 - Xcode 16.0+ for development
 - Swift Package Manager for dependency management
-- GitHub Actions for CI/CD
+- GitHub Actions for CI/CD (includes macOS, macOS Swift 6, and macOS Swift 6 strict-concurrency jobs)
 - SwiftLint for code style enforcement (if configured) 

@@ -36,7 +36,7 @@ This codebase is developed using AI agents.
 - Easily manipulate timing values with modern Swift concurrency
 - Output FCPXML files with proper text formatting
 - Validate FCPXML documents with the DTD
-- Works with FCPXML v1.5 through v1.13 files
+- Works with FCPXML v1.5 through v1.14 (validation, parsing, and typed element-type coverage for all DTD elements)
 - Full SwiftTimecode integration for advanced timecode operations
 - Swift 6 concurrency support with async/await patterns
 - macOS 12+ support with modern Swift features
@@ -45,7 +45,7 @@ This codebase is developed using AI agents.
 
 - macOS 12.0+
 - Xcode 16.0+
-- Swift 6.0+
+- Swift 6.0+ (strict concurrency compliant; protocols and public types are `Sendable` where appropriate; `@unchecked Sendable` only where required for Foundation/ObjC interop)
 
 ## Installation
 
@@ -62,6 +62,7 @@ Or add it to your `Package.swift`:
 
 ```swift
 // swift-tools-version: 6.0
+// Add Pipeline Neo as a dependency and link it to your target.
 import PackageDescription
 
 let package = Package(
@@ -88,7 +89,7 @@ let package = Package(
 ```swift
 import PipelineNeo
 
-// Create a modular pipeline with default implementations
+// Create a modular pipeline (default or custom), then a document, resources, and sequences.
 let service = ModularUtilities.createPipeline()
 
 // Or create a custom pipeline with specific implementations
@@ -118,7 +119,7 @@ document.addSequence(sequence, using: documentManager)
 import PipelineNeo
 import SwiftTimecode
 
-// Create modular components
+// Create converter/utility and convert between CMTime, Timecode, and FCPXML time.
 let timecodeConverter = TimecodeConverter()
 let utility = FCPXMLUtility(
     timecodeConverter: timecodeConverter
@@ -143,7 +144,7 @@ let fcpxmlTime = cmTime.fcpxmlTime(using: timecodeConverter)
 ### Working with Modular XML Operations
 
 ```swift
-// Create modular XML components
+// Create elements, children, and attributes via documentManager and extensions.
 let documentManager = XMLDocumentManager()
 let parser = FCPXMLParser()
 
@@ -171,7 +172,7 @@ let formatRef = project.getAttribute(name: "formatRef", using: documentManager)
 ### Error Handling with Modular Components
 
 ```swift
-// Create modular error handler
+// Process FCPXML from a URL and handle success/failure via Result.
 let errorHandler = ErrorHandler()
 
 // Process FCPXML with error handling
@@ -194,7 +195,7 @@ case .failure(let error):
 ### Advanced Modular Operations
 
 ```swift
-// Create custom implementations for specific needs
+// Use a custom TimecodeConverter and validate documents with the parser.
 class CustomTimecodeConverter: TimecodeConverter {
     override func timecode(from time: CMTime, frameRate: TimecodeFrameRate) -> Timecode? {
         // Custom timecode conversion logic
@@ -223,7 +224,7 @@ Pipeline Neo now provides comprehensive async/await support for all operations, 
 ```swift
 import PipelineNeo
 
-// Create a service with async capabilities
+// Create a service with async capabilities and call async APIs.
 let service = ModularUtilities.createPipeline()
 
 // Asynchronously parse FCPXML files
@@ -255,7 +256,7 @@ let conformed = await service.conform(time: time, toFrameDuration: frameDuration
 ### Concurrent Operations with Task Groups
 
 ```swift
-// Process multiple FCPXML files concurrently
+// Process multiple files and elements concurrently; use TaskGroup for parsing.
 let urls = [url1, url2, url3, url4, url5]
 let results = await ModularUtilities.processMultipleFCPXML(
     from: urls,
@@ -291,7 +292,7 @@ await withTaskGroup(of: XMLDocument.self) { group in
 ### Async Component-Level Operations
 
 ```swift
-// Async parser operations
+// Call async APIs on parser, timecode converter, and document manager.
 let parser = FCPXMLParser()
 let document = try await parser.parse(data)
 let isValid = await parser.validate(document)
@@ -314,7 +315,7 @@ try await documentManager.saveDocument(document, to: url)
 ### Modular Extensions Usage
 
 ```swift
-// Use modular extensions for CMTime operations
+// Use extensions on CMTime, XMLElement, and XMLDocument with injected utilities.
 let time = CMTime(value: 3600, timescale: 60000)
 let frameRate = TimecodeFrameRate.fps24
 
@@ -338,6 +339,7 @@ let isValid = document.isValid(using: parser)
 ### Open an FCPXML File
 
 ```swift
+// Load an FCPXML file from disk and parse it into an XMLDocument.
 let fileURL = URL(fileURLWithPath: "/Users/[username]/Documents/sample.fcpxml")
 
 do {
@@ -360,6 +362,7 @@ do {
 ### List Event Names
 
 ```swift
+// Read event names from the loaded FCPXML document.
 let eventNames = fcpxmlDoc.fcpxEventNames
 print("Event names: \(eventNames)")
 ```
@@ -367,6 +370,7 @@ print("Event names: \(eventNames)")
 ### Create and Add Events
 
 ```swift
+// Create a new event element and append it to the document's library.
 let newEvent = XMLElement().fcpxEvent(name: "My New Event")
 fcpxmlDoc.add(events: [newEvent])
 print("Updated event names: \(fcpxmlDoc.fcpxEventNames)")
@@ -375,13 +379,14 @@ print("Updated event names: \(fcpxmlDoc.fcpxEventNames)")
 ### Work with Clips
 
 ```swift
+// Find clips that reference a given resource, then remove them and the resource.
 let firstEvent = fcpxmlDoc.fcpxEvents[0]
 let matchingClips = try firstEvent.eventClips(forResourceID: "r1")
 
-// Remove clips
+// Remove clips from the event.
 try firstEvent.removeFromEvent(items: matchingClips)
 
-// Remove resource
+// Remove the resource from the document.
 if let resource = fcpxmlDoc.resource(matchingID: "r1") {
     fcpxmlDoc.remove(resourceAtIndex: resource.index)
 }
@@ -390,6 +395,7 @@ if let resource = fcpxmlDoc.resource(matchingID: "r1") {
 ### Display Clip Duration
 
 ```swift
+// Get the first event's first clip and display its duration as a counter string.
 let firstEvent = fcpxmlDoc.fcpxEvents[0]
 
 if let eventClips = firstEvent.eventClips, eventClips.count > 0 {
@@ -404,6 +410,7 @@ if let eventClips = firstEvent.eventClips, eventClips.count > 0 {
 ### Save FCPXML File
 
 ```swift
+// Serialise the document to FCPXML string and write it to disk.
 do {
     try fcpxmlDoc.fcpxmlString.write(
         toFile: "/Users/[username]/Documents/sample-output.fcpxml",
@@ -422,7 +429,12 @@ Further information on FCPXML can be found [here](https://fcp.cafe/developers/fc
 
 ## FCPXML Version Support
 
-Pipeline Neo supports FCPXML versions 1.5 through 1.13. All DTDs for these versions are included in the codebase, ensuring compatibility with the latest Final Cut Pro XML workflows.
+Pipeline Neo supports FCPXML versions 1.5 through 1.14 in the following ways:
+
+- **Validation**: All DTDs for these versions are included. You can validate a document against any version’s schema (e.g. `document.validateFCPXMLAgainst(version: "1.14")`).
+- **Parsing**: Any well-formed FCPXML document parses successfully; the full XML tree is available via Foundation’s `XMLDocument`/`XMLElement` APIs.
+- **Typed element types**: Every element from the FCPXML DTDs (1.5–1.14) is represented in `FCPXMLElementType`, so you can identify and filter by any element (e.g. `locator`, `import-options`, `live-drawing`, `filter-video`, all `adjust-*`, smart-collection match rules, etc.). Structural types like multicam vs compound `media` are inferred from the first child.
+- **Typed attributes and helpers**: The framework also provides typed properties and helpers for a subset of elements (e.g. `fcpxDuration`, `fcpxOffset`, event/project/clip APIs). Other elements are fully accessible via `element.name`, `element.attribute(forName:)`, and the shared `getElementAttribute` / `setElementAttribute` helpers.
 
 ## Migration from Original Pipeline
 
@@ -438,10 +450,15 @@ Pipeline Neo is a modernised successor to [Pipeline](https://github.com/reuelk/p
 
 ## Modularity & Safety
 
-Pipeline Neo is now fully modular, built on a protocol-oriented architecture. All major operations (parsing, timecode conversion, XML manipulation, error handling) are defined as protocols with default implementations, enabling easy extension, testing, and future-proofing. Dependency injection is used throughout for maximum flexibility and testability.
+Pipeline Neo is fully modular and protocol-oriented:
+
+- **Protocols and DI**: All major operations are defined as protocols (`FCPXMLParsing`, `TimecodeConversion`, `XMLDocumentOperations`, `ErrorHandling`, etc.) with default implementations. You inject dependencies when creating `FCPXMLService`, `FCPXMLUtility`, or when using the `+Modular` extensions (e.g. `element.setAttribute(name:value:using: documentManager)`).
+- **Single default for extensions**: Extension APIs that cannot take parameters (e.g. `element.fcpxDuration`, `document.fcpxAssetResources`) use a single shared instance, `FCPXMLUtility.defaultForExtensions`, so behaviour is consistent and concurrency-safe. For custom pipelines, use the modular API (inject into the service/utility and use the `+Modular` extension overloads that take a `using:` parameter).
+- **No hidden concrete types in extensions**: Extensions no longer instantiate `FCPXMLUtility()` internally; they use `defaultForExtensions`, keeping one clear injection point and making the design testable via the modular APIs.
+- **Swift 6 strict concurrency**: The package uses Swift 6 and complies with strict concurrency: public protocols and implementations are `Sendable`; error and option enums are `Sendable`; `@unchecked Sendable` is used only for NSObject-based delegates and for types that hold non-Sendable dependencies with documented safe usage.
 
 - Thread-safe and concurrency-compliant: All code is Sendable or @unchecked Sendable as appropriate, and passes thread sanitizer checks.
-- No known vulnerabilities: All dependencies (including SwiftTimecode 3.0.0) are up to date and have no published security advisories as of July 2025.
+- No known vulnerabilities: All dependencies (SwiftTimecode 3.0.0, [SwiftExtensions](https://github.com/orchetect/swift-extensions) 2.0.0+) are up to date and have no published security advisories as of July 2025.
 - No unsafe code patterns: No use of unsafe pointers, dynamic code execution, or C APIs. All concurrency is structured and type-safe.
 
 ## Architecture Overview

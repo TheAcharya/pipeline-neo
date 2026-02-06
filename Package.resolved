@@ -1,6 +1,15 @@
 {
-  "originHash" : "83f87e594e10cd80237b502906ac1dff51db5f501166612299436526d0df1f2f",
+  "originHash" : "21e5ceb49e532ca5fac42774ecfcec73fb799b294864b0765f68b686a02da7dc",
   "pins" : [
+    {
+      "identity" : "swift-extensions",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/orchetect/swift-extensions",
+      "state" : {
+        "revision" : "f090f8210d7dfba476edefbe0f269854d07b32a6",
+        "version" : "2.0.0"
+      }
+    },
     {
       "identity" : "swift-timecode",
       "kind" : "remoteSourceControl",

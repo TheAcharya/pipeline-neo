@@ -9,10 +9,42 @@ import CoreMedia
 import SwiftTimecode
 @testable import PipelineNeo
 
+// MARK: - Table of Contents (commented for easy searching)
+//
+// 1. Test Dependencies / Setup and Teardown
+// 2. FCPXMLUtility Tests
+// 3. FCPXMLService Tests
+// 4. Modular Component Tests
+// 5. Modular Utilities Tests
+// 6. Async Tests
+// 7. Performance Tests
+// 8. Comprehensive Parameter Tests / Frame Rate Tests
+// 9. Time Value Tests
+// 10. FCPXML Time String Tests
+// 11. Time Conforming Tests
+// 12. Error Handling Tests
+// 13. Document Management Tests
+// 14. Element Filtering Tests
+// 15. Modular Extensions Comprehensive
+// 16. Performance Tests (Different Parameters)
+// 17. Edge Case Tests
+// 18. FCPXMLElementType Coverage
+// 19. FCPXMLError Coverage
+// 20. ModularUtilities Full API
+// 21. XMLDocument Extension
+// 22. XMLElement Extension
+// 23. Parser Filter Multicam/Compound
+//
+// Coverage: Extensive FCPXML coverage — all versions (1.5–1.14), all supported frame rates, parsing/validation, FCPXML time strings,
+// element-type filtering (core + extended + multicam/compound), document/event/resource/clip extensions, error types, async/await,
+// performance, and edge cases. Not every single extension property has a dedicated test; main API surface is well covered.
+
 @available(macOS 12.0, *)
 final class PipelineNeoTests: XCTestCase, @unchecked Sendable {
     
     // MARK: - Test Dependencies
+    /// Shared instances of FCPXMLUtility, FCPXMLService, parser, timecodeConverter, documentManager, errorHandler.
+    /// Injected in setUp; used across sync and async tests.
     
     private var utility: FCPXMLUtility!
     private var service: FCPXMLService!
@@ -22,7 +54,8 @@ final class PipelineNeoTests: XCTestCase, @unchecked Sendable {
     private var errorHandler: ErrorHandler!
     
     // MARK: - Setup and Teardown
-    
+    /// Creates all modular components and injects them into utility and service. Tears down references in tearDownWithError.
+
     override func setUpWithError() throws {
         try super.setUpWithError()
         
@@ -60,7 +93,8 @@ final class PipelineNeoTests: XCTestCase, @unchecked Sendable {
     }
     
     // MARK: - FCPXMLUtility Tests
-    
+    /// Filtering by FCPXMLElementType; CMTime ↔ FCPXML time string; time conforming to frame duration.
+
     func testFCPXMLUtilityInitialisation() {
         XCTAssertNotNil(utility)
         XCTAssertNotNil(service)
@@ -108,7 +142,8 @@ final class PipelineNeoTests: XCTestCase, @unchecked Sendable {
     }
     
     // MARK: - FCPXMLService Tests
-    
+    /// Service initialisation; document creation; timecode and CMTime conversion via service.
+
     func testFCPXMLServiceInitialisation() {
         XCTAssertNotNil(service)
     }
@@ -139,7 +174,8 @@ final class PipelineNeoTests: XCTestCase, @unchecked Sendable {
     }
     
     // MARK: - Modular Component Tests
-    
+    /// Parser parse/validate; TimecodeConverter; DocumentManager create/add; ErrorHandler message handling.
+
     func testParserComponent() {
         let testData = """
         <?xml version="1.0" encoding="UTF-8"?>
@@ -192,13 +228,37 @@ final class PipelineNeoTests: XCTestCase, @unchecked Sendable {
     }
     
     // MARK: - Modular Utilities Tests
-    
+    /// ModularUtilities.createPipeline() returns a configured FCPXMLService.
+
     func testModularUtilitiesCreatePipeline() {
         let pipeline = ModularUtilities.createPipeline()
         XCTAssertNotNil(pipeline)
     }
     
-    // MARK: - Async Tests
+    // MARK: - Async Tests (Swift 6 concurrency: Sendable service, async/await, no non-Sendable capture)
+    /// Async parser, timecode converter, document manager, service; ModularUtilities.validateDocument; element filtering;
+    /// time conforming; FCPXML time string conversion; XMLElement operations; concurrent operations and TaskGroup.
+
+    /// Validates Swift 6 concurrency: Sendable service used from multiple tasks; each task asserts locally (no non-Sendable cross-task transfer).
+    func testSwift6ConcurrencySendableServiceInTaskGroup() async {
+        let service = ModularUtilities.createPipeline()
+        let frameRates: [TimecodeFrameRate] = [.fps24, .fps25, .fps30]
+        await withTaskGroup(of: Bool.self) { group in
+            for rate in frameRates {
+                group.addTask {
+                    let time = CMTime(value: 3600, timescale: 60000)
+                    let tc = await service.timecode(from: time, frameRate: rate)
+                    return tc != nil
+                }
+            }
+            var count = 0
+            for await ok in group {
+                XCTAssertTrue(ok)
+                count += 1
+            }
+            XCTAssertEqual(count, frameRates.count)
+        }
+    }
     
     func testAsyncParserComponent() async throws {
         let testData = """
@@ -338,8 +398,8 @@ final class PipelineNeoTests: XCTestCase, @unchecked Sendable {
         
         // Test concurrent document creation
         async let doc1 = documentManager.createFCPXMLDocument(version: "1.10")
-        async let doc2 = documentManager.createFCPXMLDocument(version: "1.11")
-        async let doc3 = documentManager.createFCPXMLDocument(version: "1.12")
+        async let doc2 = documentManager.createFCPXMLDocument(version: "1.12")
+        async let doc3 = documentManager.createFCPXMLDocument(version: "1.14")
         
         let documents = await (doc1, doc2, doc3)
         
@@ -349,7 +409,8 @@ final class PipelineNeoTests: XCTestCase, @unchecked Sendable {
     }
     
     // MARK: - Performance Tests
-    
+    /// measure { } for filter(elements:ofTypes:) and timecode conversion.
+
     func testPerformanceFilterElements() {
         let elements = (0..<1000).map { _ in XMLElement(name: "asset") }
         let types: [FCPXMLElementType] = [.assetResource]
@@ -369,9 +430,9 @@ final class PipelineNeoTests: XCTestCase, @unchecked Sendable {
     }
     
     // MARK: - Comprehensive Parameter Tests
-    
+
     // MARK: - Frame Rate Tests
-    // Only use frame rates supported by Final Cut Pro
+    /// All FCP-supported frame rates (23.976–60); drop-frame timecode. Only use frame rates supported by Final Cut Pro.
     let fcpSupportedFrameRates: [TimecodeFrameRate] = [
         .fps23_976, .fps24, .fps25, .fps29_97, .fps30, .fps50, .fps59_94, .fps60
     ]
@@ -399,7 +460,8 @@ final class PipelineNeoTests: XCTestCase, @unchecked Sendable {
     }
     
     // MARK: - Time Value Tests
-    
+    /// Various and large CMTime values; round-trip via timecode converter.
+
     func testVariousTimeValues() {
         let timeValues: [(value: Int64, timescale: Int32, expectedSeconds: Double)] = [
             (0, 60000, 0.0),           // Zero time
@@ -447,7 +509,8 @@ final class PipelineNeoTests: XCTestCase, @unchecked Sendable {
     }
     
     // MARK: - FCPXML Time String Tests
-    
+    /// Valid "value/timescale" formats and round-trip; invalid strings (empty, non-numeric, bad format).
+
     func testFCPXMLTimeStringFormats() {
         let timeStrings = [
             "0/60000",           // Zero time
@@ -505,14 +568,19 @@ final class PipelineNeoTests: XCTestCase, @unchecked Sendable {
     }
     
     // MARK: - Time Conforming Tests
-    
+    /// conform(time:toFrameDuration:) for multiple frame durations; conformed time is multiple of frame duration.
+
     func testTimeConformingWithDifferentFrameDurations() {
+        // All FCP-supported frame rates as frame durations (23.976, 24, 25, 29.97, 30, 50, 59.94, 60)
         let frameDurations: [CMTime] = [
-            CMTime(value: 1, timescale: 24),   // 24fps
-            CMTime(value: 1, timescale: 25),   // 25fps
-            CMTime(value: 1, timescale: 30),   // 30fps
-            CMTime(value: 1001, timescale: 24000), // 23.976fps
-            CMTime(value: 1001, timescale: 30000), // 29.97fps
+            CMTime(value: 1, timescale: 24),           // 24 fps
+            CMTime(value: 1, timescale: 25),           // 25 fps
+            CMTime(value: 1, timescale: 30),           // 30 fps
+            CMTime(value: 1, timescale: 50),           // 50 fps
+            CMTime(value: 1, timescale: 60),            // 60 fps
+            CMTime(value: 1001, timescale: 24000),     // 23.976 fps
+            CMTime(value: 1001, timescale: 30000),     // 29.97 fps
+            CMTime(value: 1001, timescale: 60000),     // 59.94 fps
         ]
         
         let testTime = CMTime(value: 1001, timescale: 24000)
@@ -532,7 +600,8 @@ final class PipelineNeoTests: XCTestCase, @unchecked Sendable {
     }
     
     // MARK: - Error Handling Tests
-    
+    /// ErrorHandler for all FCPXMLError cases; parser with invalid XML inputs.
+
     func testErrorHandlerWithAllErrorTypes() {
         let errorTypes: [FCPXMLError] = [
             .invalidFormat,
@@ -571,9 +640,10 @@ final class PipelineNeoTests: XCTestCase, @unchecked Sendable {
     }
     
     // MARK: - Document Management Tests
-    
+    /// Document creation for FCPXML versions 1.5–1.14; complex structure (resources + sequence).
+
     func testDocumentManagerWithAllFCPXMLVersions() {
-        let versions = ["1.5", "1.6", "1.7", "1.8", "1.9", "1.10", "1.11", "1.12", "1.13"]
+        let versions = ["1.5", "1.6", "1.7", "1.8", "1.9", "1.10", "1.11", "1.12", "1.13", "1.14"]
         
         for version in versions {
             let document = documentManager.createFCPXMLDocument(version: version)
@@ -616,7 +686,8 @@ final class PipelineNeoTests: XCTestCase, @unchecked Sendable {
     }
     
     // MARK: - Element Filtering Tests
-    
+    /// Filter by core and extended FCPXMLElementType; tagName/isInferred covered in later section.
+
     func testElementFilteringWithAllElementTypes() {
         let elementTypes: [FCPXMLElementType] = [
             .assetResource, .sequence, .clip, .transition, .audio, .video, .title
@@ -642,9 +713,51 @@ final class PipelineNeoTests: XCTestCase, @unchecked Sendable {
         let noMatches = utility.filter(fcpxElements: elements, ofTypes: [])
         XCTAssertEqual(noMatches.count, 0, "Should return empty array when no types specified")
     }
-    
+
+    /// Verifies filtering by FCPXML 1.14+ and other DTD element types (full element-type coverage).
+    func testElementFilteringWithExtendedElementTypes() {
+        let extendedTypes: [FCPXMLElementType] = [
+            .locator, .metadata, .param, .liveDrawing, .filterVideo, .marker, .bookmark,
+            .importOptions, .option, .adjustTransform, .syncSource, .mcSource
+        ]
+        let elements = extendedTypes.map { XMLElement(name: $0.tagName) }
+        for type in extendedTypes {
+            let filtered = utility.filter(fcpxElements: elements, ofTypes: [type])
+            XCTAssertEqual(filtered.count, 1, "Should filter to exactly 1 element of type: \(type)")
+            XCTAssertEqual(filtered.first?.name, type.tagName, "Filtered element should match tagName: \(type.tagName)")
+        }
+    }
+
+    /// Verifies that filtering works for every FCPXMLElementType (full DTD element coverage).
+    /// For each type, builds a minimal element set containing one element of that type and asserts filter returns it.
+    func testElementFilteringWithAllFCPXMLElementTypes() {
+        func singleElement(for type: FCPXMLElementType) -> XMLElement? {
+            switch type {
+            case .none:
+                return nil
+            case .multicamResource:
+                let media = XMLElement(name: "media")
+                media.addChild(XMLElement(name: "multicam"))
+                return media
+            case .compoundResource:
+                let media = XMLElement(name: "media")
+                media.addChild(XMLElement(name: "sequence"))
+                return media
+            default:
+                return XMLElement(name: type.tagName)
+            }
+        }
+        for type in FCPXMLElementType.allCases where type != .none {
+            guard let element = singleElement(for: type) else { continue }
+            let filtered = utility.filter(fcpxElements: [element], ofTypes: [type])
+            XCTAssertEqual(filtered.count, 1, "Should filter to exactly 1 element of type: \(type)")
+            XCTAssertEqual(filtered.first?.name, type.tagName, "Filtered element should match tagName: \(type.tagName)")
+        }
+    }
+
     // MARK: - Modular Extensions Comprehensive Tests
-    
+    /// CMTime timecode/fcpxmlTime/conformed; XMLElement setAttribute/getAttribute/createChild; XMLDocument addResource/addSequence/isValid.
+
     func testCMTimeModularExtensionsWithAllFrameRates() {
         let testTime = CMTime(value: 3600, timescale: 60000)
         for frameRate in fcpSupportedFrameRates {
@@ -720,7 +833,8 @@ final class PipelineNeoTests: XCTestCase, @unchecked Sendable {
     }
     
     // MARK: - Performance Tests with Different Parameters
-    
+    /// measure for timecode conversion (all frame rates), document creation loop, element filtering (large dataset).
+
     func testPerformanceTimecodeConversionAllFrameRates() {
         let testTime = CMTime(value: 3600, timescale: 60000)
         measure {
@@ -754,7 +868,8 @@ final class PipelineNeoTests: XCTestCase, @unchecked Sendable {
     }
     
     // MARK: - Edge Case Tests
-    
+    /// Edge-case CMTime values; concurrent access (DispatchQueue) for thread-safety.
+
     func testEdgeCaseTimeValues() {
         let edgeCases: [(value: Int64, timescale: Int32, description: String)] = [
             (1000000, 60000, "Large CMTime value"),
@@ -797,5 +912,297 @@ final class PipelineNeoTests: XCTestCase, @unchecked Sendable {
         }
         
         group.wait()
+    }
+
+    // MARK: - FCPXMLElementType Coverage
+    /// tagName and isInferred for multicamResource, compoundResource, assetResource, sequence, clip, none.
+
+    func testFCPXMLElementTypeTagNameAndIsInferred() {
+        XCTAssertEqual(FCPXMLElementType.multicamResource.tagName, "media")
+        XCTAssertEqual(FCPXMLElementType.compoundResource.tagName, "media")
+        XCTAssertTrue(FCPXMLElementType.multicamResource.isInferred)
+        XCTAssertTrue(FCPXMLElementType.compoundResource.isInferred)
+
+        XCTAssertEqual(FCPXMLElementType.assetResource.tagName, "asset")
+        XCTAssertEqual(FCPXMLElementType.sequence.tagName, "sequence")
+        XCTAssertFalse(FCPXMLElementType.assetResource.isInferred)
+        XCTAssertFalse(FCPXMLElementType.clip.isInferred)
+        XCTAssertEqual(FCPXMLElementType.none.tagName, "")
+    }
+
+    // MARK: - FCPXMLError Coverage
+    /// errorDescription non-empty for parsingFailed, invalidFormat, unsupportedVersion, validationFailed, timecodeConversionFailed, documentOperationFailed.
+
+    func testFCPXMLErrorAllCasesHaveDescription() {
+        let parsingFailed = FCPXMLError.parsingFailed(NSError(domain: "Test", code: 1, userInfo: [NSLocalizedDescriptionKey: "test"]))
+        XCTAssertFalse(parsingFailed.errorDescription?.isEmpty ?? true)
+
+        XCTAssertFalse(FCPXMLError.invalidFormat.errorDescription?.isEmpty ?? true)
+        XCTAssertFalse(FCPXMLError.unsupportedVersion.errorDescription?.isEmpty ?? true)
+        XCTAssertFalse(FCPXMLError.validationFailed("detail").errorDescription?.isEmpty ?? true)
+        XCTAssertFalse(FCPXMLError.timecodeConversionFailed("detail").errorDescription?.isEmpty ?? true)
+        XCTAssertFalse(FCPXMLError.documentOperationFailed("detail").errorDescription?.isEmpty ?? true)
+    }
+
+    // MARK: - ModularUtilities Full API Coverage
+    /// createCustomPipeline; validateDocument (invalid doc); processFCPXML(from:url); processMultipleFCPXML; convertTimecodes.
+
+    func testModularUtilitiesCreateCustomPipeline() {
+        let custom = ModularUtilities.createCustomPipeline(
+            parser: FCPXMLParser(),
+            timecodeConverter: TimecodeConverter(),
+            documentManager: XMLDocumentManager(),
+            errorHandler: ErrorHandler()
+        )
+        XCTAssertNotNil(custom)
+        let doc = custom.createFCPXMLDocument(version: "1.10")
+        XCTAssertNotNil(doc)
+        XCTAssertEqual(doc.rootElement()?.name, "fcpxml")
+    }
+
+    func testModularUtilitiesValidateDocumentReturnsErrorsForInvalidDocument() {
+        let doc = XMLDocument()
+        doc.setRootElement(XMLElement(name: "wrongroot"))
+        let result = ModularUtilities.validateDocument(doc, using: parser)
+        XCTAssertFalse(result.isValid)
+        XCTAssertFalse(result.errors.isEmpty)
+    }
+
+    func testModularUtilitiesProcessFCPXMLFromDataViaTempURL() throws {
+        let validFCPXML = """
+        <?xml version="1.0" encoding="UTF-8"?>
+        <fcpxml version="1.10">
+            <resources><asset id="r1"/></resources>
+        </fcpxml>
+        """
+        let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString + ".fcpxml")
+        try validFCPXML.data(using: .utf8)!.write(to: tempURL)
+        defer { try? FileManager.default.removeItem(at: tempURL) }
+
+        let result = ModularUtilities.processFCPXML(from: tempURL, using: service, errorHandler: errorHandler)
+        switch result {
+        case .success(let document):
+            XCTAssertNotNil(document.rootElement())
+            XCTAssertEqual(document.rootElement()?.name, "fcpxml")
+        case .failure(let error):
+            XCTFail("Expected success, got: \(error)")
+        }
+    }
+
+    func testModularUtilitiesProcessMultipleFCPXML() async throws {
+        let validFCPXML = """
+        <?xml version="1.0" encoding="UTF-8"?>
+        <fcpxml version="1.10"><resources/></fcpxml>
+        """
+        let tempDir = FileManager.default.temporaryDirectory
+        let url1 = tempDir.appendingPathComponent(UUID().uuidString + ".fcpxml")
+        let url2 = tempDir.appendingPathComponent(UUID().uuidString + ".fcpxml")
+        try validFCPXML.data(using: .utf8)!.write(to: url1)
+        try validFCPXML.data(using: .utf8)!.write(to: url2)
+        defer { try? FileManager.default.removeItem(at: url1); try? FileManager.default.removeItem(at: url2) }
+
+        let results = await ModularUtilities.processMultipleFCPXML(from: [url1, url2], using: service, errorHandler: errorHandler)
+        XCTAssertEqual(results.count, 2)
+        for (index, result) in results.enumerated() {
+            switch result {
+            case .success(let doc):
+                XCTAssertNotNil(doc.rootElement(), "Result \(index) should be valid document")
+            case .failure:
+                XCTFail("Result \(index) should succeed for valid FCPXML")
+            }
+        }
+    }
+
+    func testModularUtilitiesConvertTimecodes() async {
+        let c1 = XMLElement(name: "clip")
+        c1.setAttribute(name: "id", value: "c1", using: documentManager)
+        let c2 = XMLElement(name: "clip")
+        c2.setAttribute(name: "id", value: "c2", using: documentManager)
+        let elements = [c1, c2]
+        let timecodes = await ModularUtilities.convertTimecodes(for: elements, using: timecodeConverter, frameRate: .fps24)
+        XCTAssertEqual(timecodes.count, 2)
+        // Implementation returns CMTime.zero-based timecodes for placeholder extraction
+        XCTAssertNotNil(timecodes[0])
+        XCTAssertNotNil(timecodes[1])
+    }
+
+    // MARK: - XMLDocument Extension Coverage (Events, Resources, fcpxmlString)
+    /// fcpxEventNames, add(events:); resource(matchingID:), remove(resourceAtIndex:); fcpxmlString, fcpxmlVersion; init(contentsOfFCPXML:).
+
+    func testXMLDocumentExtensionFcpxEventNamesAndAddEvents() {
+        let document = documentManager.createFCPXMLDocument(version: "1.10")
+        guard let root = document.rootElement() else { XCTFail("No root"); return }
+        let resources = XMLElement(name: "resources")
+        root.addChild(resources)
+        let library = XMLElement(name: "library")
+        root.addChild(library)
+
+        XCTAssertTrue(document.fcpxEventNames.isEmpty)
+
+        let event1 = XMLElement().fcpxEvent(name: "Event One")
+        let event2 = XMLElement().fcpxEvent(name: "Event Two")
+        document.add(events: [event1, event2])
+
+        let names = document.fcpxEventNames
+        XCTAssertEqual(names.count, 2)
+        XCTAssertTrue(names.contains("Event One"))
+        XCTAssertTrue(names.contains("Event Two"))
+    }
+
+    func testXMLDocumentExtensionResourceMatchingIDAndRemove() {
+        let document = documentManager.createFCPXMLDocument(version: "1.10")
+        let r1 = documentManager.createElement(name: "asset", attributes: ["id": "r1", "name": "Asset 1"])
+        let r2 = documentManager.createElement(name: "asset", attributes: ["id": "r2", "name": "Asset 2"])
+        document.addResource(r1, using: documentManager)
+        document.addResource(r2, using: documentManager)
+
+        let found = document.resource(matchingID: "r1")
+        XCTAssertNotNil(found)
+        XCTAssertEqual(found?.fcpxID, "r1")
+
+        guard let resourcesElement = document.rootElement()?.elements(forName: "resources").first,
+              let children = resourcesElement.children, children.count >= 2 else {
+            XCTFail("Expected resources with at least 2 children")
+            return
+        }
+        let indexToRemove = 0
+        document.remove(resourceAtIndex: indexToRemove)
+        XCTAssertNil(document.resource(matchingID: "r1"))
+    }
+
+    func testXMLDocumentExtensionFcpxmlStringAndVersion() {
+        let document = documentManager.createFCPXMLDocument(version: "1.14")
+        document.fcpxmlVersion = "1.14"
+        let str = document.fcpxmlString
+        XCTAssertFalse(str.isEmpty)
+        XCTAssertTrue(str.contains("fcpxml"))
+        XCTAssertEqual(document.fcpxmlVersion, "1.14")
+    }
+
+    func testXMLDocumentContentsOfFCPXMLInitializer() throws {
+        let validFCPXML = """
+        <?xml version="1.0" encoding="UTF-8"?>
+        <fcpxml version="1.10">
+            <resources><asset id="r1"/></resources>
+        </fcpxml>
+        """
+        let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString + ".fcpxml")
+        try validFCPXML.data(using: .utf8)!.write(to: tempURL)
+        defer { try? FileManager.default.removeItem(at: tempURL) }
+
+        let document = try XMLDocument(contentsOfFCPXML: tempURL)
+        XCTAssertNotNil(document.rootElement())
+        XCTAssertEqual(document.rootElement()?.name, "fcpxml")
+    }
+
+    // MARK: - XMLElement Extension Coverage (fcpxType, isFCPX, eventClips, fcpxDuration)
+    /// fcpxType (asset, sequence, clip, locator, media+multicam/sequence); isFCPXResource, isFCPXStoryElement; fcpxEvent, eventClips(forResourceID:), addToEvent, removeFromEvent; fcpxDuration get/set; eventClips throws when not event.
+
+    func testXMLElementExtensionFcpxTypeAndIsFCPX() {
+        let asset = XMLElement(name: "asset")
+        XCTAssertEqual(asset.fcpxType, .assetResource)
+        XCTAssertTrue(asset.isFCPXResource)
+
+        let sequence = XMLElement(name: "sequence")
+        XCTAssertEqual(sequence.fcpxType, .sequence)
+        XCTAssertFalse(sequence.isFCPXResource)
+
+        let clip = XMLElement(name: "clip")
+        XCTAssertEqual(clip.fcpxType, .clip)
+        XCTAssertTrue(clip.isFCPXStoryElement)
+
+        let locator = XMLElement(name: "locator")
+        XCTAssertEqual(locator.fcpxType, .locator)
+        XCTAssertTrue(locator.isFCPXResource)
+    }
+
+    func testXMLElementExtensionFcpxTypeMediaWithFirstChildMulticamOrSequence() {
+        let mediaMulticam = XMLElement(name: "media")
+        mediaMulticam.addChild(XMLElement(name: "multicam"))
+        XCTAssertEqual(mediaMulticam.fcpxType, .multicamResource)
+
+        let mediaCompound = XMLElement(name: "media")
+        mediaCompound.addChild(XMLElement(name: "sequence"))
+        XCTAssertEqual(mediaCompound.fcpxType, .compoundResource)
+
+        let mediaPlain = XMLElement(name: "media")
+        mediaPlain.addChild(XMLElement(name: "asset"))
+        XCTAssertEqual(mediaPlain.fcpxType, .mediaResource)
+    }
+
+    func testXMLElementExtensionFcpxEventAndEventClips() throws {
+        let event = XMLElement().fcpxEvent(name: "Test Event")
+        XCTAssertEqual(event.fcpxType, .event)
+        XCTAssertEqual(event.fcpxName, "Test Event")
+
+        let clips = try event.eventClips(forResourceID: "r99")
+        XCTAssertEqual(clips.count, 0)
+
+        // eventClips(forResourceID:) matches on clip.fcpxRef; for type .clip, fcpxRef comes from video/audio child.
+        let clipRef = documentManager.createElement(name: "clip", attributes: ["name": "C1"])
+        let video = documentManager.createElement(name: "video", attributes: ["ref": "r1"])
+        clipRef.addChild(video)
+        try event.addToEvent(items: [clipRef])
+        let clipsR1 = try event.eventClips(forResourceID: "r1")
+        XCTAssertEqual(clipsR1.count, 1)
+        XCTAssertEqual(clipsR1.first?.fcpxRef, "r1")
+
+        try event.removeFromEvent(items: clipsR1)
+        XCTAssertEqual(try event.eventClips(forResourceID: "r1").count, 0)
+    }
+
+    func testXMLElementExtensionFcpxDuration() {
+        let clip = documentManager.createElement(name: "clip", attributes: ["duration": "3600/60000"])
+        clip.setAttribute(name: "duration", value: "3600/60000", using: documentManager)
+        let duration = clip.fcpxDuration
+        XCTAssertNotNil(duration)
+        XCTAssertEqual(duration?.value, 3600)
+        XCTAssertEqual(duration?.timescale, 60000)
+
+        clip.fcpxDuration = CMTime(value: 7200, timescale: 60000)
+        XCTAssertEqual(clip.getAttribute(name: "duration", using: documentManager), "7200/60000")
+    }
+
+    func testXMLElementExtensionEventClipsThrowsWhenNotEvent() {
+        let notEvent = XMLElement(name: "sequence")
+        do {
+            _ = try notEvent.eventClips(forResourceID: "r1")
+            XCTFail("Should throw when called on non-event")
+        } catch {
+            XCTAssertTrue(error is XMLElement.FCPXMLElementError || String(describing: error).contains("notAnEvent"))
+        }
+    }
+
+    // MARK: - Parser Filter Multicam and Compound
+    /// Filter media by first child (multicam → multicamResource, sequence → compoundResource). FCPXMLUtility.defaultForExtensions.
+
+    func testParserFilterMulticamAndCompoundResources() {
+        let mediaMulticam = XMLElement(name: "media")
+        mediaMulticam.addChild(XMLElement(name: "multicam"))
+        let mediaCompound = XMLElement(name: "media")
+        mediaCompound.addChild(XMLElement(name: "sequence"))
+        let mediaPlain = XMLElement(name: "media")
+        mediaPlain.addChild(XMLElement(name: "format"))
+
+        let elements = [mediaMulticam, mediaCompound, mediaPlain]
+        let multicamOnly = utility.filter(fcpxElements: elements, ofTypes: [.multicamResource])
+        XCTAssertEqual(multicamOnly.count, 1)
+        XCTAssertEqual(multicamOnly.first?.fcpxType, .multicamResource)
+
+        let compoundOnly = utility.filter(fcpxElements: elements, ofTypes: [.compoundResource])
+        XCTAssertEqual(compoundOnly.count, 1)
+        XCTAssertEqual(compoundOnly.first?.fcpxType, .compoundResource)
+
+        let both = utility.filter(fcpxElements: elements, ofTypes: [.multicamResource, .compoundResource])
+        XCTAssertEqual(both.count, 2)
+    }
+
+    func testFCPXMLUtilityDefaultForExtensions() {
+        let defaultUtility = FCPXMLUtility.defaultForExtensions
+        XCTAssertNotNil(defaultUtility)
+        let elements = [XMLElement(name: "asset"), XMLElement(name: "clip")]
+        let filtered = defaultUtility.filter(fcpxElements: elements, ofTypes: [.assetResource])
+        XCTAssertEqual(filtered.count, 1)
+        XCTAssertEqual(filtered.first?.name, "asset")
     }
 } 

@@ -6,6 +6,7 @@
 
 import Foundation
 import CoreMedia
+import SwiftExtensions
 
 #if canImport(Logging)
 import Logging
@@ -78,27 +79,20 @@ extension XMLDocument {
 
 	/// The "resource" element child of the "fcpxml" element.
 	public var fcpxResourceElement: XMLElement? {
-		guard let fcpxmlElement = self.fcpxmlElement, fcpxmlElement.elements(forName: "resources").count > 0 else {
-			return nil
-		}
-		return fcpxmlElement.elements(forName: "resources")[0]
+		guard let fcpxmlElement = self.fcpxmlElement else { return nil }
+		return fcpxmlElement.firstChildElement(named: "resources")
 	}
 	
 	/// An array of all resources in the FCPXML document.
 	public var fcpxResources: [XMLElement] {
-		if let resourceNodes = self.fcpxResourceElement?.children {
-			return resourceNodes as! [XMLElement]
-		} else {
-			return []
-		}
+		guard let resourceElement = fcpxResourceElement else { return [] }
+		return Array(resourceElement.childElements)
 	}
 	
 	/// The library XMLElement in the FCPXML document.
 	public var fcpxLibraryElement: XMLElement? {
-		guard let fcpxmlElement = self.fcpxmlElement, fcpxmlElement.elements(forName: "library").count > 0 else {
-			return nil
-		}
-		return fcpxmlElement.elements(forName: "library")[0]
+		guard let fcpxmlElement = self.fcpxmlElement else { return nil }
+		return fcpxmlElement.firstChildElement(named: "library")
 	}
 	
 	/// An array of all event elements in the FCPXML document.
@@ -111,38 +105,38 @@ extension XMLDocument {
 	
 	/// An array of format resources in the FCPXML document.
 	public var fcpxFormatResources: [XMLElement] {
-		let utility = FCPXMLUtility()
+		let utility = FCPXMLUtility.defaultForExtensions
 		return utility.filter(fcpxElements: self.fcpxResources, ofTypes: [.formatResource])
 	}
 	
 	/// An array of asset resources in the FCPXML document.
 	public var fcpxAssetResources: [XMLElement] {
-		let utility = FCPXMLUtility()
+		let utility = FCPXMLUtility.defaultForExtensions
 		return utility.filter(fcpxElements: self.fcpxResources, ofTypes: [.assetResource])
 	}
 	
 	/// An array of multicam resources in the FCPXML document.
 	public var fcpxMulticamResources: [XMLElement] {
-		let utility = FCPXMLUtility()
+		let utility = FCPXMLUtility.defaultForExtensions
 		return utility.filter(fcpxElements: self.fcpxResources, ofTypes: [.multicamResource])
 	}
 	
 	/// An array of compound clip resources in the FCPXML document.
 	public var fcpxCompoundResources: [XMLElement] {
-		let utility = FCPXMLUtility()
+		let utility = FCPXMLUtility.defaultForExtensions
 		return utility.filter(fcpxElements: self.fcpxResources, ofTypes: [.compoundResource])
 	}
 	
 	/// An array of effect resources in the FCPXML document.
 	public var fcpxEffectResources: [XMLElement] {
-		let utility = FCPXMLUtility()
+		let utility = FCPXMLUtility.defaultForExtensions
 		return utility.filter(fcpxElements: self.fcpxResources, ofTypes: [.effectResource])
 	}
 	
 	/// An array of all projects in all events in the FCPXML document.
 	public var fcpxAllProjects: [XMLElement] {
 		var projects: [XMLElement] = []
-		let utility = FCPXMLUtility()
+		let utility = FCPXMLUtility.defaultForExtensions
 		for event in self.fcpxEvents {
 			guard let eventChildren = event.children else {
 				continue
@@ -158,7 +152,7 @@ extension XMLDocument {
 	/// An array of all clips in all events in the FCPXML document.
 	public var fcpxAllClips: [XMLElement] {
 		var clips: [XMLElement] = []
-		let utility = FCPXMLUtility()
+		let utility = FCPXMLUtility.defaultForExtensions
 		for event in self.fcpxEvents {
 			guard let eventChildren = event.children else {
 				continue
@@ -175,19 +169,7 @@ extension XMLDocument {
 	/// The version of FCPXML used in this document.
 	public var fcpxmlVersion: String? {
 		get {
-			guard let fcpxmlElement = self.fcpxmlElement else {
-				return nil
-			}
-			
-			guard let versionAttribute = fcpxmlElement.attribute(forName: "version") else {
-				return nil
-			}
-			
-			guard let versionNumber = versionAttribute.stringValue else {
-				return nil
-			}
-			
-			return versionNumber
+			fcpxmlElement?.stringValue(forAttributeNamed: "version")
 		}
 		
 		set {
@@ -613,7 +595,7 @@ extension XMLDocument {
 	///
 	/// - DTDResourceNotFound: The DTD resource in the Pipeline framework was not found.
 	/// - DTDResourceUnreadable: The DTD resource in the Pipeline framework was not readable.
-	enum FCPXMLDocumentError: Error {
+	enum FCPXMLDocumentError: Error, Sendable {
 		case DTDResourceNotFound
 		case DTDResourceUnreadable
 	}

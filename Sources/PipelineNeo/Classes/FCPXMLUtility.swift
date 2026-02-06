@@ -14,7 +14,7 @@ import Logging
 
 /// Contains miscellaneous utility methods for processing FCPXML data with modern Swift concurrency support.
 @available(macOS 12.0, *)
-public class FCPXMLUtility {
+public final class FCPXMLUtility: @unchecked Sendable {
 	
 	// MARK: - Dependencies
 	
@@ -37,6 +37,11 @@ public class FCPXMLUtility {
 		self.documentManager = documentManager
 		self.errorHandler = errorHandler
 	}
+
+	// MARK: - Default for Extension APIs
+
+	/// Default instance used by extension APIs (e.g. `XMLElement.fcpxDuration`, `XMLDocument.fcpxAssetResources`) that cannot receive dependency injection. Concurrency-safe (immutable). For custom implementations use the modular API: inject dependencies into `FCPXMLService` / `FCPXMLUtility` and use the `+Modular` extensions (e.g. `element.setAttribute(name:value:using: documentManager)`) or service methods.
+	public static let defaultForExtensions: FCPXMLUtility = FCPXMLUtility()
 	
 	// MARK: - Retrieval Methods
 	

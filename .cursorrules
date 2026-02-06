@@ -1,11 +1,32 @@
 # Pipeline Neo - Cursor Rules
 
+## Table of Contents
+
+- [Project Overview](#project-overview)
+- [Modularity & Safety](#modularity--safety)
+- [Code Style and Formatting](#code-style-and-formatting)
+- [Architecture Guidelines](#architecture-guidelines)
+- [Dependencies](#dependencies)
+- [File Organisation](#file-organisation)
+- [Development Patterns](#development-patterns)
+- [Testing Requirements](#testing-requirements)
+- [Performance Considerations](#performance-considerations)
+- [Documentation Standards](#documentation-standards)
+- [Git Workflow](#git-workflow)
+- [Quality Assurance](#quality-assurance)
+- [Project-Specific Rules](#project-specific-rules)
+- [External References](#external-references)
+- [Common Tasks](#common-tasks)
+- [Code Generation Guidelines](#code-generation-guidelines)
+- [Documentation Sync](#documentation-sync)
+- [Maintenance](#maintenance)
+
 ## Project Overview
 Pipeline Neo is a modern, fully modular Swift 6 framework for Final Cut Pro FCPXML processing with SwiftTimecode integration. The codebase is 100% protocol-oriented, with all major operations defined as protocols and implemented via dependency injection for maximum flexibility, testability, and future-proofing. This project targets macOS 12+, Xcode 16+, and Swift 6.0 with full concurrency support.
 
 ### Current Status
-- All 46 tests passing
-- Full FCPXML version support (1.5-1.13)
+- All 66 tests passing
+- Full FCPXML version support (1.5–1.14); DTDs for validation; full parsing; typed element-type coverage for all DTD elements (FCPXMLElementType)
 - Final Cut Pro frame rate support (23.976, 24, 25, 29.97, 30, 50, 59.94, 60)
 - Thread-safe and concurrency-compliant with comprehensive async/await support
 - No known security vulnerabilities
@@ -14,7 +35,8 @@ Pipeline Neo is a modern, fully modular Swift 6 framework for Final Cut Pro FCPX
 ## Modularity & Safety
 - All core operations (parsing, timecode conversion, XML manipulation, error handling) are defined as protocols (e.g., FCPXMLParsing, TimecodeConversion, XMLDocumentOperations, ErrorHandling), with both sync and async/await APIs.
 - Default implementations are provided, but any component can be swapped or extended via dependency injection.
-- All code is Sendable or @unchecked Sendable as appropriate, and passes thread sanitizer checks.
+- Extension APIs that cannot take parameters use a single shared instance, `FCPXMLUtility.defaultForExtensions` (concurrency-safe). No hidden concrete types in extensions; for custom pipelines use the modular API with `using:` parameter.
+- All code is Sendable or @unchecked Sendable as appropriate, and passes thread sanitizer checks. The project builds and tests with Swift 6 strict concurrency (`-strict-concurrency=complete`); CI runs a job that enforces this.
 - No known vulnerabilities in dependencies (including SwiftTimecode 3.0.0) as of July 2025.
 - No unsafe code patterns: no unsafe pointers, dynamic code execution, or C APIs. All concurrency is structured and type-safe.
 - Async/await support is comprehensive across all protocols, implementations, services, and utilities.
@@ -38,6 +60,7 @@ Pipeline Neo is a modern, fully modular Swift 6 framework for Final Cut Pro FCPX
 ### File Headers
 All Swift files must include the standard header format:
 ```swift
+// Standard file header: replace [FileName], [Your Name], [Date], [Year].
 //
 //  [FileName].swift
 //  PipelineNeo
@@ -74,6 +97,7 @@ All Swift files must include the standard header format:
 
 ### Primary Dependencies
 - SwiftTimecode: 3.0.0+ for timecode operations
+- SwiftExtensions: 2.0.0+ ([orchetect/swift-extensions](https://github.com/orchetect/swift-extensions)) for String, Collection, Optional, XML helpers where useful
 - Foundation: Core XML and data handling
 - CoreMedia: CMTime operations and conversions
 
@@ -85,6 +109,7 @@ All Swift files must include the standard header format:
 ## File Organisation
 
 ### Source Structure
+- Layout: Classes, Delegates, Errors (FCPXMLError), Extensions (including +Modular: CMTime+Modular, XMLDocument+Modular, XMLElement+Modular), Implementations, Protocols, Services, Utilities, FCPXML DTDs
 - Group related functionality in extensions
 - Keep files focused on single responsibilities
 - Use clear file naming conventions
@@ -102,12 +127,12 @@ All Swift files must include the standard header format:
 
 ### Async Operations
 ```swift
-// Standard async pattern for time conversions
+// Standard async pattern for time conversions (implementation returns Timecode or nil).
 public func timecode(from time: CMTime, frameRate: TimecodeFrameRate) async -> Timecode? {
     // Implementation
 }
 
-// Task-based concurrent operations
+// Task-based concurrent operations: only when element types are Sendable.
 await withTaskGroup(of: Void.self) { group in
     for element in elements {
         group.addTask {
@@ -119,12 +144,12 @@ await withTaskGroup(of: Void.self) { group in
 
 ### Error Handling
 ```swift
-// Result-based error handling
+// Result-based error handling for sync APIs.
 public func parseFCPXML(from url: URL) -> Result<XMLDocument, FCPXMLError> {
     // Implementation with proper error types
 }
 
-// Async error handling
+// Async error handling: propagate FCPXMLError from underlying errors.
 do {
     let document = try await loadFCPXML(from: url)
     return document
@@ -149,7 +174,7 @@ do {
 - Performance tests for time-critical operations
 - Concurrency tests for async operations
 - Test all supported frame rates (Final Cut Pro compatible)
-- Current: 46 comprehensive tests covering all functionality including async/await operations
+- Current: 66 comprehensive tests covering all functionality including async/await operations
 
 ### Test Data
 - Use realistic FCPXML samples
@@ -246,7 +271,7 @@ Only test with Final Cut Pro supported frame rates:
 ## Project-Specific Rules
 
 ### FCPXML Handling
-- Support FCPXML versions 1.5 through 1.13
+- Support FCPXML versions 1.5 through 1.14 (DTDs included; full parsing; typed element-type coverage via FCPXMLElementType for all DTD elements)
 - Validate against DTD schemas
 - Handle all supported frame rates (Final Cut Pro compatible)
 - Implement proper XML formatting
@@ -314,6 +339,9 @@ Only test with Final Cut Pro supported frame rates:
 - Validate error handling
 - Ensure test coverage
 - Verify documentation quality
+
+## Documentation Sync
+- Keep this file in sync with AGENT.md: same project overview, concurrency and modularity details, test count (66), FCPXML/version support, and source layout. When updating one, update the other.
 
 ## Maintenance
 

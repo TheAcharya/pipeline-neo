@@ -1,239 +1,243 @@
-# Pipeline Neo - Testing Documentation
+# Pipeline Neo — Test Suite
 
-This directory contains the comprehensive test suite for Pipeline Neo, ensuring reliability, performance, and correctness across all supported FCPXML operations and timecode conversions.
+This directory contains the test suite for **Pipeline Neo**, a Swift 6 framework for Final Cut Pro FCPXML processing with SwiftTimecode integration. The tests ensure correctness, concurrency safety, and performance across parsing, timecode conversion, document and element operations, and all supported FCPXML versions and frame rates.
 
-## Test Structure
+---
+
+## Table of Contents
+
+1. [Test structure](#1-test-structure)
+2. [Running tests](#2-running-tests)
+3. [Test categories and coverage](#3-test-categories-and-coverage)
+4. [Supported frame rates](#4-supported-frame-rates)
+5. [FCPXML versions](#5-fcpxml-versions)
+6. [Performance tests](#6-performance-tests)
+7. [Writing and organising tests](#7-writing-and-organising-tests)
+8. [Continuous integration](#8-continuous-integration)
+9. [Debugging tests](#9-debugging-tests)
+10. [Contributing to tests](#10-contributing-to-tests)
+11. [Resources](#11-resources)
+
+---
+
+## 1. Test structure
 
 ```
 Tests/
-├── README.md                           # This file
+├── README.md                    # This file
 └── PipelineNeoTests/
-    ├── PipelineNeoTests.swift          # Main test suite
-    └── XCTestManifests.swift           # Linux test support
+    ├── PipelineNeoTests.swift   # Main test suite (67+ tests)
+    └── XCTestManifests.swift    # Linux test discovery
 ```
 
-## Test Categories
+- **PipelineNeoTests.swift** — Single test class `PipelineNeoTests` with shared dependencies (parser, timecode converter, document manager, error handler) injected in `setUpWithError`. All tests use these instances for consistency and to validate the modular, protocol-oriented API.
+- **XCTestManifests.swift** — Exposes the test cases for Swift Package Manager on Linux.
 
-### Core Functionality Tests
-- FCPXML Utility Tests - Core utility functions and conversions
-- XMLDocument Extension Tests - FCPXML document operations
-- XMLElement Extension Tests - FCPXML element creation and manipulation
-- CMTime Extension Tests - Time-related utilities and conversions
+---
 
-### SwiftTimecode Integration Tests
-- SwiftTimecode Integration - CMTime ↔ SwiftTimecode conversions
-- All FCPXML Supported Frame Rates - Comprehensive frame rate testing
-- Timecode Operations - Advanced timecode manipulations
-
-### Performance Tests
-- FCPXML Parsing Performance - Document parsing efficiency
-- Time Conversion Performance - Timecode conversion speed
-
-### Error Handling Tests
-- Invalid Input Handling - Graceful error recovery
-- Empty Document Handling - Edge case management
-
-### Concurrency Tests
-- Concurrent FCPXML Utility Access - Thread safety verification
-- Concurrent Document Access - Multi-threaded operations
-
-## Test Coverage
-
-### Supported Frame Rates
-Pipeline Neo tests all Final Cut Pro supported frame rates:
-- 23.976 fps (23.98)
-- 24 fps
-- 25 fps
-- 29.97 fps
-- 29.97 fps drop frame
-- 30 fps
-- 30 fps drop frame
-- 47.952 fps (47.95)
-- 48 fps
-- 50 fps
-- 59.94 fps
-- 59.94 fps drop frame
-- 60 fps
-- 60 fps drop frame
-- 100 fps
-- 119.88 fps
-- 119.88 fps drop frame
-- 120 fps
-- 120 fps drop frame
-
-### FCPXML Versions
-- FCPXML v1.5 through v1.13 support
-- DTD validation testing
-- Version-specific feature testing
-
-## Running Tests
+## 2. Running tests
 
 ### Swift Package Manager
+
 ```bash
 # Run all tests
 swift test
 
-# Run tests with verbose output
+# Verbose output
 swift test --verbose
 
-# Run specific test
-swift test --filter testTimecodeKitIntegration
+# Run a single test by name
+swift test --filter testAllSupportedFrameRates
+
+# Run tests matching a pattern
+swift test --filter PipelineNeoTests
 ```
 
 ### Xcode
-1. Open the project in Xcode
-2. Select the test target
-3. Press Cmd+U to run tests
-4. View results in the Test Navigator
 
-### Linux Support
-Tests include Linux compatibility through `XCTestManifests.swift`, ensuring cross-platform functionality.
+1. Open the package (e.g. **File → Open** the folder or `.swiftpm` workspace).
+2. Select the **PipelineNeo** scheme.
+3. **⌃⌘U** (or **Product → Test**) to run all tests.
+4. Use the **Test Navigator** (⌘6) to run or re-run individual tests.
 
-## Test Data
+### Linux
 
-### Sample FCPXML Documents
-- Empty FCPXML documents for basic functionality testing
-- Minimal valid FCPXML structures
-- Edge cases and error conditions
+Tests are discoverable on Linux via `XCTestManifests.swift`. Run with `swift test` in a Linux environment that provides XCTest.
 
-### Timecode Test Data
-- Various frame rates and time values
-- Drop frame and non-drop frame timecode
-- Boundary conditions and edge cases
+---
 
-## Performance Benchmarks
+## 3. Test categories and coverage
 
-### Current Performance Targets
-- FCPXML Parsing: < 1ms for basic documents
-- Time Conversion: < 1ms for 1000 conversions
-- Memory Usage: Efficient memory management for large documents
+The test file is organised with `// MARK: -` sections. Below is a concise map of **categories → tests** and what they cover.
 
-### Performance Monitoring
-- Continuous performance tracking
-- Regression detection
-- Baseline establishment for future comparisons
+| Category | Tests | What they cover |
+|----------|--------|------------------|
+| **Test dependencies / setup** | (shared) | `setUpWithError` / `tearDownWithError`; creation of parser, timecodeConverter, documentManager, errorHandler, FCPXMLUtility, FCPXMLService. |
+| **FCPXMLUtility** | `testFCPXMLUtilityInitialisation`, `testFilterElements`, `testCMTimeFromFCPXMLTime`, `testFCPXMLTimeFromCMTime`, `testConformTime` | Utility init, element filtering by `FCPXMLElementType`, CMTime ↔ FCPXML time string, time conforming to frame duration. |
+| **FCPXMLService** | `testFCPXMLServiceInitialisation`, `testCreateFCPXMLDocument`, `testTimecodeConversion`, `testCMTimeFromTimecode` | Service init, document creation, timecode and CMTime conversion via service. |
+| **Modular components** | `testParserComponent`, `testTimecodeConverterComponent`, `testDocumentManagerComponent`, `testErrorHandlerComponent` | Parser parse/validate, TimecodeConverter round-trip, DocumentManager create/add resource, ErrorHandler message formatting. |
+| **Modular utilities** | `testModularUtilitiesCreatePipeline` | `ModularUtilities.createPipeline()` returns a configured `FCPXMLService`. |
+| **Async / concurrency** | `testSwift6ConcurrencySendableServiceInTaskGroup`, `testAsyncParserComponent`, `testAsyncTimecodeConverterComponent`, `testAsyncDocumentManagerComponent`, `testAsyncFCPXMLService`, `testAsyncModularUtilities`, `testAsyncElementFiltering`, `testAsyncTimeConforming`, `testAsyncFCPXMLTimeStringConversion`, `testAsyncXMLElementOperations`, `testAsyncConcurrentOperations` | Sendable service in `TaskGroup`, async parser/timecode/document/service/utilities/element filtering/time conforming/FCPXML time/XML element ops; concurrent async operations. |
+| **Performance (basic)** | `testPerformanceFilterElements`, `testPerformanceTimecodeConversion` | Filter-elements and timecode conversion throughput. |
+| **Frame rate** | `testAllSupportedFrameRates`, `testDropFrameTimecode` | All 8 FCP-supported frame rates (timecode round-trip); drop-frame (29.97, 59.94). |
+| **Time values** | `testVariousTimeValues`, `testLargeTimeValues` | Various and large CMTime values; round-trip via timecode converter. |
+| **FCPXML time strings** | `testFCPXMLTimeStringFormats`, `testInvalidFCPXMLTimeStrings` | Valid `value/timescale` formats and round-trip; invalid strings (empty, malformed, wrong count) → `CMTime.zero`. |
+| **Time conforming** | `testTimeConformingWithDifferentFrameDurations` | `conform(time:toFrameDuration:)` for all 8 FCP frame durations; conformed time is multiple of frame duration. |
+| **Error handling** | `testErrorHandlerWithAllErrorTypes`, `testParserWithInvalidXML` | ErrorHandler for FCPXMLError cases; parser with invalid XML. |
+| **Document management** | `testDocumentManagerWithAllFCPXMLVersions`, `testDocumentManagerWithComplexStructure` | Document creation for FCPXML versions 1.5–1.14; add resources/sequences and validate structure. |
+| **Element filtering** | `testElementFilteringWithAllElementTypes`, `testElementFilteringWithExtendedElementTypes`, `testElementFilteringWithAllFCPXMLElementTypes` | Filter by core and extended types; filter by every `FCPXMLElementType` (full DTD element coverage). |
+| **Modular extensions** | `testCMTimeModularExtensionsWithAllFrameRates`, `testXMLElementModularExtensionsWithComplexAttributes`, `testXMLDocumentModularExtensionsWithComplexStructure` | CMTime timecode/fcpxmlTime/conformed with converter; XMLElement setAttribute/getAttribute/createChild; XMLDocument addResource/addSequence/isValid. |
+| **Performance (params)** | `testPerformanceTimecodeConversionAllFrameRates`, `testPerformanceDocumentCreation`, `testPerformanceElementFilteringLargeDataset` | Timecode conversion for all frame rates; document creation loop; element filtering over large dataset. |
+| **Edge cases** | `testEdgeCaseTimeValues`, `testConcurrencySafety` | Edge time values (zero, very small, large); concurrent timecode conversion (DispatchQueue). |
+| **FCPXMLElementType** | `testFCPXMLElementTypeTagNameAndIsInferred` | `tagName` and `isInferred` for multicam/compound/asset/sequence/clip/none. |
+| **FCPXMLError** | `testFCPXMLErrorAllCasesHaveDescription` | Every `FCPXMLError` case has non-empty `errorDescription`. |
+| **ModularUtilities API** | `testModularUtilitiesCreateCustomPipeline`, `testModularUtilitiesValidateDocumentReturnsErrorsForInvalidDocument`, `testModularUtilitiesProcessFCPXMLFromDataViaTempURL`, `testModularUtilitiesProcessMultipleFCPXML`, `testModularUtilitiesConvertTimecodes` | Custom pipeline; validateDocument (invalid doc); processFCPXML from URL; processMultipleFCPXML; convertTimecodes (placeholder). |
+| **XMLDocument extension** | `testXMLDocumentExtensionFcpxEventNamesAndAddEvents`, `testXMLDocumentExtensionResourceMatchingIDAndRemove`, `testXMLDocumentExtensionFcpxmlStringAndVersion`, `testXMLDocumentContentsOfFCPXMLInitializer` | fcpxEventNames, add(events:); resource(matchingID:), remove(resourceAtIndex:); fcpxmlString, fcpxmlVersion; `init(contentsOfFCPXML:)`. |
+| **XMLElement extension** | `testXMLElementExtensionFcpxTypeAndIsFCPX`, `testXMLElementExtensionFcpxTypeMediaWithFirstChildMulticamOrSequence`, `testXMLElementExtensionFcpxEventAndEventClips`, `testXMLElementExtensionFcpxDuration`, `testXMLElementExtensionEventClipsThrowsWhenNotEvent` | fcpxType (asset, sequence, clip, locator, media+multicam/sequence); isFCPXResource, isFCPXStoryElement; fcpxEvent, eventClips, addToEvent, removeFromEvent; fcpxDuration get/set; eventClips throws when not event. |
+| **Parser filter** | `testParserFilterMulticamAndCompoundResources`, `testFCPXMLUtilityDefaultForExtensions` | Filter media by first child (multicam/compound); `FCPXMLUtility.defaultForExtensions` filtering. |
 
-## Test Guidelines
+---
 
-### Writing New Tests
-1. Descriptive Names - Use clear, descriptive test method names
-2. Single Responsibility - Each test should verify one specific aspect
-3. Comprehensive Coverage - Test both success and failure scenarios
-4. Edge Cases - Include boundary conditions and error cases
-5. Performance - Add performance tests for time-critical operations
+## 4. Supported frame rates
 
-### Test Organisation
+Pipeline Neo targets the **eight frame rates** supported by Final Cut Pro for timeline and export:
+
+| Frame rate | SwiftTimecode / tests |
+|------------|------------------------|
+| 23.976 fps | `.fps23_976` |
+| 24 fps     | `.fps24` |
+| 25 fps     | `.fps25` |
+| 29.97 fps  | `.fps29_97` (drop-frame tested) |
+| 30 fps     | `.fps30` |
+| 50 fps     | `.fps50` |
+| 59.94 fps  | `.fps59_94` (drop-frame tested) |
+| 60 fps     | `.fps60` |
+
+These are collected in the test constant **`fcpSupportedFrameRates`** and used in:
+
+- `testAllSupportedFrameRates` — timecode round-trip for each rate.
+- `testCMTimeModularExtensionsWithAllFrameRates` — CMTime extension (timecode, fcpxmlTime, conform) for each rate.
+- `testTimeConformingWithDifferentFrameDurations` — conform to frame boundary for each rate (using the corresponding `CMTime` frame duration).
+- `testPerformanceTimecodeConversionAllFrameRates` — performance of timecode conversion across all rates.
+
+The FCPXML DTDs also mention other values (e.g. 47.95, 48, 90, 100, 119.88, 120) for attributes like `conform-rate srcFrameRate`. The codebase and this test suite focus on the eight standard FCP frame rates above.
+
+---
+
+## 5. FCPXML versions
+
+- **Document manager tests** create documents for **FCPXML 1.5 through 1.14** and assert valid structure and resource/sequence handling.
+- **Parsing and validation** use sample FCPXML that is valid for the declared version; invalid XML is covered in `testParserWithInvalidXML`.
+- **DTDs** are present under `Sources/PipelineNeo/FCPXML DTDs/` for reference and validation; the test suite does not exhaustively test every version-specific DTD attribute.
+
+---
+
+## 6. Performance tests
+
+Performance is measured with `measure { ... }`; XCTest reports duration and relative standard deviation.
+
+| Test | What is measured |
+|------|-------------------|
+| `testPerformanceFilterElements` | Filtering elements by type (repeated runs). |
+| `testPerformanceTimecodeConversion` | Timecode conversion (single frame rate, repeated). |
+| `testPerformanceTimecodeConversionAllFrameRates` | Timecode conversion for all 8 frame rates per iteration. |
+| `testPerformanceDocumentCreation` | Creating FCPXML documents and adding a resource in a loop. |
+| `testPerformanceElementFilteringLargeDataset` | Filtering a large set of elements by type. |
+
+Guidelines:
+
+- Keep each test fast (ideally &lt; 100 ms per iteration where possible).
+- Avoid heavy I/O or large in-memory documents unless the test is explicitly for that.
+- Use the same dependency injection (parser, documentManager, etc.) as the rest of the suite.
+
+---
+
+## 7. Writing and organising tests
+
+### Naming and placement
+
+- **Names:** `test<FeatureOrBehaviour>` (e.g. `testAllSupportedFrameRates`, `testParserWithInvalidXML`).
+- **Placement:** Add new tests under the appropriate `// MARK: - ...` section in `PipelineNeoTests.swift` so the table in [Test categories and coverage](#3-test-categories-and-coverage) stays accurate.
+
+### Structure (Arrange–Act–Assert)
+
 ```swift
-// MARK: - Test Category Name
+// MARK: - Your Category
+/// One-line summary of what this test validates.
 
-func testSpecificFunctionality() throws {
-    // Arrange - Set up test data
-    let utility = FCPXMLUtility()
-    
-    // Act - Perform the operation
-    let result = utility.someOperation()
-    
-    // Assert - Verify the result
+func testYourFeature() {
+    // Arrange — use shared utility, service, parser, etc.
+    let input = ...
+
+    // Act
+    let result = utility.someMethod(input)
+
+    // Assert
     XCTAssertNotNil(result)
-    XCTAssertEqual(result.expectedValue, actualValue)
+    XCTAssertEqual(result, expected)
 }
 ```
 
-### Async Testing
+### Async tests
+
 ```swift
-func testAsyncOperation() async throws {
-    let utility = FCPXMLUtility()
-    let result = await utility.asyncOperation()
+func testAsyncFeature() async throws {
+    let result = await service.parseFCPXML(from: url)
     XCTAssertNotNil(result)
 }
 ```
 
-### Performance Testing
+### Performance tests
+
 ```swift
-func testPerformance() throws {
+func testPerformanceSomething() {
     measure {
-        // Code to measure
-        for _ in 0..<1000 {
+        for _ in 0..<100 {
             // Operation to benchmark
         }
     }
 }
 ```
 
-## Continuous Integration
+### Concurrency
 
-### GitHub Actions
-- Automated testing on every push and pull request
-- macOS testing with latest Xcode
-- Swift 6.0 compatibility verification
-- Performance regression detection
+- The test class is `@unchecked Sendable`; shared properties are set in `setUpWithError` and cleared in `tearDownWithError`.
+- Prefer `async` tests and `await` over raw threads. For concurrent behaviour, use `withTaskGroup` or async lets and assert inside the task (as in `testSwift6ConcurrencySendableServiceInTaskGroup`).
 
-### Test Requirements
-- All tests must pass before merging
-- Performance tests must meet baseline requirements
-- Code coverage should be maintained or improved
+---
 
-## Debugging Tests
+## 8. Continuous integration
 
-### Common Issues
-1. Concurrency Warnings - Ensure proper async/await usage
-2. Memory Leaks - Use proper cleanup in test teardown
-3. Timing Issues - Use appropriate timeouts for async operations
+- **GitHub Actions** (e.g. `.github/workflows/build.yml`) run on push/PR to the configured branches.
+- Jobs typically include:
+  - Build and unit tests (Xcode workspace, `xcodebuild`).
+  - Swift 6 tools version and, where applicable, strict concurrency (`-strict-concurrency=complete`).
+- **Requirements:** All tests must pass; no regressions in behaviour or (where baselines exist) performance.
 
-### Debug Techniques
-```swift
-// Add debug output
-print("Debug: \(someValue)")
+---
 
-// Use conditional compilation
-#if DEBUG
-print("Debug information")
-#endif
+## 9. Debugging tests
 
-// Break on specific conditions
-if someCondition {
-    print("Breakpoint condition met")
-}
-```
+- **Single test:** Run with `swift test --filter testMethodName` or run the single test in Xcode (click the diamond next to the method).
+- **Print / breakpoints:** Use `print(...)` or breakpoints; avoid leaving noisy prints in committed code.
+- **Async:** If a test hangs, check for missing `await` or blocking work on the main actor.
+- **Flakiness:** Prefer deterministic data and shared injected dependencies; avoid reliance on wall-clock time or unconstrained concurrency.
 
-## Contributing to Tests
+---
 
-### Adding New Tests
-1. Follow existing naming conventions
-2. Add tests to appropriate test categories
-3. Include both positive and negative test cases
-4. Update this README if adding new test categories
+## 10. Contributing to tests
 
-### Test Data Management
-- Keep test data minimal and focused
-- Use realistic but simple FCPXML examples
-- Document any special test data requirements
+1. **Add tests** for new behaviour or edge cases; place them in the right `// MARK: -` section and keep names descriptive.
+2. **Update this README** if you add a new category or change what a section covers (including the table in §3).
+3. **Frame rates:** Use **`fcpSupportedFrameRates`** when testing “all FCP frame rates”; do not hard-code a subset unless the test is explicitly for that subset (e.g. drop-frame only).
+4. **Test data:** Prefer minimal, in-memory FCPXML (e.g. string → `Data`) or small fixtures; document any assumption (e.g. file at temporary URL) in a comment or in this README.
 
-### Performance Considerations
-- Keep individual tests fast (< 100ms)
-- Use appropriate test data sizes
-- Avoid unnecessary setup/teardown overhead
+---
 
-## Future Testing Plans
+## 11. Resources
 
-### Planned Enhancements
-- Integration Tests - End-to-end workflow testing
-- Stress Tests - Large document processing
-- Memory Tests - Memory usage validation
-- API Compatibility Tests - Backward compatibility verification
-
-### Test Infrastructure
-- Test Data Generation - Automated test data creation
-- Performance Baselines - Automated performance regression detection
-- Coverage Reporting - Detailed code coverage analysis
-
-## Resources
-
-### Documentation
-- [XCTest Framework Documentation](https://developer.apple.com/documentation/xctest)
-- [Swift Testing Best Practices](https://developer.apple.com/documentation/xcode/testing-your-apps-in-xcode)
-- [Pipeline Neo API Documentation](../README.md)
-
-### External References
-- [Final Cut Pro XML Documentation](https://fcp.cafe/developers/fcpxml/)
-- [SwiftTimecode Documentation](https://github.com/orchetect/swift-timecode)
+- [XCTest](https://developer.apple.com/documentation/xctest) — Apple’s testing framework.
+- [Testing in Xcode](https://developer.apple.com/documentation/xcode/testing-your-apps-in-xcode) — Running and writing tests.
+- [Pipeline Neo README](../README.md) — Project overview and API usage.
+- [Final Cut Pro XML (FCPXML)](https://fcp.cafe/developers/fcpxml/) — FCPXML format reference.
+- [SwiftTimecode](https://github.com/orchetect/swift-timecode) — Timecode and frame rate types used by Pipeline Neo.

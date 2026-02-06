@@ -8,6 +8,8 @@ on:
       - '**/*.md'       # .md files anywhere in the repo
       - '**/LICENSE'    # LICENSE files anywhere in the repo
       - '**/.gitignore' # .gitignore files anywhere in the repo
+      - '**/*.cursorrules'  # .cursorrules files anywhere in the repo
+      - '**/.cursorrules'   # .cursorrules files anywhere in the repo
       
   pull_request:
     branches: [main]
@@ -26,6 +28,7 @@ env:
   SCHEME: "PipelineNeo-CI"
 
 jobs:
+  # Non-strict concurrency (default Swift / targeted mode)
   macOS:
     name: macOS
     runs-on: macos-15
@@ -35,10 +38,11 @@ jobs:
       with:
         xcode-version: latest-stable
     - name: Build
-      run: xcodebuild build -workspace ".swiftpm/xcode/package.xcworkspace" -scheme "$SCHEME" -destination "generic/platform=macOS,name=Any Mac" | xcbeautify && exit ${PIPESTATUS[0]}
+      run: xcodebuild build -workspace ".swiftpm/xcode/package.xcworkspace" -scheme "$SCHEME" -destination "generic/platform=macOS,name=Any Mac" | xcbeautify --renderer github-actions && exit ${PIPESTATUS[0]}
     - name: Unit Tests
-      run: xcodebuild test -workspace ".swiftpm/xcode/package.xcworkspace" -scheme "$SCHEME" -destination "platform=macOS" | xcbeautify && exit ${PIPESTATUS[0]}
+      run: xcodebuild test -workspace ".swiftpm/xcode/package.xcworkspace" -scheme "$SCHEME" -destination "platform=macOS" | xcbeautify --renderer github-actions && exit ${PIPESTATUS[0]}
   
+  # Non-strict concurrency, Swift 6 tools version
   macOS-swift6:
     name: macOS (Swift 6)
     runs-on: macos-15
@@ -50,6 +54,19 @@ jobs:
     - name: Set Package to Swift 6.0
       run: swift package tools-version --set "6.0"
     - name: Build
-      run: xcodebuild build -workspace ".swiftpm/xcode/package.xcworkspace" -scheme "$SCHEME" -destination "generic/platform=macOS,name=Any Mac" | xcbeautify && exit ${PIPESTATUS[0]}
+      run: xcodebuild build -workspace ".swiftpm/xcode/package.xcworkspace" -scheme "$SCHEME" -destination "generic/platform=macOS,name=Any Mac" | xcbeautify --renderer github-actions && exit ${PIPESTATUS[0]}
     - name: Unit Tests
-      run: xcodebuild test -workspace ".swiftpm/xcode/package.xcworkspace" -scheme "$SCHEME" -destination "platform=macOS" | xcbeautify && exit ${PIPESTATUS[0]} 
+      run: xcodebuild test -workspace ".swiftpm/xcode/package.xcworkspace" -scheme "$SCHEME" -destination "platform=macOS" | xcbeautify --renderer github-actions && exit ${PIPESTATUS[0]}
+  # Strict concurrency: -strict-concurrency=complete
+  macOS-swift6-strict-concurrency:
+    name: macOS (Swift 6 strict concurrency)
+    runs-on: macos-15
+    steps:
+    - uses: actions/checkout@main
+    - uses: maxim-lobanov/setup-xcode@v1
+      with:
+        xcode-version: latest-stable
+    - name: Build with strict concurrency
+      run: xcodebuild build -workspace ".swiftpm/xcode/package.xcworkspace" -scheme "$SCHEME" -destination "generic/platform=macOS,name=Any Mac" OTHER_SWIFT_FLAGS="-strict-concurrency=complete" | xcbeautify --renderer github-actions && exit ${PIPESTATUS[0]}
+    - name: Tests with strict concurrency
+      run: xcodebuild test -workspace ".swiftpm/xcode/package.xcworkspace" -scheme "$SCHEME" -destination "platform=macOS" OTHER_SWIFT_FLAGS="-strict-concurrency=complete" | xcbeautify --renderer github-actions && exit ${PIPESTATUS[0]}

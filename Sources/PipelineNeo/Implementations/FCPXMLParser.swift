@@ -5,6 +5,7 @@
 //
 
 import Foundation
+import SwiftExtensions
 
 /// Implementation of FCPXML parsing operations
 @available(macOS 12.0, *)
@@ -71,37 +72,43 @@ public final class FCPXMLParser: FCPXMLParsing, FCPXMLElementFiltering, Sendable
     
     // MARK: - FCPXMLElementFiltering Implementation
     
-    public func filter(elements: [XMLElement], ofTypes types: [FCPXMLElementType]) -> [XMLElement] {
+    /// Returns the name of the first child element (used for media → multicam/compound inference).
+    private static func firstChildElementName(of element: XMLElement) -> String? {
+        element.childElements.first.flatMap(\.name)
+    }
+
+    private static func filterElements(_ elements: [XMLElement], ofTypes types: [FCPXMLElementType]) -> [XMLElement] {
         return elements.filter { element in
             guard let elementName = element.name else { return false }
             return types.contains { type in
-                elementName == type.rawValue
+                if type == .multicamResource {
+                    guard elementName == "media" else { return false }
+                    return Self.firstChildElementName(of: element) == "multicam"
+                }
+                if type == .compoundResource {
+                    guard elementName == "media" else { return false }
+                    return Self.firstChildElementName(of: element) == "sequence"
+                }
+                return elementName == type.rawValue
             }
         }
     }
+
+    public func filter(elements: [XMLElement], ofTypes types: [FCPXMLElementType]) -> [XMLElement] {
+        return Self.filterElements(elements, ofTypes: types)
+    }
     
     public func findElements(withResourceID resourceID: String, in elements: [XMLElement]) -> [XMLElement] {
-        return elements.filter { element in
-            element.attribute(forName: "id")?.stringValue == resourceID
-        }
+        elements.filter { $0.stringValue(forAttributeNamed: "id") == resourceID }
     }
     
     // MARK: - FCPXMLElementFiltering Async Implementation
     
     public func filter(elements: [XMLElement], ofTypes types: [FCPXMLElementType]) async -> [XMLElement] {
-        // For now, just call the synchronous version
-        return elements.filter { element in
-            guard let elementName = element.name else { return false }
-            return types.contains { type in
-                elementName == type.rawValue
-            }
-        }
+        return Self.filterElements(elements, ofTypes: types)
     }
     
     public func findElements(withResourceID resourceID: String, in elements: [XMLElement]) async -> [XMLElement] {
-        // For now, just call the synchronous version
-        return elements.filter { element in
-            element.attribute(forName: "id")?.stringValue == resourceID
-        }
+        elements.filter { $0.stringValue(forAttributeNamed: "id") == resourceID }
     }
 } 

@@ -65,11 +65,15 @@ extension CMTime {
 	/// - Returns: A tuple with hours, minutes, seconds, and frames as Int and String values.
 	public func timeAsTimecode(usingFrameDuration frameDuration: CMTime, dropFrame: Bool) -> (hours: Int, minutes: Int, seconds: Int, frames: Int, hoursString: String, minutesString: String, secondsString: String, framesString: String, timecodeString: String, timecodeInSeconds: Double) {
 		
+		let frameDurationSeconds = frameDuration.seconds
+		guard frameDurationSeconds > 0, frameDurationSeconds.isFinite else {
+			return (0, 0, 0, 0, "00", "00", "00", "00", "00:00:00:00", 0)
+		}
 		let framerate: Double
 		if frameDuration == CMTime(value: 1001, timescale: 24000) { // If the framerate is 23.976, make the framerate 24 per SMPTE
 			framerate = 24.0
 		} else {
-			framerate = 1 / (frameDuration.seconds)
+			framerate = 1 / frameDurationSeconds
 		}
 		
 		// This block below provides correct timing readout for 23.98 NDF, 29.97 NDF and 59.98 NDF
@@ -82,7 +86,7 @@ extension CMTime {
 		case CMTime(value: 1001, timescale: 60000) where dropFrame == false:	// 59.98 NDF
 			numberOfFrames = self.seconds / CMTime(value: 100, timescale: 6000).seconds
 		default:
-			numberOfFrames = self.seconds / frameDuration.seconds
+			numberOfFrames = self.seconds / frameDurationSeconds
 		}
 		
 		// Round the number of frames so it's at a frame boundary
@@ -112,7 +116,7 @@ extension CMTime {
 			counter = hoursString + ":" + minutesString + ":" + secondsString + ":" + framesString
 		}
 		
-		let timecodeInSeconds = (hours * 60 * 60) + (minutes * 60) + seconds + (frames * frameDuration.seconds)
+		let timecodeInSeconds = (hours * 60 * 60) + (minutes * 60) + seconds + (frames * frameDurationSeconds)
 		
 		return (Int(hours), Int(minutes), Int(seconds), Int(frames), hoursString, minutesString, secondsString, framesString, counter, timecodeInSeconds)
 	}
