@@ -15,6 +15,8 @@
 - `FCPXMLError` and public option enums marked `Sendable`; error descriptions verified for all cases
 - AGENT.md and .cursorrules aligned with codebase (file structure including Errors and +Modular extensions, test count, concurrency notes); code blocks in README, AGENT, .cursorrules, and Tests/README commented for clarity
 
+---
+
 ### 1.0.2
 
 **Released:**
@@ -30,6 +32,8 @@
 - Updated version references from 1.6.13 to 3.0.0
 - All 66 tests passing with SwiftTimecode 3.0.0
 - Task-based concurrency avoided for Foundation XML types and SwiftTimecode types due to Sendable limitations
+
+---
 
 ### 1.0.1
 
