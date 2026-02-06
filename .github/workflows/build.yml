@@ -67,6 +67,6 @@ jobs:
       with:
         xcode-version: latest-stable
     - name: Build with strict concurrency
-      run: swift build -Xswiftc -strict-concurrency=complete
+      run: xcodebuild build -workspace ".swiftpm/xcode/package.xcworkspace" -scheme "$SCHEME" -destination "generic/platform=macOS,name=Any Mac" OTHER_SWIFT_FLAGS="-strict-concurrency=complete" | xcbeautify --renderer github-actions && exit ${PIPESTATUS[0]}
     - name: Tests with strict concurrency
-      run: swift test -Xswiftc -strict-concurrency=complete 
+      run: xcodebuild test -workspace ".swiftpm/xcode/package.xcworkspace" -scheme "$SCHEME" -destination "platform=macOS" OTHER_SWIFT_FLAGS="-strict-concurrency=complete" | xcbeautify --renderer github-actions && exit ${PIPESTATUS[0]}
