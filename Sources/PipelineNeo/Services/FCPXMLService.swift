@@ -130,7 +130,7 @@ public final class FCPXMLService: Sendable {
         }
     }
     
-    /// Asynchronously converts CMTime to TimecodeKit Timecode
+    /// Asynchronously converts CMTime to SwiftTimecode Timecode
     /// - Parameters:
     ///   - time: CMTime to convert
     ///   - frameRate: Target frame rate
@@ -139,7 +139,7 @@ public final class FCPXMLService: Sendable {
         return await timecodeConverter.timecode(from: time, frameRate: frameRate)
     }
     
-    /// Asynchronously converts TimecodeKit Timecode to CMTime
+    /// Asynchronously converts SwiftTimecode Timecode to CMTime
     /// - Parameter timecode: Timecode to convert
     /// - Returns: CMTime
     public func cmTime(from timecode: Timecode) async -> CMTime {

@@ -100,7 +100,11 @@ public final class TimecodeConverter: TimecodeConversion, FCPXMLTimeStringConver
     // MARK: - TimeConforming Implementation
     
     public func conform(time: CMTime, toFrameDuration frameDuration: CMTime) -> CMTime {
-        let frameCount = CMTimeGetSeconds(time) / CMTimeGetSeconds(frameDuration)
+        let frameDurationSeconds = CMTimeGetSeconds(frameDuration)
+        guard frameDurationSeconds > 0, frameDurationSeconds.isFinite else {
+            return .zero
+        }
+        let frameCount = CMTimeGetSeconds(time) / frameDurationSeconds
         let roundedFrames = round(frameCount)
         return CMTimeMultiply(frameDuration, multiplier: Int32(roundedFrames))
     }
@@ -108,8 +112,11 @@ public final class TimecodeConverter: TimecodeConversion, FCPXMLTimeStringConver
     // MARK: - TimeConforming Async Implementation
     
     public func conform(time: CMTime, toFrameDuration frameDuration: CMTime) async -> CMTime {
-        // For now, just call the synchronous version
-        let frameCount = CMTimeGetSeconds(time) / CMTimeGetSeconds(frameDuration)
+        let frameDurationSeconds = CMTimeGetSeconds(frameDuration)
+        guard frameDurationSeconds > 0, frameDurationSeconds.isFinite else {
+            return .zero
+        }
+        let frameCount = CMTimeGetSeconds(time) / frameDurationSeconds
         let roundedFrames = round(frameCount)
         return CMTimeMultiply(frameDuration, multiplier: Int32(roundedFrames))
     }

@@ -35,7 +35,7 @@ public protocol TimecodeConversion: Sendable {
     
     // MARK: - Async Methods
     
-    /// Asynchronously converts CMTime to TimecodeKit Timecode
+    /// Asynchronously converts CMTime to SwiftTimecode Timecode
     /// - Parameters:
     ///   - time: The CMTime to convert
     ///   - frameRate: The target frame rate

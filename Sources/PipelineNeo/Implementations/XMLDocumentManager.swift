@@ -96,7 +96,9 @@ public final class XMLDocumentManager: XMLDocumentOperations, XMLElementOperatio
     }
     
     public func setAttribute(name: String, value: String, on element: XMLElement) {
-        element.setAttributesAs([name: value])
+        element.removeAttribute(forName: name)
+        let attr = XMLNode.attribute(withName: name, stringValue: value) as! XMLNode
+        element.addAttribute(attr)
     }
     
     public func getAttribute(name: String, from element: XMLElement) -> String? {
@@ -118,8 +120,9 @@ public final class XMLDocumentManager: XMLDocumentOperations, XMLElementOperatio
     }
     
     public func setAttribute(name: String, value: String, on element: XMLElement) async {
-        // For now, just call the synchronous version
-        element.setAttributesAs([name: value])
+        element.removeAttribute(forName: name)
+        let attr = XMLNode.attribute(withName: name, stringValue: value) as! XMLNode
+        element.addAttribute(attr)
     }
     
     public func getAttribute(name: String, from element: XMLElement) async -> String? {

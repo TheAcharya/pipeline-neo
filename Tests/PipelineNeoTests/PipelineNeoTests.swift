@@ -571,12 +571,16 @@ final class PipelineNeoTests: XCTestCase, @unchecked Sendable {
     /// conform(time:toFrameDuration:) for multiple frame durations; conformed time is multiple of frame duration.
 
     func testTimeConformingWithDifferentFrameDurations() {
+        // All FCP-supported frame rates as frame durations (23.976, 24, 25, 29.97, 30, 50, 59.94, 60)
         let frameDurations: [CMTime] = [
-            CMTime(value: 1, timescale: 24),   // 24fps
-            CMTime(value: 1, timescale: 25),   // 25fps
-            CMTime(value: 1, timescale: 30),   // 30fps
-            CMTime(value: 1001, timescale: 24000), // 23.976fps
-            CMTime(value: 1001, timescale: 30000), // 29.97fps
+            CMTime(value: 1, timescale: 24),           // 24 fps
+            CMTime(value: 1, timescale: 25),           // 25 fps
+            CMTime(value: 1, timescale: 30),           // 30 fps
+            CMTime(value: 1, timescale: 50),           // 50 fps
+            CMTime(value: 1, timescale: 60),            // 60 fps
+            CMTime(value: 1001, timescale: 24000),     // 23.976 fps
+            CMTime(value: 1001, timescale: 30000),     // 29.97 fps
+            CMTime(value: 1001, timescale: 60000),     // 59.94 fps
         ]
         
         let testTime = CMTime(value: 1001, timescale: 24000)
@@ -719,6 +723,33 @@ final class PipelineNeoTests: XCTestCase, @unchecked Sendable {
         let elements = extendedTypes.map { XMLElement(name: $0.tagName) }
         for type in extendedTypes {
             let filtered = utility.filter(fcpxElements: elements, ofTypes: [type])
+            XCTAssertEqual(filtered.count, 1, "Should filter to exactly 1 element of type: \(type)")
+            XCTAssertEqual(filtered.first?.name, type.tagName, "Filtered element should match tagName: \(type.tagName)")
+        }
+    }
+
+    /// Verifies that filtering works for every FCPXMLElementType (full DTD element coverage).
+    /// For each type, builds a minimal element set containing one element of that type and asserts filter returns it.
+    func testElementFilteringWithAllFCPXMLElementTypes() {
+        func singleElement(for type: FCPXMLElementType) -> XMLElement? {
+            switch type {
+            case .none:
+                return nil
+            case .multicamResource:
+                let media = XMLElement(name: "media")
+                media.addChild(XMLElement(name: "multicam"))
+                return media
+            case .compoundResource:
+                let media = XMLElement(name: "media")
+                media.addChild(XMLElement(name: "sequence"))
+                return media
+            default:
+                return XMLElement(name: type.tagName)
+            }
+        }
+        for type in FCPXMLElementType.allCases where type != .none {
+            guard let element = singleElement(for: type) else { continue }
+            let filtered = utility.filter(fcpxElements: [element], ofTypes: [type])
             XCTAssertEqual(filtered.count, 1, "Should filter to exactly 1 element of type: \(type)")
             XCTAssertEqual(filtered.first?.name, type.tagName, "Filtered element should match tagName: \(type.tagName)")
         }
