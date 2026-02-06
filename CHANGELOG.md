@@ -2,7 +2,7 @@
 
 ### 1.1.0
 
-**Released:**
+**🎉 Released:**
 - 6th February 2026
 
 **🔧 Improvements:**
@@ -18,7 +18,7 @@
 
 ### 1.0.2
 
-**Released:**
+**🎉 Released:**
 - 30th November 2025
 
 **🔧 Improvements:**
@@ -36,7 +36,7 @@
 
 ### 1.0.1
 
-**Released:**
+**🎉 Released:**
 - 11th July 2025
 
 **🔧 Improvements:**
