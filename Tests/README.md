@@ -5,6 +5,7 @@ This directory contains the comprehensive test suite for Pipeline Neo, ensuring 
 ## Test Structure
 
 ```
+Test directory layout for Pipeline Neo:
 Tests/
 ├── README.md                           # This file
 └── PipelineNeoTests/
@@ -62,7 +63,7 @@ Pipeline Neo tests all Final Cut Pro supported frame rates:
 - 120 fps drop frame
 
 ### FCPXML Versions
-- FCPXML v1.5 through v1.13 support
+- FCPXML v1.5 through v1.14 support
 - DTD validation testing
 - Version-specific feature testing
 
@@ -70,13 +71,13 @@ Pipeline Neo tests all Final Cut Pro supported frame rates:
 
 ### Swift Package Manager
 ```bash
-# Run all tests
+# Run all tests.
 swift test
 
-# Run tests with verbose output
+# Run tests with verbose output.
 swift test --verbose
 
-# Run specific test
+# Run a single test by name.
 swift test --filter testTimecodeKitIntegration
 ```
 
@@ -124,6 +125,7 @@ Tests include Linux compatibility through `XCTestManifests.swift`, ensuring cros
 
 ### Test Organisation
 ```swift
+// Example: Arrange-Act-Assert pattern with a category marker.
 // MARK: - Test Category Name
 
 func testSpecificFunctionality() throws {
@@ -141,6 +143,7 @@ func testSpecificFunctionality() throws {
 
 ### Async Testing
 ```swift
+// Example: async test using await; use async throws for operations that can fail.
 func testAsyncOperation() async throws {
     let utility = FCPXMLUtility()
     let result = await utility.asyncOperation()
@@ -150,6 +153,7 @@ func testAsyncOperation() async throws {
 
 ### Performance Testing
 ```swift
+// Example: use measure { } to benchmark a block; XCTest reports timing.
 func testPerformance() throws {
     measure {
         // Code to measure
@@ -182,15 +186,15 @@ func testPerformance() throws {
 
 ### Debug Techniques
 ```swift
-// Add debug output
+// Add debug output to inspect values during test runs.
 print("Debug: \(someValue)")
 
-// Use conditional compilation
+// Use conditional compilation so debug code is excluded from release.
 #if DEBUG
 print("Debug information")
 #endif
 
-// Break on specific conditions
+// Break on specific conditions by setting a breakpoint on the print line.
 if someCondition {
     print("Breakpoint condition met")
 }

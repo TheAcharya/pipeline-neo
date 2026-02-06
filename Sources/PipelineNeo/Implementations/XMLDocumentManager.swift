@@ -5,6 +5,7 @@
 //
 
 import Foundation
+import SwiftExtensions
 
 /// Implementation of XML document operations
 @available(macOS 12.0, *)
@@ -26,7 +27,7 @@ public final class XMLDocumentManager: XMLDocumentOperations, XMLElementOperatio
     public func addResource(_ resource: XMLElement, to document: XMLDocument) {
         guard let rootElement = document.rootElement() else { return }
         
-        var resourcesElement = rootElement.elements(forName: "resources").first
+        var resourcesElement = rootElement.firstChildElement(named: "resources")
         if resourcesElement == nil {
             resourcesElement = XMLElement(name: "resources")
             rootElement.addChild(resourcesElement!)
@@ -61,7 +62,7 @@ public final class XMLDocumentManager: XMLDocumentOperations, XMLElementOperatio
         // For now, just call the synchronous version
         guard let rootElement = document.rootElement() else { return }
         
-        var resourcesElement = rootElement.elements(forName: "resources").first
+        var resourcesElement = rootElement.firstChildElement(named: "resources")
         if resourcesElement == nil {
             resourcesElement = XMLElement(name: "resources")
             rootElement.addChild(resourcesElement!)
@@ -99,7 +100,7 @@ public final class XMLDocumentManager: XMLDocumentOperations, XMLElementOperatio
     }
     
     public func getAttribute(name: String, from element: XMLElement) -> String? {
-        return element.attribute(forName: name)?.stringValue
+        element.stringValue(forAttributeNamed: name)
     }
     
     // MARK: - XMLElementOperations Async Implementation
@@ -122,7 +123,6 @@ public final class XMLDocumentManager: XMLDocumentOperations, XMLElementOperatio
     }
     
     public func getAttribute(name: String, from element: XMLElement) async -> String? {
-        // For now, just call the synchronous version
-        return element.attribute(forName: name)?.stringValue
+        element.stringValue(forAttributeNamed: name)
     }
 } 

@@ -10,7 +10,7 @@ import SwiftTimecode
 
 /// Utility functions for modular FCPXML operations
 @available(macOS 12.0, *)
-public struct ModularUtilities {
+public struct ModularUtilities: Sendable {
     
     /// Creates a complete FCPXML processing pipeline with all dependencies
     /// - Returns: Configured FCPXMLService

@@ -7,6 +7,7 @@
 import Foundation
 import CoreMedia
 import SwiftTimecode
+import SwiftExtensions
 
 /// Implementation of timecode conversion operations
 @available(macOS 12.0, *)
@@ -66,8 +67,9 @@ public final class TimecodeConverter: TimecodeConversion, FCPXMLTimeStringConver
     public func cmTime(fromFCPXMLTime timeString: String) -> CMTime {
         let components = timeString.components(separatedBy: "/")
         guard components.count == 2,
-              let numerator = Int64(components[0]),
-              let denominator = Int32(components[1]) else {
+              let numerator = components[safe: 0].flatMap({ Int64($0) }),
+              let denominator = components[safe: 1].flatMap({ Int32($0) }),
+              denominator != 0 else {
             return CMTime.zero
         }
         return CMTime(value: numerator, timescale: denominator)
@@ -80,11 +82,11 @@ public final class TimecodeConverter: TimecodeConversion, FCPXMLTimeStringConver
     // MARK: - FCPXMLTimeStringConversion Async Implementation
     
     public func cmTime(fromFCPXMLTime timeString: String) async -> CMTime {
-        // For now, just call the synchronous version
         let components = timeString.components(separatedBy: "/")
         guard components.count == 2,
-              let numerator = Int64(components[0]),
-              let denominator = Int32(components[1]) else {
+              let numerator = components[safe: 0].flatMap({ Int64($0) }),
+              let denominator = components[safe: 1].flatMap({ Int32($0) }),
+              denominator != 0 else {
             return CMTime.zero
         }
         return CMTime(value: numerator, timescale: denominator)

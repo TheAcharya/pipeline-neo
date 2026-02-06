@@ -1,4 +1,6 @@
 // swift-tools-version: 6.0
+// Pipeline Neo supports Swift 6 concurrency: Sendable protocols/implementations,
+// async/await APIs, and builds with -strict-concurrency=complete (see CI).
 
 import PackageDescription
 
@@ -13,12 +15,16 @@ let package = Package(
             targets: ["PipelineNeo"]),
     ],
     dependencies: [
-        .package(url: "https://github.com/orchetect/swift-timecode", from: "3.0.0")
+        .package(url: "https://github.com/orchetect/swift-timecode", from: "3.0.0"),
+        .package(url: "https://github.com/orchetect/swift-extensions", from: "2.0.0")
     ],
     targets: [
         .target(
             name: "PipelineNeo",
-            dependencies: [.product(name: "SwiftTimecode", package: "swift-timecode")],
+            dependencies: [
+                .product(name: "SwiftTimecode", package: "swift-timecode"),
+                .product(name: "SwiftExtensions", package: "swift-extensions")
+            ],
             resources: [
                 .process("FCPXML DTDs")
             ]),
