@@ -6,7 +6,7 @@
 - 6th February 2026
 
 **🔧 Improvements:**
-- Integrated **SwiftExtensions** (orchetect/swift-extensions 2.0.0+)
+- Integrated [swift-extensions](https://github.com/orchetect/swift-extensions)
 - Added DTD and version support for 1.14; documentation, tests, and CI now cover 1.5 through 1.14
 - Full DTD element-type coverage via `FCPXMLElementType`: tag names, inferred types (e.g. media by first child), and filtering by type across the parser and utility
 - Single injection point for extension APIs via `FCPXMLUtility.defaultForExtensions`; extensions no longer instantiate concrete types internally; custom pipelines use the modular API with dependency injection
