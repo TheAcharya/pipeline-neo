@@ -1,7 +1,11 @@
 //
 //  XMLElement+Modular.swift
 //  Pipeline Neo • https://github.com/TheAcharya/pipeline-neo
-//  © 2025 • Licensed under MIT License
+//  © 2026 • Licensed under MIT License
+
+
+//
+//	Modular XMLElement extensions with dependency-injected operations.
 //
 
 import Foundation

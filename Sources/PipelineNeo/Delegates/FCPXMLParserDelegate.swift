@@ -1,62 +1,53 @@
 //
 //  FCPXMLParserDelegate.swift
 //  Pipeline Neo • https://github.com/TheAcharya/pipeline-neo
-//  © 2025 • Licensed under MIT License
-//
+//  © 2026 • Licensed under MIT License
 
+
+//
+//	XML parser delegate for FCPXML document structure parsing.
+//
 
 import Foundation
 
 /// An XMLParser delegate for parsing roles and IDs from FCPXML documents.
 @available(macOS 12.0, *)
-final class FCPXMLParserDelegate: NSObject, XMLParserDelegate, @unchecked Sendable {
+final class FCPXMLParserDelegate: NSObject, XMLParserDelegate {
     
-    /// All roles found by the parser
+    /// Unique roles found by the parser (insertion-ordered).
     private var foundRoles: [String] = []
+    private var roleSet: Set<String> = []
     
-    /// All resource IDs found by the parser
+    /// Unique resource IDs found by the parser (insertion-ordered).
     private var foundResourceIDs: [String] = []
+    private var resourceIDSet: Set<String> = []
     
-    /// All text style IDs found by the parser
+    /// Unique text style IDs found by the parser (insertion-ordered).
     private var foundTextStyleIDs: [String] = []
+    private var textStyleIDSet: Set<String> = []
     
     override init() {
         super.init()
     }
     
     func parser(_ parser: XMLParser, didStartElement elementName: String, namespaceURI: String?, qualifiedName qName: String?, attributes attributeDict: [String : String] = [:]) {
-        
-        // Parse roles
-        if let role = attributeDict["role"] {
-            if !foundRoles.contains(role) {
-                foundRoles.append(role)
-            }
+        if let role = attributeDict["role"], roleSet.insert(role).inserted {
+            foundRoles.append(role)
         }
-        
-        // Parse resource IDs
-        if let id = attributeDict["id"] {
-            if !foundResourceIDs.contains(id) {
-                foundResourceIDs.append(id)
-            }
+        if let id = attributeDict["id"], resourceIDSet.insert(id).inserted {
+            foundResourceIDs.append(id)
         }
-        
-        // Parse text style IDs
-        if let textStyleID = attributeDict["textStyleID"] {
-            if !foundTextStyleIDs.contains(textStyleID) {
-                foundTextStyleIDs.append(textStyleID)
-            }
+        if let textStyleID = attributeDict["textStyleID"], textStyleIDSet.insert(textStyleID).inserted {
+            foundTextStyleIDs.append(textStyleID)
         }
     }
     
-    func getRoles() -> [String] {
-        return foundRoles
-    }
+    /// The unique roles found during parsing.
+    var roles: [String] { foundRoles }
     
-    func getResourceIDs() -> [String] {
-        return foundResourceIDs
-    }
+    /// The unique resource IDs found during parsing.
+    var resourceIDs: [String] { foundResourceIDs }
     
-    func getTextStyleIDs() -> [String] {
-        return foundTextStyleIDs
-    }
+    /// The unique text style IDs found during parsing.
+    var textStyleIDs: [String] { foundTextStyleIDs }
 }

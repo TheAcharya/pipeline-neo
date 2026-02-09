@@ -1,41 +1,53 @@
 //
 //  FCPXMLUtility.swift
 //  Pipeline Neo • https://github.com/TheAcharya/pipeline-neo
-//  © 2025 • Licensed under MIT License
+//  © 2026 • Licensed under MIT License
+
+
+//
+//	Utility methods for FCPXML processing; single injection point for extension APIs.
 //
 
 import Foundation
 import CoreMedia
 import SwiftTimecode
 
-#if canImport(Logging)
-import Logging
-#endif
-
 /// Contains miscellaneous utility methods for processing FCPXML data with modern Swift concurrency support.
 @available(macOS 12.0, *)
-public final class FCPXMLUtility: @unchecked Sendable {
+public final class FCPXMLUtility: Sendable {
 	
 	// MARK: - Dependencies
-	
+
 	private let parser: FCPXMLParsing & FCPXMLElementFiltering
 	private let timecodeConverter: TimecodeConversion & FCPXMLTimeStringConversion & TimeConforming
 	private let documentManager: XMLDocumentOperations & XMLElementOperations
 	private let errorHandler: ErrorHandling
-	
+	private let logger: PipelineLogger
+	private let cutDetector: CutDetection
+	private let versionConverter: FCPXMLVersionConverting
+	private let mediaExtractor: MediaExtraction
+
 	// MARK: - Initializing
-	
+
 	/// Initializer with dependency injection
 	public init(
 		parser: FCPXMLParsing & FCPXMLElementFiltering = FCPXMLParser(),
 		timecodeConverter: TimecodeConversion & FCPXMLTimeStringConversion & TimeConforming = TimecodeConverter(),
 		documentManager: XMLDocumentOperations & XMLElementOperations = XMLDocumentManager(),
-		errorHandler: ErrorHandling = ErrorHandler()
+		errorHandler: ErrorHandling = ErrorHandler(),
+		cutDetector: CutDetection = CutDetector(),
+		versionConverter: FCPXMLVersionConverting = FCPXMLVersionConverter(),
+		mediaExtractor: MediaExtraction = MediaExtractor(),
+		logger: PipelineLogger = NoOpPipelineLogger()
 	) {
 		self.parser = parser
 		self.timecodeConverter = timecodeConverter
 		self.documentManager = documentManager
 		self.errorHandler = errorHandler
+		self.cutDetector = cutDetector
+		self.versionConverter = versionConverter
+		self.mediaExtractor = mediaExtractor
+		self.logger = logger
 	}
 
 	// MARK: - Default for Extension APIs
@@ -66,7 +78,7 @@ public final class FCPXMLUtility: @unchecked Sendable {
 	///   - timecodeFrames: The frames element of the timecode value.
 	///   - frameDuration: The duration of a single frame as a CMTime value.
 	/// - Returns: A CMTime value equivalent to the timecode value in real time.
-	public func CMTimeFrom(timecodeHours: Int, timecodeMinutes: Int, timecodeSeconds: Int, timecodeFrames: Int, frameDuration: CMTime) -> CMTime {
+	public func cmTimeFrom(timecodeHours: Int, timecodeMinutes: Int, timecodeSeconds: Int, timecodeFrames: Int, frameDuration: CMTime) -> CMTime {
 		return timecodeConverter.cmTimeFrom(timecodeHours: timecodeHours, timecodeMinutes: timecodeMinutes, timecodeSeconds: timecodeSeconds, timecodeFrames: timecodeFrames, frameDuration: frameDuration)
 	}
 
@@ -74,7 +86,7 @@ public final class FCPXMLUtility: @unchecked Sendable {
 	///
 	/// - Parameter timeString: The FCPXML time value as a string.
 	/// - Returns: The equivalent CMTime value.
-	public func CMTime(fromFCPXMLTime timeString: String) -> CMTime {
+	public func cmTime(fromFCPXMLTime timeString: String) -> CoreMedia.CMTime {
 		return timecodeConverter.cmTime(fromFCPXMLTime: timeString)
 	}
 	
@@ -94,6 +106,83 @@ public final class FCPXMLUtility: @unchecked Sendable {
 	/// - Returns: A CMTime of the conformed value.
 	public func conform(time: CMTime, toFrameDuration frameDuration: CMTime) -> CMTime {
 		return timecodeConverter.conform(time: time, toFrameDuration: frameDuration)
+	}
+
+	/// Detects edit points (cuts) in the first project spine of the document.
+	/// - Parameter document: Parsed FCPXML document.
+	/// - Returns: Result with edit points and counts (same-clip vs different-clips, hard cut / transition / gap).
+	public func detectCuts(in document: XMLDocument) -> CutDetectionResult {
+		cutDetector.detectCuts(in: document)
+	}
+
+	/// Detects edit points (cuts) in the given spine element.
+	/// - Parameter spine: An FCPXML `spine` XMLElement.
+	/// - Returns: Result with edit points and counts.
+	public func detectCuts(inSpine spine: XMLElement) -> CutDetectionResult {
+		cutDetector.detectCuts(inSpine: spine)
+	}
+
+	/// Asynchronously detects edit points (cuts) in the first project spine of the document.
+	public func detectCuts(in document: XMLDocument) async -> CutDetectionResult {
+		await cutDetector.detectCuts(in: document)
+	}
+
+	/// Asynchronously detects edit points (cuts) in the given spine element.
+	public func detectCuts(inSpine spine: XMLElement) async -> CutDetectionResult {
+		await cutDetector.detectCuts(inSpine: spine)
+	}
+
+	/// Converts the document to the target FCPXML version (e.g. 1.14 → 1.10).
+	public func convertToVersion(_ document: XMLDocument, targetVersion: FCPXMLVersion) throws -> XMLDocument {
+		try versionConverter.convert(document, to: targetVersion)
+	}
+
+	/// Saves the document as a single .fcpxml file.
+	public func saveAsFCPXML(_ document: XMLDocument, to url: URL) throws {
+		try documentManager.saveDocument(document, to: url)
+	}
+
+	/// Saves the document as a .fcpxmld bundle. Only supported when document version is 1.10 or higher.
+	/// - Throws: `FCPXMLBundleExportError.bundleRequiresVersion1_10OrHigher` if version < 1.10.
+	public func saveAsBundle(_ document: XMLDocument, to outputDirectory: URL, bundleName: String) throws -> URL {
+		let exporter = FCPXMLBundleExporter(version: .v1_10)
+		return try exporter.saveDocumentAsBundle(document, to: outputDirectory, bundleName: bundleName)
+	}
+
+	/// Asynchronously converts the document to the target FCPXML version.
+	public func convertToVersion(_ document: XMLDocument, targetVersion: FCPXMLVersion) async throws -> XMLDocument {
+		try await versionConverter.convert(document, to: targetVersion)
+	}
+
+	/// Asynchronously saves the document as a .fcpxml file.
+	public func saveAsFCPXML(_ document: XMLDocument, to url: URL) async throws {
+		try await documentManager.saveDocument(document, to: url)
+	}
+
+	/// Asynchronously saves the document as a .fcpxmld bundle (document version must be 1.10 or higher).
+	public func saveAsBundle(_ document: XMLDocument, to outputDirectory: URL, bundleName: String) async throws -> URL {
+		let exporter = FCPXMLBundleExporter(version: .v1_10)
+		return try exporter.saveDocumentAsBundle(document, to: outputDirectory, bundleName: bundleName)
+	}
+
+	/// Extracts media references (asset media-rep src, locator url) from the document.
+	public func extractMediaReferences(from document: XMLDocument, baseURL: URL? = nil) -> MediaExtractionResult {
+		mediaExtractor.extractMediaReferences(from: document, baseURL: baseURL)
+	}
+
+	/// Copies referenced media files (file URLs only) to the destination directory; deduplicates by source URL.
+	public func copyReferencedMedia(from document: XMLDocument, to destinationURL: URL, baseURL: URL? = nil) -> MediaCopyResult {
+		mediaExtractor.copyReferencedMedia(from: document, to: destinationURL, baseURL: baseURL)
+	}
+
+	/// Asynchronously extracts media references from the document.
+	public func extractMediaReferences(from document: XMLDocument, baseURL: URL? = nil) async -> MediaExtractionResult {
+		await mediaExtractor.extractMediaReferences(from: document, baseURL: baseURL)
+	}
+
+	/// Asynchronously copies referenced media files to the destination directory.
+	public func copyReferencedMedia(from document: XMLDocument, to destinationURL: URL, baseURL: URL? = nil) async -> MediaCopyResult {
+		await mediaExtractor.copyReferencedMedia(from: document, to: destinationURL, baseURL: baseURL)
 	}
 	
 	/// Converts a project counter value to the project's timecode.
@@ -240,7 +329,10 @@ public final class FCPXMLUtility: @unchecked Sendable {
 		}
 		
 		var startTime: CMTime
-		let clipParentElement = clip.parent as! XMLElement
+		guard let clipParentElement = clip.parent as? XMLElement else {
+			debugLog("clipParentElement is nil or not XMLElement")
+			return nil
+		}
 		if clipParentElement.name == "spine" && clipParentElement.fcpxOffset != nil { // If the clip is in a secondary storyline
 			
 			guard let spineOffset = clipParentElement.fcpxOffset else {
@@ -248,12 +340,12 @@ public final class FCPXMLUtility: @unchecked Sendable {
 				return nil
 			}
 			
-			guard let spineParent = clipParentElement.parent else {
-				debugLog("spineParent is nil")
+			guard let spineParent = clipParentElement.parent as? XMLElement else {
+				debugLog("spineParent is nil or not XMLElement")
 				return nil
 			}
 			
-			let spineParentElement = spineParent as! XMLElement
+			let spineParentElement = spineParent
 			
 			let newSpineOffset = CMTimeAdd(spineOffset, clipElementOffset)
 			
@@ -312,29 +404,23 @@ public final class FCPXMLUtility: @unchecked Sendable {
 	// MARK: - SwiftTimecode Integration
 	
 	/// Converts a CMTime to a SwiftTimecode Timecode object.
+	/// Delegates to the injected timecodeConverter.
 	///
 	/// - Parameters:
 	///   - time: The CMTime to convert
 	///   - frameRate: The frame rate for the timecode
 	/// - Returns: A Timecode object or nil if conversion fails
 	public func timecode(from time: CMTime, frameRate: TimecodeFrameRate) -> Timecode? {
-		do {
-			// Convert CMTime to real time (seconds) and create Timecode
-			let realTime = time.seconds
-			return try Timecode(.realTime(seconds: realTime), at: frameRate)
-		} catch {
-			return nil
-		}
+		return timecodeConverter.timecode(from: time, frameRate: frameRate)
 	}
 	
 	/// Converts a SwiftTimecode Timecode object to CMTime.
+	/// Delegates to the injected timecodeConverter.
 	///
 	/// - Parameter timecode: The Timecode object to convert
 	/// - Returns: A CMTime value
-	public func cmTime(from timecode: Timecode) -> CMTime {
-		// Convert Timecode to real time and create CMTime
-		let realTime = timecode.realTimeValue
-		return CoreMedia.CMTime(seconds: realTime, preferredTimescale: 60000)
+	public func cmTime(from timecode: Timecode) -> CoreMedia.CMTime {
+		return timecodeConverter.cmTime(from: timecode)
 	}
 	
 	// MARK: - Async Methods
@@ -419,7 +505,7 @@ public final class FCPXMLUtility: @unchecked Sendable {
 	///   - isInterlaced: A boolean value indicating if the format is interlaced.
 	///   - isSD16x9: A boolean value indicating if the format has an aspect ratio of 16:9.
 	/// - Returns: A string of the FFVideoFormat identifier.
-	public func FFVideoFormat(fromWidth width: Int, height: Int, frameRate: Float, isInterlaced: Bool, isSD16x9: Bool) -> String {
+	public func ffVideoFormat(fromWidth width: Int, height: Int, frameRate: Float, isInterlaced: Bool, isSD16x9: Bool) -> String {
 		
 		var ffVideoFormat = "FFVideoFormat"
 		let undefined = "FFVideoFormatRateUndefined"
@@ -524,7 +610,7 @@ public final class FCPXMLUtility: @unchecked Sendable {
 			return undefined
 		}
 		
-		if isInterlaced == false {
+		if !isInterlaced {
 			ffVideoFormat += "p"
 		} else {
 			if frameRate == 59.94 || frameRate == 50 {
@@ -534,24 +620,26 @@ public final class FCPXMLUtility: @unchecked Sendable {
 			}
 		}
 		
-		switch frameRate {
-		case 23.98:
+		// Use tolerance-based matching for frame rates to handle floating-point rounding
+		// (e.g. 23.976 may be rounded to 23.98 by callers).
+		let tolerance: Float = 0.05
+		if abs(frameRate - 23.976) < tolerance || abs(frameRate - 23.98) < tolerance {
 			ffVideoFormat += "2398"
-		case 24:
+		} else if abs(frameRate - 24) < tolerance {
 			ffVideoFormat += "24"
-		case 25:
+		} else if abs(frameRate - 25) < tolerance {
 			ffVideoFormat += "25"
-		case 29.97:
+		} else if abs(frameRate - 29.97) < tolerance {
 			ffVideoFormat += "2997"
-		case 30:
+		} else if abs(frameRate - 30) < tolerance {
 			ffVideoFormat += "30"
-		case 50:
+		} else if abs(frameRate - 50) < tolerance {
 			ffVideoFormat += "50"
-		case 59.94:
+		} else if abs(frameRate - 59.94) < tolerance {
 			ffVideoFormat += "5994"
-		case 60:
+		} else if abs(frameRate - 60) < tolerance {
 			ffVideoFormat += "60"
-		default:
+		} else {
 			return undefined
 		}
 		
@@ -562,15 +650,7 @@ public final class FCPXMLUtility: @unchecked Sendable {
 		return ffVideoFormat
 	}
 
-#if canImport(Logging)
-  	private static let logger = Logger(label: "PipelineNeo.FCPXMLUtility")
-
-  	private func debugLog(_ message: String) {
-		FCPXMLUtility.logger.debug("\(message)")
-	}
-#else
 	private func debugLog(_ message: String) {
-		print(message)
+		logger.log(level: .debug, message: message, metadata: nil)
 	}
-#endif
 }

@@ -1,7 +1,11 @@
 //
 //  FCPXMLParsing.swift
 //  Pipeline Neo • https://github.com/TheAcharya/pipeline-neo
-//  © 2025 • Licensed under MIT License
+//  © 2026 • Licensed under MIT License
+
+
+//
+//	Protocols for FCPXML parsing and element filtering operations.
 //
 
 import Foundation
@@ -21,9 +25,13 @@ public protocol FCPXMLParsing: Sendable {
     /// - Throws: FCPXMLError if parsing fails
     func parse(from url: URL) throws -> XMLDocument
     
-    /// Validates FCPXML document against DTD
-    /// - Parameter document: The XMLDocument to validate
-    /// - Returns: True if valid, false otherwise
+    /// Checks whether the document has a valid fcpxml root element.
+    ///
+    /// This is a lightweight structural check, not full DTD validation.
+    /// For semantic validation use `FCPXMLValidator`; for DTD validation use `FCPXMLDTDValidator`.
+    ///
+    /// - Parameter document: The XMLDocument to check
+    /// - Returns: True if the root element is `fcpxml`, false otherwise
     func validate(_ document: XMLDocument) -> Bool
     
     // MARK: - Async Methods
@@ -40,9 +48,9 @@ public protocol FCPXMLParsing: Sendable {
     /// - Throws: FCPXMLError if parsing fails
     func parse(from url: URL) async throws -> XMLDocument
     
-    /// Asynchronously validates FCPXML document against DTD
-    /// - Parameter document: The XMLDocument to validate
-    /// - Returns: True if valid, false otherwise
+    /// Asynchronously checks whether the document has a valid fcpxml root element.
+    /// - Parameter document: The XMLDocument to check
+    /// - Returns: True if the root element is `fcpxml`, false otherwise
     func validate(_ document: XMLDocument) async -> Bool
 }
 

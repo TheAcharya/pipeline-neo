@@ -1,19 +1,28 @@
 //
 //  ErrorHandler.swift
 //  Pipeline Neo • https://github.com/TheAcharya/pipeline-neo
-//  © 2025 • Licensed under MIT License
+//  © 2026 • Licensed under MIT License
+
+
+//
+//	Implementation of error handling and formatting.
 //
 
 import Foundation
 
-/// Implementation of error handling operations
+/// Default implementation of the `ErrorHandling` protocol.
+///
+/// Formats FCPXML errors into human-readable messages, with specific handling
+/// for each `FCPXMLError` case.
 @available(macOS 12.0, *)
 public final class ErrorHandler: ErrorHandling, Sendable {
     
+    /// Creates a new error handler.
     public init() {}
     
     // MARK: - ErrorHandling Implementation
     
+    /// Formats a parsing error into a descriptive message.
     public func handleParsingError(_ error: Error) -> String {
         if let fcpxmlError = error as? FCPXMLError {
             switch fcpxmlError {
@@ -34,10 +43,12 @@ public final class ErrorHandler: ErrorHandling, Sendable {
         return "Parsing error: \(error.localizedDescription)"
     }
     
+    /// Formats a validation error into a descriptive message.
     public func handleValidationError(_ error: Error) -> String {
         return "Validation error: \(error.localizedDescription)"
     }
     
+    /// Formats a timecode conversion error into a descriptive message.
     public func handleTimecodeError(_ error: Error) -> String {
         return "Timecode conversion error: \(error.localizedDescription)"
     }

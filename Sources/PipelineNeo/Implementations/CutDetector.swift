@@ -1,0 +1,125 @@
+//
+//  CutDetector.swift
+//  Pipeline Neo • https://github.com/TheAcharya/pipeline-neo
+//  © 2026 • Licensed under MIT License
+//
+//
+//	Default implementation of CutDetection: finds edit points on a spine and
+//	classifies them by boundary type and source relationship.
+//
+
+import Foundation
+import SwiftExtensions
+
+/// Default implementation of `CutDetection`.
+@available(macOS 12.0, *)
+public final class CutDetector: CutDetection, Sendable {
+
+    public init() {}
+
+    // MARK: - CutDetection (Sync)
+
+    public func detectCuts(in document: XMLDocument) -> CutDetectionResult {
+        guard let spine = _firstProjectSpine(in: document) else {
+            return .empty
+        }
+        return detectCuts(inSpine: spine)
+    }
+
+    public func detectCuts(inSpine spine: XMLElement) -> CutDetectionResult {
+        _detectCuts(inSpine: spine)
+    }
+
+    // MARK: - CutDetection (Async)
+
+    public func detectCuts(in document: XMLDocument) async -> CutDetectionResult {
+        guard let spine = _firstProjectSpine(in: document) else { return .empty }
+        return _detectCuts(inSpine: spine)
+    }
+
+    public func detectCuts(inSpine spine: XMLElement) async -> CutDetectionResult {
+        _detectCuts(inSpine: spine)
+    }
+
+    // MARK: - Private
+
+    private func _firstProjectSpine(in document: XMLDocument) -> XMLElement? {
+        guard let root = document.rootElement(), root.name == "fcpxml" else { return nil }
+        guard let project = _firstProjectUnder(root) else { return nil }
+        return project.fcpxProjectSpine
+    }
+
+    private func _firstProjectUnder(_ element: XMLElement) -> XMLElement? {
+        if element.fcpxType == .project { return element }
+        guard let children = element.children else { return nil }
+        for node in children {
+            guard node.kind == .element, let el = node as? XMLElement else { continue }
+            if let found = _firstProjectUnder(el) { return found }
+        }
+        return nil
+    }
+
+    private func _detectCuts(inSpine spine: XMLElement) -> CutDetectionResult {
+        let storyElements = Array(spine.fcpStoryElements)
+        guard storyElements.count >= 2 else { return .empty }
+
+        let clipIndices = storyElements.indices.filter { storyElements[$0].fcpxRef != nil }
+        guard clipIndices.count >= 2 else { return .empty }
+
+        var editPoints: [EditPoint] = []
+        for k in 0 ..< clipIndices.count - 1 {
+            let outIdx = clipIndices[k]
+            let inIdx = clipIndices[k + 1]
+            let outgoing = storyElements[outIdx]
+            let incoming = storyElements[inIdx]
+
+            let editType: EditPoint.EditType
+            let transitionName: String?
+            if inIdx == outIdx + 1 {
+                let between = storyElements[outIdx + 1]
+                if between.fcpxType == .transition {
+                    editType = .transition
+                    transitionName = between.fcpxName ?? between.getElementAttribute("name")
+                } else if between.fcpxType == .gap {
+                    editType = .gapCut
+                    transitionName = nil
+                } else {
+                    editType = .hardCut
+                    transitionName = nil
+                }
+            } else {
+                let firstBetween = storyElements[outIdx + 1]
+                if firstBetween.fcpxType == .transition {
+                    editType = .transition
+                    transitionName = firstBetween.fcpxName ?? firstBetween.getElementAttribute("name")
+                } else if firstBetween.fcpxType == .gap {
+                    editType = .gapCut
+                    transitionName = nil
+                } else {
+                    editType = .hardCut
+                    transitionName = nil
+                }
+            }
+
+            let timelineOffset = incoming.getElementAttribute("offset") ?? "0s"
+            let outRef = outgoing.fcpxRef
+            let inRef = incoming.fcpxRef
+            let sourceRelationship: EditPoint.SourceRelationship =
+                (outRef != nil && inRef != nil && outRef == inRef) ? .sameClip : .differentClips
+
+            let point = EditPoint(
+                index: editPoints.count,
+                timelineOffset: timelineOffset,
+                editType: editType,
+                sourceRelationship: sourceRelationship,
+                transitionName: transitionName,
+                outgoingClipName: outgoing.fcpxName,
+                incomingClipName: incoming.fcpxName,
+                outgoingClipRef: outRef,
+                incomingClipRef: inRef
+            )
+            editPoints.append(point)
+        }
+        return CutDetectionResult(editPoints: editPoints)
+    }
+}
