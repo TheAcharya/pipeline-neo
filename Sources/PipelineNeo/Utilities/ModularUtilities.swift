@@ -1,7 +1,11 @@
 //
 //  ModularUtilities.swift
 //  Pipeline Neo • https://github.com/TheAcharya/pipeline-neo
-//  © 2025 • Licensed under MIT License
+//  © 2026 • Licensed under MIT License
+
+
+//
+//	Pipeline creation, validation, and batch processing helpers.
 //
 
 import Foundation
@@ -34,153 +38,175 @@ public struct ModularUtilities: Sendable {
     ///   - timecodeConverter: Custom timecode converter
     ///   - documentManager: Custom document manager
     ///   - errorHandler: Custom error handler
+    ///   - logger: Optional logger (default: no-op)
     /// - Returns: Configured FCPXMLService
     public static func createCustomPipeline(
         parser: FCPXMLParsing & FCPXMLElementFiltering,
         timecodeConverter: TimecodeConversion & FCPXMLTimeStringConversion & TimeConforming,
         documentManager: XMLDocumentOperations & XMLElementOperations,
-        errorHandler: ErrorHandling
+        errorHandler: ErrorHandling,
+        logger: PipelineLogger = NoOpPipelineLogger()
     ) -> FCPXMLService {
         return FCPXMLService(
             parser: parser,
             timecodeConverter: timecodeConverter,
             documentManager: documentManager,
-            errorHandler: errorHandler
+            errorHandler: errorHandler,
+            logger: logger
         )
     }
     
-    /// Validates FCPXML document structure
-    /// - Parameters:
-    ///   - document: Document to validate
-    ///   - parser: Parser service for validation
-    /// - Returns: Validation result with error messages
-    public static func validateDocument(_ document: XMLDocument, using parser: FCPXMLParsing) -> (isValid: Bool, errors: [String]) {
-        var errors: [String] = []
-        
-        if !parser.validate(document) {
-            errors.append("Invalid FCPXML document structure")
-        }
-        
-        guard let rootElement = document.rootElement() else {
-            errors.append("Missing root element")
-            return (false, errors)
-        }
-        
-        if rootElement.name != "fcpxml" {
-            errors.append("Root element must be 'fcpxml'")
-        }
-        
-        return (errors.isEmpty, errors)
+    /// Validates FCPXML document structure using the semantic validator.
+    ///
+    /// Delegates to `FCPXMLValidator` for root element, resources, and ref resolution checks.
+    ///
+    /// - Parameter document: Document to validate.
+    /// - Returns: Validation result with error messages.
+    public static func validateDocument(_ document: XMLDocument) -> (isValid: Bool, errors: [String]) {
+        let validator = FCPXMLValidator()
+        let result = validator.validate(document)
+        let errorMessages = result.errors.map(\.message)
+        return (result.isValid, errorMessages)
     }
     
-    /// Processes FCPXML with error handling
+    /// Validates FCPXML document (deprecated: parser parameter is unused).
+    @available(*, deprecated, message: "Use validateDocument(_:) without the parser parameter.")
+    public static func validateDocument(_ document: XMLDocument, using parser: FCPXMLParsing) -> (isValid: Bool, errors: [String]) {
+        validateDocument(document)
+    }
+    
+    /// Processes FCPXML from a URL, returning a Result.
     /// - Parameters:
     ///   - url: URL of FCPXML file
     ///   - service: FCPXML service
-    ///   - errorHandler: Error handling service
     /// - Returns: Processed document or error
+    public static func processFCPXML(
+        from url: URL,
+        using service: FCPXMLService
+    ) -> Result<XMLDocument, FCPXMLError> {
+        do {
+            let document = try service.parseFCPXML(from: url)
+            return .success(document)
+        } catch let error as FCPXMLError {
+            return .failure(error)
+        } catch {
+            return .failure(FCPXMLError.parsingFailed(error))
+        }
+    }
+    
+    /// Processes FCPXML with error handling (deprecated: errorHandler is unused).
+    @available(*, deprecated, message: "Use processFCPXML(from:using:) without errorHandler.")
     public static func processFCPXML(
         from url: URL,
         using service: FCPXMLService,
         errorHandler: ErrorHandling
     ) -> Result<XMLDocument, FCPXMLError> {
-        do {
-            let document = try service.parseFCPXML(from: url)
-            return .success(document)
-        } catch {
-            let errorMessage = errorHandler.handleParsingError(error)
-            return .failure(FCPXMLError.parsingFailed(NSError(domain: "FCPXMLService", code: 1, userInfo: [NSLocalizedDescriptionKey: errorMessage])))
-        }
+        processFCPXML(from: url, using: service)
     }
     
     // MARK: - Async Methods
     
-    /// Asynchronously validates FCPXML document structure
-    /// - Parameters:
-    ///   - document: Document to validate
-    ///   - parser: Parser service for validation
-    /// - Returns: Validation result with error messages
-    public static func validateDocument(_ document: XMLDocument, using parser: FCPXMLParsing) async -> (isValid: Bool, errors: [String]) {
-        var errors: [String] = []
-        
-        let isValid = await parser.validate(document)
-        if !isValid {
-            errors.append("Invalid FCPXML document structure")
-        }
-        
-        guard let rootElement = document.rootElement() else {
-            errors.append("Missing root element")
-            return (false, errors)
-        }
-        
-        if rootElement.name != "fcpxml" {
-            errors.append("Root element must be 'fcpxml'")
-        }
-        
-        return (errors.isEmpty, errors)
+    /// Asynchronously validates FCPXML document structure.
+    ///
+    /// - Parameter document: Document to validate.
+    /// - Returns: Validation result with error messages.
+    public static func validateDocument(_ document: XMLDocument) async -> (isValid: Bool, errors: [String]) {
+        let validator = FCPXMLValidator()
+        let result = validator.validate(document)
+        let errorMessages = result.errors.map(\.message)
+        return (result.isValid, errorMessages)
     }
     
-    /// Asynchronously processes FCPXML with error handling
+    /// Asynchronously validates FCPXML document (deprecated: parser parameter is unused).
+    @available(*, deprecated, message: "Use validateDocument(_:) without the parser parameter.")
+    public static func validateDocument(_ document: XMLDocument, using parser: FCPXMLParsing) async -> (isValid: Bool, errors: [String]) {
+        let validator = FCPXMLValidator()
+        let result = validator.validate(document)
+        let errorMessages = result.errors.map(\.message)
+        return (result.isValid, errorMessages)
+    }
+    
+    /// Asynchronously processes FCPXML from a URL, returning a Result.
     /// - Parameters:
     ///   - url: URL of FCPXML file
     ///   - service: FCPXML service
-    ///   - errorHandler: Error handling service
     /// - Returns: Processed document or error
+    public static func processFCPXML(
+        from url: URL,
+        using service: FCPXMLService
+    ) async -> Result<XMLDocument, FCPXMLError> {
+        do {
+            let document = try await service.parseFCPXML(from: url)
+            return .success(document)
+        } catch let error as FCPXMLError {
+            return .failure(error)
+        } catch {
+            return .failure(FCPXMLError.parsingFailed(error))
+        }
+    }
+    
+    /// Asynchronously processes FCPXML with error handling (deprecated: errorHandler is unused).
+    @available(*, deprecated, message: "Use processFCPXML(from:using:) without errorHandler.")
     public static func processFCPXML(
         from url: URL,
         using service: FCPXMLService,
         errorHandler: ErrorHandling
     ) async -> Result<XMLDocument, FCPXMLError> {
-        do {
-            let document = try await service.parseFCPXML(from: url)
-            return .success(document)
-        } catch {
-            let errorMessage = errorHandler.handleParsingError(error)
-            return .failure(FCPXMLError.parsingFailed(NSError(domain: "FCPXMLService", code: 1, userInfo: [NSLocalizedDescriptionKey: errorMessage])))
-        }
+        await processFCPXML(from: url, using: service)
     }
     
-    /// Asynchronously processes multiple FCPXML files sequentially
+    /// Asynchronously processes multiple FCPXML files sequentially.
     /// - Parameters:
     ///   - urls: Array of FCPXML file URLs
     ///   - service: FCPXML service
-    ///   - errorHandler: Error handling service
     /// - Returns: Array of processed documents or errors
+    public static func processMultipleFCPXML(
+        from urls: [URL],
+        using service: FCPXMLService
+    ) async -> [Result<XMLDocument, FCPXMLError>] {
+        var results: [Result<XMLDocument, FCPXMLError>] = []
+        for url in urls {
+            let result = await processFCPXML(from: url, using: service)
+            results.append(result)
+        }
+        return results
+    }
+    
+    /// Asynchronously processes multiple FCPXML files (deprecated: errorHandler is unused).
+    @available(*, deprecated, message: "Use processMultipleFCPXML(from:using:) without errorHandler.")
     public static func processMultipleFCPXML(
         from urls: [URL],
         using service: FCPXMLService,
         errorHandler: ErrorHandling
     ) async -> [Result<XMLDocument, FCPXMLError>] {
-        var results: [Result<XMLDocument, FCPXMLError>] = []
-        
-        for url in urls {
-            let result = await processFCPXML(from: url, using: service, errorHandler: errorHandler)
-            results.append(result)
-        }
-        
-        return results
+        await processMultipleFCPXML(from: urls, using: service)
     }
     
-    /// Asynchronously converts timecodes for multiple elements sequentially
+    /// Asynchronously converts timecodes for multiple elements sequentially.
+    ///
+    /// Extracts the "offset" attribute from each element as an FCPXML time string,
+    /// converts it to CMTime via the provided timeStringConverter, then converts to Timecode.
+    /// Elements without a valid "offset" attribute produce nil.
+    ///
     /// - Parameters:
     ///   - elements: Array of XMLElements with time attributes
-    ///   - timecodeConverter: Timecode converter service
+    ///   - timecodeConverter: Timecode converter service (must also conform to FCPXMLTimeStringConversion)
     ///   - frameRate: Target frame rate
     /// - Returns: Array of converted timecodes
     public static func convertTimecodes(
         for elements: [XMLElement],
-        using timecodeConverter: TimecodeConversion,
+        using timecodeConverter: TimecodeConversion & FCPXMLTimeStringConversion,
         frameRate: TimecodeFrameRate
     ) async -> [Timecode?] {
         var results: [Timecode?] = []
         
-        for _ in elements {
-            // Extract time from element (this would need to be implemented based on your XML structure)
-            let time = CMTime.zero // Placeholder - implement actual time extraction
+        for element in elements {
+            let offsetString = element.attribute(forName: "offset")?.stringValue ?? "0s"
+            let time = await timecodeConverter.cmTime(fromFCPXMLTime: offsetString)
             let timecode = await timecodeConverter.timecode(from: time, frameRate: frameRate)
             results.append(timecode)
         }
         
         return results
     }
-} 
+}

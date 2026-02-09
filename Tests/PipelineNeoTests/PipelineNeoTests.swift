@@ -1,7 +1,11 @@
 //
 //  PipelineNeoTests.swift
 //  Pipeline Neo • https://github.com/TheAcharya/pipeline-neo
-//  © 2025 • Licensed under MIT License
+//  © 2026 • Licensed under MIT License
+
+
+//
+//	Main test class for the Pipeline Neo framework.
 //
 
 import XCTest
@@ -118,19 +122,33 @@ final class PipelineNeoTests: XCTestCase, @unchecked Sendable {
     }
     
     func testCMTimeFromFCPXMLTime() {
-        let timeString = "3600/60000"
-        let result = utility.CMTime(fromFCPXMLTime: timeString)
+        // Test with trailing "s" (real FCPXML format)
+        let timeString = "3600/60000s"
+        let result = utility.cmTime(fromFCPXMLTime: timeString)
         
         XCTAssertNotEqual(result, CMTime.zero)
         XCTAssertEqual(result.value, 3600)
         XCTAssertEqual(result.timescale, 60000)
+        
+        // Test without trailing "s" (also supported)
+        let resultNoS = utility.cmTime(fromFCPXMLTime: "3600/60000")
+        XCTAssertEqual(resultNoS.value, 3600)
+        XCTAssertEqual(resultNoS.timescale, 60000)
+        
+        // Test whole-second format
+        let zeroResult = utility.cmTime(fromFCPXMLTime: "0s")
+        XCTAssertEqual(zeroResult.seconds, 0, accuracy: 0.001)
     }
     
     func testFCPXMLTimeFromCMTime() {
         let time = CMTime(value: 3600, timescale: 60000)
         let result = utility.fcpxmlTime(fromCMTime: time)
         
-        XCTAssertEqual(result, "3600/60000")
+        XCTAssertEqual(result, "3600/60000s")
+        
+        // Test zero value
+        let zeroResult = utility.fcpxmlTime(fromCMTime: .zero)
+        XCTAssertEqual(zeroResult, "0s")
     }
     
     func testConformTime() {
@@ -165,8 +183,8 @@ final class PipelineNeoTests: XCTestCase, @unchecked Sendable {
         XCTAssertNotNil(timecode)
     }
     
-    func testCMTimeFromTimecode() {
-        let timecode = try! Timecode(.realTime(seconds: 60), at: TimecodeFrameRate.fps24)
+    func testCMTimeFromTimecode() throws {
+        let timecode = try Timecode(.realTime(seconds: 60), at: TimecodeFrameRate.fps24)
         let result = service.cmTime(from: timecode)
         
         XCTAssertNotEqual(result, CMTime.zero)
@@ -327,8 +345,11 @@ final class PipelineNeoTests: XCTestCase, @unchecked Sendable {
     
     func testAsyncModularUtilities() async {
         let document = await documentManager.createFCPXMLDocument(version: "1.10")
+        // Add a resources element so semantic validation passes (FCPXMLValidator checks for it)
+        let resources = XMLElement(name: "resources")
+        document.rootElement()?.addChild(resources)
         
-        let validation = await ModularUtilities.validateDocument(document, using: parser)
+        let validation = await ModularUtilities.validateDocument(document)
         XCTAssertTrue(validation.isValid)
         XCTAssertTrue(validation.errors.isEmpty)
     }
@@ -358,7 +379,7 @@ final class PipelineNeoTests: XCTestCase, @unchecked Sendable {
     }
     
     func testAsyncFCPXMLTimeStringConversion() async {
-        let timeString = "3600/60000"
+        let timeString = "3600/60000s"
         let cmTime = await timecodeConverter.cmTime(fromFCPXMLTime: timeString)
         
         XCTAssertNotEqual(cmTime, CMTime.zero)
@@ -491,9 +512,9 @@ final class PipelineNeoTests: XCTestCase, @unchecked Sendable {
     
     func testLargeTimeValues() {
         let largeTimes: [CMTime] = [
-            CMTime(value: 86400000, timescale: 60000), // 24 hours
-            CMTime(value: 604800000, timescale: 60000), // 1 week
-            CMTime(value: 2592000000, timescale: 60000), // 1 month (30 days)
+            CMTime(value: 86400000, timescale: 60000), // 1440 seconds (24 minutes)
+            CMTime(value: 604800000, timescale: 60000), // 10080 seconds (~2.8 hours)
+            CMTime(value: 2592000000, timescale: 60000), // 43200 seconds (12 hours)
         ]
         
         for time in largeTimes {
@@ -512,21 +533,22 @@ final class PipelineNeoTests: XCTestCase, @unchecked Sendable {
     /// Valid "value/timescale" formats and round-trip; invalid strings (empty, non-numeric, bad format).
 
     func testFCPXMLTimeStringFormats() {
+        // Test with standard FCPXML format (trailing "s")
         let timeStrings = [
-            "0/60000",           // Zero time
-            "1/60000",           // Very small time
-            "60000/60000",       // 1 second
-            "3600/60000",        // 0.06 seconds
-            "7200/60000",        // 0.12 seconds
-            "3600000/60000",     // 1 minute
-            "216000000/60000",   // 1 hour
-            "1001/24000",        // Common film time
-            "1001/30000",        // Common video time
+            "0/60000s",           // Zero time
+            "1/60000s",           // Very small time
+            "60000/60000s",       // 1 second
+            "3600/60000s",        // 0.06 seconds
+            "7200/60000s",        // 0.12 seconds
+            "3600000/60000s",     // 1 minute
+            "216000000/60000s",   // 1 hour
+            "1001/24000s",        // Common film time
+            "1001/30000s",        // Common video time
         ]
         
         for timeString in timeStrings {
             let cmTime = timecodeConverter.cmTime(fromFCPXMLTime: timeString)
-            if timeString == "0/60000" {
+            if timeString == "0/60000s" {
                 // Zero time is valid and should return zero CMTime
                 XCTAssertEqual(cmTime, CMTime.zero, "Zero FCPXML time should return zero CMTime")
             } else {
@@ -536,6 +558,15 @@ final class PipelineNeoTests: XCTestCase, @unchecked Sendable {
                 XCTAssertEqual(convertedBack, timeString, "FCPXML time string round-trip failed for: \(timeString)")
             }
         }
+        
+        // Test without "s" suffix (also accepted)
+        let noSuffix = timecodeConverter.cmTime(fromFCPXMLTime: "1001/24000")
+        XCTAssertNotEqual(noSuffix, CMTime.zero, "Parsing without 's' suffix should also work")
+        XCTAssertEqual(noSuffix.value, 1001)
+        
+        // Test whole-second format
+        let tenSeconds = timecodeConverter.cmTime(fromFCPXMLTime: "10s")
+        XCTAssertEqual(tenSeconds.seconds, 10, accuracy: 0.001)
     }
     
     func testInvalidFCPXMLTimeStrings() {
@@ -543,7 +574,6 @@ final class PipelineNeoTests: XCTestCase, @unchecked Sendable {
             "",                  // Empty string
             "invalid",           // Non-numeric
             "1/2/3",            // Too many components
-            "1",                // Missing denominator
             "/60000",           // Missing numerator
             "abc/def",          // Non-numeric components
             "1/0",              // Zero denominator
@@ -589,13 +619,12 @@ final class PipelineNeoTests: XCTestCase, @unchecked Sendable {
             let conformed = timecodeConverter.conform(time: testTime, toFrameDuration: frameDuration)
             XCTAssertNotEqual(conformed, CMTime.zero, "Time conforming failed for frame duration: \(frameDuration)")
             
-            // Conformed time should be a multiple of frame duration
-            let frameCount = Double(conformed.value) / Double(frameDuration.value)
-            let timescaleRatio = Double(conformed.timescale) / Double(frameDuration.timescale)
-            let totalFrameCount = frameCount * timescaleRatio
+            // Conformed time should be a whole number of frames
+            let frames = conformed.seconds / frameDuration.seconds
+            let roundedFrames = round(frames)
             
-            XCTAssertEqual(totalFrameCount.truncatingRemainder(dividingBy: 1), 0, accuracy: 0.001,
-                          "Conformed time is not a multiple of frame duration")
+            XCTAssertEqual(frames, roundedFrames, accuracy: 0.01,
+                          "Conformed time should be a whole number of frames")
         }
     }
     
@@ -766,7 +795,7 @@ final class PipelineNeoTests: XCTestCase, @unchecked Sendable {
             XCTAssertNotNil(timecode, "CMTime extension timecode conversion failed for: \(frameRate)")
             // Test FCPXML time string conversion
             let fcpxmlTime = testTime.fcpxmlTime(using: timecodeConverter)
-            XCTAssertEqual(fcpxmlTime, "3600/60000", "CMTime extension FCPXML time conversion failed for: \(frameRate)")
+            XCTAssertEqual(fcpxmlTime, "3600/60000s", "CMTime extension FCPXML time conversion failed for: \(frameRate)")
             // Test time conforming
             let frameDuration = CMTime(value: 1, timescale: 24) // Use standard 24fps for testing
             let conformed = testTime.conformed(toFrameDuration: frameDuration, using: timecodeConverter)
@@ -963,7 +992,7 @@ final class PipelineNeoTests: XCTestCase, @unchecked Sendable {
     func testModularUtilitiesValidateDocumentReturnsErrorsForInvalidDocument() {
         let doc = XMLDocument()
         doc.setRootElement(XMLElement(name: "wrongroot"))
-        let result = ModularUtilities.validateDocument(doc, using: parser)
+        let result = ModularUtilities.validateDocument(doc)
         XCTAssertFalse(result.isValid)
         XCTAssertFalse(result.errors.isEmpty)
     }
@@ -979,7 +1008,7 @@ final class PipelineNeoTests: XCTestCase, @unchecked Sendable {
         try validFCPXML.data(using: .utf8)!.write(to: tempURL)
         defer { try? FileManager.default.removeItem(at: tempURL) }
 
-        let result = ModularUtilities.processFCPXML(from: tempURL, using: service, errorHandler: errorHandler)
+        let result = ModularUtilities.processFCPXML(from: tempURL, using: service)
         switch result {
         case .success(let document):
             XCTAssertNotNil(document.rootElement())
@@ -1001,7 +1030,7 @@ final class PipelineNeoTests: XCTestCase, @unchecked Sendable {
         try validFCPXML.data(using: .utf8)!.write(to: url2)
         defer { try? FileManager.default.removeItem(at: url1); try? FileManager.default.removeItem(at: url2) }
 
-        let results = await ModularUtilities.processMultipleFCPXML(from: [url1, url2], using: service, errorHandler: errorHandler)
+        let results = await ModularUtilities.processMultipleFCPXML(from: [url1, url2], using: service)
         XCTAssertEqual(results.count, 2)
         for (index, result) in results.enumerated() {
             switch result {
@@ -1160,7 +1189,7 @@ final class PipelineNeoTests: XCTestCase, @unchecked Sendable {
         XCTAssertEqual(duration?.timescale, 60000)
 
         clip.fcpxDuration = CMTime(value: 7200, timescale: 60000)
-        XCTAssertEqual(clip.getAttribute(name: "duration", using: documentManager), "7200/60000")
+        XCTAssertEqual(clip.getAttribute(name: "duration", using: documentManager), "7200/60000s")
     }
 
     func testXMLElementExtensionEventClipsThrowsWhenNotEvent() {
@@ -1204,5 +1233,252 @@ final class PipelineNeoTests: XCTestCase, @unchecked Sendable {
         let filtered = defaultUtility.filter(fcpxElements: elements, ofTypes: [.assetResource])
         XCTAssertEqual(filtered.count, 1)
         XCTAssertEqual(filtered.first?.name, "asset")
+    }
+
+    // MARK: - SwiftSecuencia Integration
+    /// FCPXMLVersion, ValidationResult/Error/Warning, Marker/ChapterMarker/Keyword/Rating/Metadata, ColorSpace, XMLDocument FCPXMLVersion overloads.
+
+    func testFCPXMLVersionAllCasesAndDefault() {
+        XCTAssertEqual(FCPXMLVersion.default, .v1_14)
+        XCTAssertEqual(FCPXMLVersion.v1_10.stringValue, "1.10")
+        XCTAssertEqual(FCPXMLVersion.v1_14.dtdResourceName, "Final_Cut_Pro_XML_DTD_version_1.14")
+        XCTAssertNotNil(FCPXMLVersion(string: "1.14"))
+        XCTAssertEqual(FCPXMLVersion(string: "1.14"), .v1_14)
+        XCTAssertTrue(FCPXMLVersion.v1_14.isAtLeast(.v1_10))
+        XCTAssertFalse(FCPXMLVersion.v1_5.isAtLeast(.v1_14))
+    }
+
+    func testValidationResultAndErrors() {
+        let err = ValidationError(type: .missingRequiredElement, message: "Missing resources", context: ["element": "fcpxml"])
+        let result = ValidationResult.error(err)
+        XCTAssertFalse(result.isValid)
+        XCTAssertEqual(result.errors.count, 1)
+        XCTAssertEqual(result.errors.first?.type, .missingRequiredElement)
+        XCTAssertTrue(ValidationResult.success.isValid)
+        let warning = ValidationWarning(type: .unusedAsset, message: "Unused", context: [:])
+        let withWarning = ValidationResult.warning(warning)
+        XCTAssertTrue(withWarning.isValid)
+        XCTAssertEqual(withWarning.warnings.count, 1)
+    }
+
+    func testMarkerAndChapterMarkerXmlElement() {
+        let start = CMTime(value: 3600, timescale: 60000)
+        let duration = CMTime(value: 1, timescale: 24)
+        let marker = Marker(start: start, duration: duration, value: "Review", note: "Note", completed: false)
+        let el = marker.xmlElement()
+        XCTAssertEqual(el.name, "marker")
+        XCTAssertNotNil(el.attribute(forName: "start")?.stringValue)
+        XCTAssertNotNil(el.attribute(forName: "value")?.stringValue)
+
+        let ch = ChapterMarker(start: start, value: "Intro", posterOffset: nil, note: nil)
+        let chEl = ch.xmlElement()
+        XCTAssertEqual(chEl.name, "chapter-marker")
+        XCTAssertEqual(chEl.attribute(forName: "value")?.stringValue, "Intro")
+    }
+
+    func testKeywordAndRatingXmlElement() {
+        let start = CMTime(value: 0, timescale: 60000)
+        let duration = CMTime(value: 300, timescale: 1)
+        let kw = Keyword(start: start, duration: duration, value: "Interview", note: nil)
+        let kwEl = kw.xmlElement()
+        XCTAssertEqual(kwEl.name, "keyword")
+        XCTAssertEqual(kwEl.attribute(forName: "value")?.stringValue, "Interview")
+
+        let rating = Rating(start: start, duration: duration, value: .favorite, note: nil)
+        let ratingEl = rating.xmlElement()
+        XCTAssertEqual(ratingEl.name, "rating")
+        XCTAssertEqual(ratingEl.attribute(forName: "value")?.stringValue, "favorite")
+    }
+
+    func testMetadataXmlElement() {
+        var meta = Metadata()
+        meta.setReel("A001")
+        meta.setScene("1")
+        let el = meta.xmlElement()
+        XCTAssertEqual(el.name, "metadata")
+        let mdChildren = el.elements(forName: "md")
+        XCTAssertEqual(mdChildren.count, 2)
+    }
+
+    func testColorSpaceFCPXMLValue() {
+        XCTAssertEqual(ColorSpace.rec709.fcpxmlValue, "1-1-1 (Rec. 709)")
+        XCTAssertTrue(ColorSpace.rec2020HLG.isHDR)
+        XCTAssertTrue(ColorSpace.rec2020.isWideGamut)
+    }
+
+    func testXMLDocumentInitWithFCPXMLVersion() {
+        let resources: [XMLElement] = []
+        let events: [XMLElement] = []
+        let doc = XMLDocument(resources: resources, events: events, fcpxmlVersion: .v1_14)
+        XCTAssertNotNil(doc.rootElement())
+        XCTAssertEqual(doc.fcpxmlVersion, "1.14")
+        let docDefault = XMLDocument(resources: resources, events: events, fcpxmlVersion: .default)
+        XCTAssertEqual(docDefault.fcpxmlVersion, FCPXMLVersion.default.stringValue)
+    }
+    
+    // MARK: - Test Coverage Gaps
+    
+    func testFCPXMLTimeStringWithSuffixParsing() {
+        // FCPXML real-world format: value/timescale followed by "s"
+        let converter = TimecodeConverter()
+        
+        let withS = converter.cmTime(fromFCPXMLTime: "1001/24000s")
+        XCTAssertEqual(withS.value, 1001)
+        XCTAssertEqual(withS.timescale, 24000)
+        
+        let withoutS = converter.cmTime(fromFCPXMLTime: "1001/24000")
+        XCTAssertEqual(withoutS.value, 1001)
+        XCTAssertEqual(withoutS.timescale, 24000)
+        
+        // Zero
+        let zero = converter.cmTime(fromFCPXMLTime: "0s")
+        XCTAssertEqual(zero.seconds, 0, accuracy: 0.001)
+        
+        // Output always has "s"
+        let out = converter.fcpxmlTime(fromCMTime: CMTime(value: 100, timescale: 2400))
+        XCTAssertTrue(out.hasSuffix("s"), "Output should have trailing 's'")
+        XCTAssertEqual(out, "100/2400s")
+        
+        let outZero = converter.fcpxmlTime(fromCMTime: .zero)
+        XCTAssertEqual(outZero, "0s")
+    }
+    
+    func testTimecodeConverterInt32Clamping() {
+        let converter = TimecodeConverter()
+        
+        // Very large frame count should not crash via Int32 overflow
+        let largeTime = CMTime(value: 100_000_000, timescale: 600)
+        let frameDuration = CMTime(value: 1, timescale: 24)
+        let conformed = converter.conform(time: largeTime, toFrameDuration: frameDuration)
+        XCTAssertTrue(conformed.seconds > 0, "Should handle large times without crash")
+    }
+    
+    func testTimecodeConverterInfiniteTime() {
+        let converter = TimecodeConverter()
+        
+        // Infinite CMTime should return nil
+        let infinite = CMTime.positiveInfinity
+        let tc = converter.timecode(from: infinite, frameRate: .fps24)
+        XCTAssertNil(tc, "Infinite time should return nil")
+    }
+    
+    func testCMTimeExtensionFcpxmlZero() {
+        let zero = CMTime.fcpxmlZero
+        XCTAssertEqual(zero.value, 0)
+        XCTAssertEqual(zero.timescale, 1000)
+    }
+    
+    func testCMTimeExtensionFcpxmlString() {
+        let time = CMTime(value: 1001, timescale: 24000)
+        XCTAssertEqual(time.fcpxmlString, "1001/24000s")
+        
+        let zero = CMTime.zero
+        XCTAssertEqual(zero.fcpxmlString, "0s")
+    }
+    
+    func testPipelineLogLevelComparable() {
+        XCTAssertTrue(PipelineLogLevel.debug < .info)
+        XCTAssertTrue(PipelineLogLevel.info < .warning)
+        XCTAssertTrue(PipelineLogLevel.warning < .error)
+        XCTAssertEqual(PipelineLogLevel.allCases.count, 4)
+    }
+    
+    func testAnnotationMarkerWithCompletedFlag() {
+        let start = CMTime(value: 3600, timescale: 60000)
+        let marker = Marker(start: start, value: "Review", completed: true)
+        let el = marker.xmlElement()
+        XCTAssertEqual(el.attribute(forName: "completed")?.stringValue, "1")
+        
+        let notCompleted = Marker(start: start, value: "Standard")
+        let el2 = notCompleted.xmlElement()
+        XCTAssertNil(el2.attribute(forName: "completed"))
+    }
+    
+    func testAnnotationRatingXmlElement() {
+        let start = CMTime(value: 0, timescale: 600)
+        let duration = CMTime(value: 3600, timescale: 600)
+        let rating = Rating(start: start, duration: duration, value: .favorite, note: "Great shot")
+        let el = rating.xmlElement()
+        XCTAssertEqual(el.name, "rating")
+        XCTAssertEqual(el.attribute(forName: "value")?.stringValue, "favorite")
+        XCTAssertEqual(el.attribute(forName: "note")?.stringValue, "Great shot")
+        
+        let rejected = Rating(start: start, duration: duration, value: .rejected)
+        let el2 = rejected.xmlElement()
+        XCTAssertEqual(el2.attribute(forName: "value")?.stringValue, "rejected")
+        XCTAssertNil(el2.attribute(forName: "note"))
+    }
+    
+    func testAnnotationChapterMarkerWithPosterOffset() {
+        let start = CMTime(value: 1001, timescale: 24000)
+        let offset = CMTime(value: 500, timescale: 24000)
+        let ch = ChapterMarker(start: start, value: "Chapter 1", posterOffset: offset, note: "Begin")
+        let el = ch.xmlElement()
+        XCTAssertNotNil(el.attribute(forName: "posterOffset"))
+        XCTAssertNotNil(el.attribute(forName: "note"))
+        XCTAssertEqual(el.attribute(forName: "value")?.stringValue, "Chapter 1")
+    }
+    
+    func testAnnotationMetadataCommonKeys() {
+        var meta = Metadata()
+        meta.setReel("R1")
+        meta.setScene("S1")
+        meta.setTake("T1")
+        meta.setDescription("Description text")
+        meta.setCameraName("A")
+        meta.setCameraAngle("Wide")
+        meta.setShotType("Close-up")
+        
+        XCTAssertEqual(meta[Metadata.Key.reel], "R1")
+        XCTAssertEqual(meta[Metadata.Key.scene], "S1")
+        XCTAssertEqual(meta.entries.count, 7)
+        XCTAssertFalse(meta.isEmpty)
+        
+        let el = meta.xmlElement()
+        XCTAssertEqual(el.elements(forName: "md").count, 7)
+    }
+    
+    func testFCPXMLServiceSyncParityValidateDocument() {
+        let doc = service.createFCPXMLDocument(version: "1.10")
+        XCTAssertTrue(service.validateDocument(doc))
+        
+        let emptyDoc = XMLDocument()
+        XCTAssertFalse(service.validateDocument(emptyDoc))
+    }
+    
+    func testFCPXMLServiceSyncParityTimeConversions() {
+        let time = CMTime(value: 3600, timescale: 60000)
+        let timeString = service.fcpxmlTime(fromCMTime: time)
+        XCTAssertEqual(timeString, "3600/60000s")
+        
+        let backToTime = service.cmTime(fromFCPXMLTime: timeString)
+        XCTAssertEqual(backToTime.value, 3600)
+        XCTAssertEqual(backToTime.timescale, 60000)
+    }
+    
+    func testFCPXMLServiceSyncParityConform() {
+        let time = CMTime(value: 1001, timescale: 24000)
+        let frameDuration = CMTime(value: 1, timescale: 24)
+        let conformed = service.conform(time: time, toFrameDuration: frameDuration)
+        XCTAssertNotEqual(conformed, CMTime.zero)
+    }
+    
+    func testAddSafeAttributeHelper() {
+        let el = XMLElement(name: "test")
+        el.addSafeAttribute(name: "id", value: "abc")
+        el.addSafeAttribute(name: "ref", value: "r1")
+        XCTAssertEqual(el.attribute(forName: "id")?.stringValue, "abc")
+        XCTAssertEqual(el.attribute(forName: "ref")?.stringValue, "r1")
+    }
+    
+    func testFCPXMLUtilityDelegatesTimecodeConversion() {
+        let time = CMTime(value: 3600, timescale: 60000)
+        let tc = utility.timecode(from: time, frameRate: .fps24)
+        XCTAssertNotNil(tc)
+        
+        if let tc = tc {
+            let back = utility.cmTime(from: tc)
+            XCTAssertEqual(back.seconds, time.seconds, accuracy: 0.001)
+        }
     }
 } 

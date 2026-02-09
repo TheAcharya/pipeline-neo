@@ -1,7 +1,11 @@
 //
 //  XMLDocumentOperations.swift
 //  Pipeline Neo • https://github.com/TheAcharya/pipeline-neo
-//  © 2025 • Licensed under MIT License
+//  © 2026 • Licensed under MIT License
+
+
+//
+//	Protocols for XML document and element manipulation operations.
 //
 
 import Foundation

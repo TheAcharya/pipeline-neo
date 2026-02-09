@@ -1,0 +1,11 @@
+//
+//  Version.swift
+//  Pipeline Neo • https://github.com/TheAcharya/pipeline-neo
+//  © 2026 • Licensed under MIT License
+//
+//
+//	Static package version for CLI and automated build tools.
+//
+
+/// Package version exposed for the CLI (--version) and CI or other tooling.
+public let packageVersion = "1.0.0"

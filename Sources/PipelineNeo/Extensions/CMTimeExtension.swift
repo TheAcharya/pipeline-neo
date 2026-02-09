@@ -1,7 +1,11 @@
 //
 //  CMTimeExtension.swift
 //  Pipeline Neo • https://github.com/TheAcharya/pipeline-neo
-//  © 2025 • Licensed under MIT License
+//  © 2026 • Licensed under MIT License
+
+
+//
+//	CMTime extensions for FCPXML time string formatting and time calculations.
 //
 
 import Foundation
@@ -11,18 +15,15 @@ import CoreMedia
 extension CMTime {
 	
 	/// The CMTime value as an FCPXML time string using the format "[value]/[timescale]s" or "0s" if the value is zero.
+	///
+	/// Delegates to `FCPXMLUtility.defaultForExtensions.fcpxmlTime(fromCMTime:)` to ensure
+	/// the format is always consistent with `TimecodeConverter.fcpxmlTime(fromCMTime:)`.
 	public var fcpxmlString: String {
-		if self.value == 0 {
-			return "0s"
-		} else {
-			return "\(self.value)/\(self.timescale)s"
-		}
+		FCPXMLUtility.defaultForExtensions.fcpxmlTime(fromCMTime: self)
 	}
 	
 	/// Returns a CMTime value with a value of zero and timescale of 1000.
-	///
-	/// - Returns: A CMTime object.
-	public func zero() -> CMTime {
+	public static var fcpxmlZero: CMTime {
 		CMTime(value: 0, timescale: 1000)
 	}
 	
@@ -30,6 +31,10 @@ extension CMTime {
 	///
 	/// - Returns: A tuple with hours, minutes, seconds, and milliseconds as Int, Double, and String values.
 	public func timeAsCounter() -> (hours: Int, minutes: Int, seconds: Int, milliseconds: Double, hoursString: String, minutesString: String, secondsString: String, framesString: String, counterString: String) {
+		
+		guard self.seconds.isFinite else {
+			return (0, 0, 0, 0, "00", "00", "00", "000", "00:00:00,000")
+		}
 		
 		let hours = Int((self.seconds / 60.0) / 60.0)
 		let minutes = Int((self.seconds / 60).truncatingRemainder(dividingBy: 60))
@@ -47,10 +52,10 @@ extension CMTime {
 		msFormatter.maximumFractionDigits = 3
 		msFormatter.decimalSeparator = ""
 		
-		let hoursString = formatter.string(from: NSNumber(value: hours))!
-		let minutesString = formatter.string(from: NSNumber(value: minutes))!
-		let secondsString = formatter.string(from: NSNumber(value: seconds))!
-		let millisecondsString = msFormatter.string(from: NSNumber(value: milliseconds))!
+		let hoursString = formatter.string(from: NSNumber(value: hours)) ?? "00"
+		let minutesString = formatter.string(from: NSNumber(value: minutes)) ?? "00"
+		let secondsString = formatter.string(from: NSNumber(value: seconds)) ?? "00"
+		let millisecondsString = msFormatter.string(from: NSNumber(value: milliseconds)) ?? "000"
 		
 		let counter: String = hoursString + ":" + minutesString + ":" + secondsString + "," + millisecondsString
 		
@@ -66,7 +71,7 @@ extension CMTime {
 	public func timeAsTimecode(usingFrameDuration frameDuration: CMTime, dropFrame: Bool) -> (hours: Int, minutes: Int, seconds: Int, frames: Int, hoursString: String, minutesString: String, secondsString: String, framesString: String, timecodeString: String, timecodeInSeconds: Double) {
 		
 		let frameDurationSeconds = frameDuration.seconds
-		guard frameDurationSeconds > 0, frameDurationSeconds.isFinite else {
+		guard frameDurationSeconds > 0, frameDurationSeconds.isFinite, self.seconds.isFinite else {
 			return (0, 0, 0, 0, "00", "00", "00", "00", "00:00:00:00", 0)
 		}
 		let framerate: Double
@@ -104,10 +109,10 @@ extension CMTime {
 		formatter.minimumIntegerDigits = 2
 		formatter.maximumIntegerDigits = 2
 		
-		let hoursString = formatter.string(from: NSNumber(value: hours))!
-		let minutesString = formatter.string(from: NSNumber(value: minutes))!
-		let secondsString = formatter.string(from: NSNumber(value: seconds))!
-		let framesString = formatter.string(from: NSNumber(value: frames))!
+		let hoursString = formatter.string(from: NSNumber(value: hours)) ?? "00"
+		let minutesString = formatter.string(from: NSNumber(value: minutes)) ?? "00"
+		let secondsString = formatter.string(from: NSNumber(value: seconds)) ?? "00"
+		let framesString = formatter.string(from: NSNumber(value: frames)) ?? "00"
 		
 		let counter: String
 		if dropFrame {

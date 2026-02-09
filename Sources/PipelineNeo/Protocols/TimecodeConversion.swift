@@ -1,7 +1,11 @@
 //
 //  TimecodeConversion.swift
 //  Pipeline Neo • https://github.com/TheAcharya/pipeline-neo
-//  © 2025 • Licensed under MIT License
+//  © 2026 • Licensed under MIT License
+
+
+//
+//	Protocols for timecode conversion, FCPXML time strings, and time conforming.
 //
 
 import Foundation
@@ -42,7 +46,7 @@ public protocol TimecodeConversion: Sendable {
     /// - Returns: SwiftTimecode Timecode or nil if conversion fails
     func timecode(from time: CMTime, frameRate: TimecodeFrameRate) async -> Timecode?
     
-    /// Asynchronously converts TimecodeKit Timecode to CMTime
+    /// Asynchronously converts SwiftTimecode Timecode to CMTime
     /// - Parameter timecode: The Timecode to convert
     /// - Returns: CMTime representation
     func cmTime(from timecode: Timecode) async -> CMTime

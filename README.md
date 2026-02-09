@@ -21,25 +21,28 @@ This codebase is developed using AI agents.
 - [Core Features](#core-features)
 - [Requirements](#requirements)
 - [Installation](#installation)
-- [Usage](#usage)
-- [Examples](#examples)
-- [Understanding FCPXML](#understanding-fcpxml)
-- [Migration from Original Pipeline](#migration-from-original-pipeline)
+- [Documentation](#documentation)
+- [FCPXML Version Support](#fcpxml-version-support)
+- [Modularity & Safety](#modularity--safety)
+- [Architecture Overview](#architecture-overview)
 - [Credits](#credits)
 - [License](#license)
 - [Reporting Bugs](#reporting-bugs)
+- [Contribution](#contribution)
 
 ## Core Features
 
-- Access an FCPXML document's resources, events, clips, and projects through simple object properties
-- Create and modify resources, events, clips, and projects with included properties and methods
-- Easily manipulate timing values with modern Swift concurrency
-- Output FCPXML files with proper text formatting
-- Validate FCPXML documents with the DTD
-- Works with FCPXML v1.5 through v1.14 (validation, parsing, and typed element-type coverage for all DTD elements)
-- Full SwiftTimecode integration for advanced timecode operations
-- Swift 6 concurrency support with async/await patterns
-- macOS 12+ support with modern Swift features
+- Read, create, and modify FCPXML documents through a protocol-oriented API; add resources, events, projects, and sequences via the document manager.
+- Load single .fcpxml files or .fcpxmld bundles via FCPXMLFileLoader (resolves bundle Info.fcpxml; sync and async).
+- Parse and validate against bundled DTDs (FCPXML 1.5–1.14); structural and reference validation (FCPXMLValidator), DTD schema validation (FCPXMLDTDValidator).
+- Access and edit resources, events, clips, and projects via typed properties and helpers (fcpxEventNames, fcpxAssetResources, resource(matchingID:), event/project/clip APIs).
+- Timecode and timing via SwiftTimecode: CMTime, Timecode, FCPXML time strings; all Final Cut Pro frame rates (23.976, 24, 25, 29.97, 30, 50, 59.94, 60); conform to frame boundaries.
+- Typed element filtering via FCPXMLElementType (every DTD element; multicam vs compound media inferred from first child).
+- Cut detection on project spines: edit points with boundary type (hard cut, transition, gap) and source relationship (same-clip vs different-clips); CutDetectionResult and EditPoint; sync and async.
+- Version conversion: convert document to a target version (e.g. 1.14 → 1.10); save as single .fcpxml or .fcpxmld bundle (bundle only for version 1.10 or higher).
+- Media extraction and copy: extract asset media-rep and locator URLs (optional baseURL); copy referenced file URLs to a directory with deduplication and unique filenames; MediaExtractionResult and MediaCopyResult; sync and async.
+- Timeline and export: build Timeline with TimelineClip and TimelineFormat; export to FCPXML string (FCPXMLExporter) or .fcpxmld bundle (FCPXMLBundleExporter, optional media copy) with FCPXMLExportAsset per asset.
+- Sync and async APIs (async/await) for all major operations; dependency-injected, concurrency-safe design for Swift 6.
 
 ## Requirements
 
@@ -82,392 +85,30 @@ let package = Package(
 )
 ```
 
-## Usage
+## Documentation
 
-### Basic FCPXML Operations with Modular Architecture
+Complete manual, usage guide, and examples are in the [Documentation](Documentation/) folder:
 
-```swift
-import PipelineNeo
-
-// Create a modular pipeline (default or custom), then a document, resources, and sequences.
-let service = ModularUtilities.createPipeline()
-
-// Or create a custom pipeline with specific implementations
-let customService = ModularUtilities.createCustomPipeline(
-    parser: FCPXMLParser(),
-    timecodeConverter: TimecodeConverter(),
-    documentManager: XMLDocumentManager(),
-    errorHandler: ErrorHandler()
-)
-
-// Create a new FCPXML document
-let document = service.createFCPXMLDocument(version: "1.10")
-
-// Add resources and sequences using modular operations
-let resource = XMLElement(name: "asset")
-resource.setAttribute(name: "id", value: "asset1", using: documentManager)
-document.addResource(resource, using: documentManager)
-
-let sequence = XMLElement(name: "sequence")
-sequence.setAttribute(name: "id", value: "seq1", using: documentManager)
-document.addSequence(sequence, using: documentManager)
-```
-
-### Time Conversions with Modular SwiftTimecode Integration
-
-```swift
-import PipelineNeo
-import SwiftTimecode
-
-// Create converter/utility and convert between CMTime, Timecode, and FCPXML time.
-let timecodeConverter = TimecodeConverter()
-let utility = FCPXMLUtility(
-    timecodeConverter: timecodeConverter
-)
-
-// Convert CMTime to SwiftTimecode Timecode
-let cmTime = CMTime(value: 3600, timescale: 1) // 1 hour
-let timecode = utility.timecode(from: cmTime, frameRate: .fps24)
-print("Timecode: \(timecode?.stringValue ?? "Invalid")")
-
-// Convert SwiftTimecode Timecode to CMTime
-let newTimecode = try! Timecode(.realTime(seconds: 7200), at: .fps24) // 2 hours
-let newCMTime = utility.cmTime(from: newTimecode)
-print("CMTime: \(newCMTime.seconds) seconds")
-
-// Use modular extensions for time operations
-let frameDuration = CMTime(value: 1, timescale: 24)
-let conformed = cmTime.conformed(toFrameDuration: frameDuration, using: timecodeConverter)
-let fcpxmlTime = cmTime.fcpxmlTime(using: timecodeConverter)
-```
-
-### Working with Modular XML Operations
-
-```swift
-// Create elements, children, and attributes via documentManager and extensions.
-let documentManager = XMLDocumentManager()
-let parser = FCPXMLParser()
-
-// Create elements with modular operations
-let project = documentManager.createElement(
-    name: "project",
-    attributes: [
-        "name": "My Project",
-        "id": "proj1"
-    ]
-)
-
-// Add child elements using modular extensions
-let sequence = project.createChild(
-    name: "sequence",
-    attributes: ["id": "seq1"],
-    using: documentManager
-)
-
-// Set attributes using modular operations
-project.setAttribute(name: "formatRef", value: "r1", using: documentManager)
-let formatRef = project.getAttribute(name: "formatRef", using: documentManager)
-```
-
-### Error Handling with Modular Components
-
-```swift
-// Process FCPXML from a URL and handle success/failure via Result.
-let errorHandler = ErrorHandler()
-
-// Process FCPXML with error handling
-let url = URL(fileURLWithPath: "/path/to/file.fcpxml")
-let result = ModularUtilities.processFCPXML(
-    from: url,
-    using: service,
-    errorHandler: errorHandler
-)
-
-switch result {
-case .success(let document):
-    print("Successfully parsed FCPXML")
-    // Work with document
-case .failure(let error):
-    print("Error: \(error.localizedDescription)")
-}
-```
-
-### Advanced Modular Operations
-
-```swift
-// Use a custom TimecodeConverter and validate documents with the parser.
-class CustomTimecodeConverter: TimecodeConverter {
-    override func timecode(from time: CMTime, frameRate: TimecodeFrameRate) -> Timecode? {
-        // Custom timecode conversion logic
-        return super.timecode(from: time, frameRate: frameRate)
-    }
-}
-
-// Use custom implementation in pipeline
-let customService = FCPXMLService(
-    timecodeConverter: CustomTimecodeConverter()
-)
-
-// Validate documents using modular validation
-let validation = ModularUtilities.validateDocument(document, using: parser)
-if validation.isValid {
-    print("Document is valid")
-} else {
-    print("Validation errors: \(validation.errors)")
-}
-```
-
-### Modern Swift 6 Async/Await Operations
-
-Pipeline Neo now provides comprehensive async/await support for all operations, enabling modern concurrent programming patterns:
-
-```swift
-import PipelineNeo
-
-// Create a service with async capabilities and call async APIs.
-let service = ModularUtilities.createPipeline()
-
-// Asynchronously parse FCPXML files
-let document = try await service.parseFCPXML(from: fileURL)
-let isValid = await service.validateDocument(document)
-
-// Asynchronously convert timecodes
-let time = CMTime(value: 3600, timescale: 60000)
-let frameRate = TimecodeFrameRate.fps24
-let timecode = await service.timecode(from: time, frameRate: frameRate)
-
-// Asynchronously create and manipulate documents
-let newDocument = await service.createFCPXMLDocument(version: "1.10")
-await service.addResource(resource, to: newDocument)
-try await service.saveDocument(newDocument, to: outputURL)
-
-// Asynchronously filter elements
-let elements = [element1, element2, element3]
-let filtered = await service.filterElements(elements, ofTypes: [.assetResource, .sequence])
-
-// Asynchronously convert FCPXML time strings
-let cmTime = await service.cmTime(fromFCPXMLTime: "3600/60000")
-let timeString = await service.fcpxmlTime(fromCMTime: cmTime)
-
-// Asynchronously conform times to frame boundaries
-let conformed = await service.conform(time: time, toFrameDuration: frameDuration)
-```
-
-### Concurrent Operations with Task Groups
-
-```swift
-// Process multiple files and elements concurrently; use TaskGroup for parsing.
-let urls = [url1, url2, url3, url4, url5]
-let results = await ModularUtilities.processMultipleFCPXML(
-    from: urls,
-    using: service,
-    errorHandler: errorHandler
-)
-
-// Convert timecodes for multiple elements concurrently
-let timecodes = await ModularUtilities.convertTimecodes(
-    for: elements,
-    using: timecodeConverter,
-    frameRate: .fps24
-)
-
-// Use structured concurrency for complex workflows
-await withTaskGroup(of: XMLDocument.self) { group in
-    for url in urls {
-        group.addTask {
-            try await service.parseFCPXML(from: url)
-        }
-    }
-    
-    for await document in group {
-        // Process each document
-        let isValid = await service.validateDocument(document)
-        if isValid {
-            // Further processing
-        }
-    }
-}
-```
-
-### Async Component-Level Operations
-
-```swift
-// Call async APIs on parser, timecode converter, and document manager.
-let parser = FCPXMLParser()
-let document = try await parser.parse(data)
-let isValid = await parser.validate(document)
-let filtered = await parser.filter(elements: elements, ofTypes: [.assetResource])
-
-// Async timecode converter operations
-let timecodeConverter = TimecodeConverter()
-let timecode = await timecodeConverter.timecode(from: time, frameRate: .fps24)
-let cmTime = await timecodeConverter.cmTime(from: timecode)
-let conformed = await timecodeConverter.conform(time: time, toFrameDuration: frameDuration)
-
-// Async document manager operations
-let documentManager = XMLDocumentManager()
-let document = await documentManager.createFCPXMLDocument(version: "1.10")
-let element = await documentManager.createElement(name: "asset", attributes: ["id": "test1"])
-await documentManager.addResource(element, to: document)
-try await documentManager.saveDocument(document, to: url)
-```
-
-### Modular Extensions Usage
-
-```swift
-// Use extensions on CMTime, XMLElement, and XMLDocument with injected utilities.
-let time = CMTime(value: 3600, timescale: 60000)
-let frameRate = TimecodeFrameRate.fps24
-
-let timecode = time.timecode(frameRate: frameRate, using: timecodeConverter)
-let fcpxmlTime = time.fcpxmlTime(using: timecodeConverter)
-let conformed = time.conformed(toFrameDuration: frameDuration, using: timecodeConverter)
-
-// Use modular extensions for XMLElement operations
-let element = XMLElement(name: "test")
-element.setAttribute(name: "id", value: "test1", using: documentManager)
-let attribute = element.getAttribute(name: "id", using: documentManager)
-
-// Use modular extensions for XMLDocument operations
-document.addResource(resource, using: documentManager)
-document.addSequence(sequence, using: documentManager)
-let isValid = document.isValid(using: parser)
-```
-
-## Examples
-
-### Open an FCPXML File
-
-```swift
-// Load an FCPXML file from disk and parse it into an XMLDocument.
-let fileURL = URL(fileURLWithPath: "/Users/[username]/Documents/sample.fcpxml")
-
-do {
-    try fileURL.checkResourceIsReachable()
-} catch {
-    print("The file cannot be found at the given path.")
-    return
-}
-
-let fcpxmlDoc: XMLDocument
-
-do {
-    fcpxmlDoc = try XMLDocument(contentsOfFCPXML: fileURL)
-} catch {
-    print("Error loading FCPXML file.")
-    return
-}
-```
-
-### List Event Names
-
-```swift
-// Read event names from the loaded FCPXML document.
-let eventNames = fcpxmlDoc.fcpxEventNames
-print("Event names: \(eventNames)")
-```
-
-### Create and Add Events
-
-```swift
-// Create a new event element and append it to the document's library.
-let newEvent = XMLElement().fcpxEvent(name: "My New Event")
-fcpxmlDoc.add(events: [newEvent])
-print("Updated event names: \(fcpxmlDoc.fcpxEventNames)")
-```
-
-### Work with Clips
-
-```swift
-// Find clips that reference a given resource, then remove them and the resource.
-let firstEvent = fcpxmlDoc.fcpxEvents[0]
-let matchingClips = try firstEvent.eventClips(forResourceID: "r1")
-
-// Remove clips from the event.
-try firstEvent.removeFromEvent(items: matchingClips)
-
-// Remove the resource from the document.
-if let resource = fcpxmlDoc.resource(matchingID: "r1") {
-    fcpxmlDoc.remove(resourceAtIndex: resource.index)
-}
-```
-
-### Display Clip Duration
-
-```swift
-// Get the first event's first clip and display its duration as a counter string.
-let firstEvent = fcpxmlDoc.fcpxEvents[0]
-
-if let eventClips = firstEvent.eventClips, eventClips.count > 0 {
-    let firstClip = eventClips[0]
-    if let duration = firstClip.fcpxDuration {
-        let timeDisplay = duration.timeAsCounter().counterString
-        print("Duration: \(timeDisplay)")
-    }
-}
-```
-
-### Save FCPXML File
-
-```swift
-// Serialise the document to FCPXML string and write it to disk.
-do {
-    try fcpxmlDoc.fcpxmlString.write(
-        toFile: "/Users/[username]/Documents/sample-output.fcpxml",
-        atomically: false,
-        encoding: .utf8
-    )
-    print("Wrote FCPXML file.")
-} catch {
-    print("Error writing to file.")
-}
-```
-
-## Understanding FCPXML
-
-Further information on FCPXML can be found [here](https://fcp.cafe/developers/fcpxml/).
+- [Manual](Documentation/Manual.md) — Full user manual: loading, modular operations, time conversions, logging, error handling, async/await, task groups, extensions, and step-by-step examples.
 
 ## FCPXML Version Support
 
-Pipeline Neo supports FCPXML versions 1.5 through 1.14 in the following ways:
-
-- **Validation**: All DTDs for these versions are included. You can validate a document against any version’s schema (e.g. `document.validateFCPXMLAgainst(version: "1.14")`).
-- **Parsing**: Any well-formed FCPXML document parses successfully; the full XML tree is available via Foundation’s `XMLDocument`/`XMLElement` APIs.
-- **Typed element types**: Every element from the FCPXML DTDs (1.5–1.14) is represented in `FCPXMLElementType`, so you can identify and filter by any element (e.g. `locator`, `import-options`, `live-drawing`, `filter-video`, all `adjust-*`, smart-collection match rules, etc.). Structural types like multicam vs compound `media` are inferred from the first child.
-- **Typed attributes and helpers**: The framework also provides typed properties and helpers for a subset of elements (e.g. `fcpxDuration`, `fcpxOffset`, event/project/clip APIs). Other elements are fully accessible via `element.name`, `element.attribute(forName:)`, and the shared `getElementAttribute` / `setElementAttribute` helpers.
-
-## Migration from Original Pipeline
-
-Pipeline Neo is a modernised successor to [Pipeline](https://github.com/reuelk/pipeline). Key changes include:
-
-- Swift 6 concurrency support with async/await
-- SwiftTimecode integration for advanced timecode operations
-- Modern Swift patterns and syntax
-- macOS 12+ requirement
-- Updated package name to `PipelineNeo`
-- Comprehensive test suite
-- Improved error handling
+Pipeline Neo supports FCPXML versions 1.5 through 1.14. All DTDs for these versions are included. You can validate a document against any version’s schema (e.g. `document.validateFCPXMLAgainst(version: "1.14")`).
+- Parsing: Any well-formed FCPXML document parses successfully; the full XML tree is available via Foundation’s `XMLDocument`/`XMLElement` APIs.
+- Typed element types: Every element from the FCPXML DTDs (1.5–1.14) is represented in `FCPXMLElementType`, so you can identify and filter by any element (e.g. `locator`, `import-options`, `live-drawing`, `filter-video`, all `adjust-*`, smart-collection match rules, etc.). Structural types like multicam vs compound `media` are inferred from the first child.
+- Typed attributes and helpers: The framework also provides typed properties and helpers for a subset of elements (e.g. `fcpxDuration`, `fcpxOffset`, event/project/clip APIs). Other elements are fully accessible via `element.name`, `element.attribute(forName:)`, and the shared `getElementAttribute` / `setElementAttribute` helpers.
 
 ## Modularity & Safety
 
-Pipeline Neo is fully modular and protocol-oriented:
-
-- **Protocols and DI**: All major operations are defined as protocols (`FCPXMLParsing`, `TimecodeConversion`, `XMLDocumentOperations`, `ErrorHandling`, etc.) with default implementations. You inject dependencies when creating `FCPXMLService`, `FCPXMLUtility`, or when using the `+Modular` extensions (e.g. `element.setAttribute(name:value:using: documentManager)`).
-- **Single default for extensions**: Extension APIs that cannot take parameters (e.g. `element.fcpxDuration`, `document.fcpxAssetResources`) use a single shared instance, `FCPXMLUtility.defaultForExtensions`, so behaviour is consistent and concurrency-safe. For custom pipelines, use the modular API (inject into the service/utility and use the `+Modular` extension overloads that take a `using:` parameter).
-- **No hidden concrete types in extensions**: Extensions no longer instantiate `FCPXMLUtility()` internally; they use `defaultForExtensions`, keeping one clear injection point and making the design testable via the modular APIs.
-- **Swift 6 strict concurrency**: The package uses Swift 6 and complies with strict concurrency: public protocols and implementations are `Sendable`; error and option enums are `Sendable`; `@unchecked Sendable` is used only for NSObject-based delegates and for types that hold non-Sendable dependencies with documented safe usage.
-
-- Thread-safe and concurrency-compliant: All code is Sendable or @unchecked Sendable as appropriate, and passes thread sanitizer checks.
-- No known vulnerabilities: All dependencies (SwiftTimecode 3.0.0, [SwiftExtensions](https://github.com/orchetect/swift-extensions) 2.0.0+) are up to date and have no published security advisories as of July 2025.
-- No unsafe code patterns: No use of unsafe pointers, dynamic code execution, or C APIs. All concurrency is structured and type-safe.
+- Protocol-oriented and dependency-injected: core behaviour (parsing, timecode, document ops, error handling) is behind protocols with default implementations you can replace. Inject when creating FCPXMLService or FCPXMLUtility or when using modular extension overloads.
+- Extension APIs that can’t take a parameter use a single shared instance (FCPXMLUtility.defaultForExtensions) for consistency and concurrency safety; use overloads with a `using:` parameter for custom pipelines.
+- Built with Swift 6 and strict concurrency; Sendable where possible, no unsafe code. Dependencies ([SwiftTimecode](https://github.com/orchetect/swift-timecode) 3.0.0, [SwiftExtensions](https://github.com/orchetect/swift-extensions) 2.0.0+) are up to date.
 
 ## Architecture Overview
 
-- Protocols: All core functionality is defined via protocols (e.g., FCPXMLParsing, TimecodeConversion, XMLDocumentOperations, ErrorHandling).
-- Implementations: Default implementations are provided, but you can inject your own for custom behaviour or testing.
-- Extensions: Modular extensions for CMTime, XMLElement, and XMLDocument allow dependency-injected operations.
-- Service Layer: FCPXMLService orchestrates all modular components for high-level workflows.
-- Utilities: ModularUtilities provides pipeline creation, validation, and error-handling helpers.
+- Protocols define parsing, timecode conversion, document operations, and error handling; each has a default implementation you can swap. FCPXMLService (and FCPXMLUtility) composes these and exposes sync and async APIs. ModularUtilities provides createPipeline, processFCPXML, validateDocument, convertTimecodes, and similar helpers.
+- FCPXMLFileLoader handles .fcpxml and .fcpxmld (including bundle Info.fcpxml). FCPXMLValidator and FCPXMLDTDValidator handle structural and schema validation; DTDs for 1.5–1.14 are bundled.
+- Extensions on CMTime, XMLElement, and XMLDocument offer convenience APIs; use modular overloads with an explicit dependency to inject your own. Error types are explicit (FCPXMLError, FCPXMLLoadError, export and validation errors); you can inject a custom error handler.
 
 See AGENT.md for a detailed breakdown for AI agents and contributors.
 

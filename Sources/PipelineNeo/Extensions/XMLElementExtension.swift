@@ -1,10 +1,14 @@
 //
 //  XMLElementExtension.swift
 //  Pipeline Neo • https://github.com/TheAcharya/pipeline-neo
-//  © 2025 • Licensed under MIT License
+//  © 2026 • Licensed under MIT License
+
+
+//
+//	XMLElement extensions for FCPXML element parsing and manipulation.
 //
 
-import Cocoa
+import AppKit
 import CoreMedia
 import SwiftExtensions
 
@@ -12,6 +16,19 @@ import SwiftExtensions
 import Logging
 #endif
 
+
+// MARK: - Safe Attribute Helper
+
+extension XMLElement {
+	/// Adds an attribute to this element safely (no force cast).
+	/// Foundation's `XMLNode.attribute(withName:stringValue:)` returns `Any`,
+	/// so this method performs a safe cast.
+	public func addSafeAttribute(name: String, value: String) {
+		if let attr = XMLNode.attribute(withName: name, stringValue: value) as? XMLNode {
+			addAttribute(attr)
+		}
+	}
+}
 
 // MARK: - XMLELEMENT EXTENSION -
 extension XMLElement {
@@ -76,7 +93,7 @@ extension XMLElement {
 		
 		let spine = XMLElement(name: "spine")
 		for clip in clips {
-			let clipCopy = clip.copy() as! XMLElement
+			guard let clipCopy = clip.copy() as? XMLElement else { continue }
 			spine.addChild(clipCopy)
 		}
 		
@@ -108,7 +125,7 @@ extension XMLElement {
 		element.fcpxDuration = duration
 		element.fcpxStart = start
 		
-		if useAudioSubroles == true {
+		if useAudioSubroles {
 			element.setElementAttribute("useAudioSubroles", value: "1")
 		} else {
 			element.setElementAttribute("useAudioSubroles", value: "0")
@@ -253,7 +270,7 @@ extension XMLElement {
 	///   - xPosition: The X position of the text on the screen.
 	///   - yPosition: The Y position of the text on the screen.
 	/// - Returns: An XMLElement object of the title, which will contain the text style definition, if specified.
-	public func fcpxTitle(titleName: String, lane: Int?, offset: CMTime, ref: String, duration: CMTime, start: CMTime, role: String?, titleText: String, textStyleID: Int, newTextStyle: Bool, font: String = "Helvetica", fontSize: CGFloat = 62, fontFace: String = "Regular", fontColor: NSColor = NSColor(calibratedRed: 1.0, green: 1.0, blue: 1.0, alpha: 1.0), strokeColor: NSColor? = nil, strokeWidth: Float = 2.0, shadowColor: NSColor? = nil, shadowDistance: Float = 5.0, shadowAngle: Float = 315.0, shadowBlurRadius: Float = 1.0, alignment: TextAlignment = TextAlignment.Center, xPosition: Float = 0, yPosition: Float = 0) -> XMLElement {
+	public func fcpxTitle(titleName: String, lane: Int?, offset: CMTime, ref: String, duration: CMTime, start: CMTime, role: String?, titleText: String, textStyleID: Int, newTextStyle: Bool, font: String = "Helvetica", fontSize: CGFloat = 62, fontFace: String = "Regular", fontColor: NSColor = NSColor(calibratedRed: 1.0, green: 1.0, blue: 1.0, alpha: 1.0), strokeColor: NSColor? = nil, strokeWidth: Float = 2.0, shadowColor: NSColor? = nil, shadowDistance: Float = 5.0, shadowAngle: Float = 315.0, shadowBlurRadius: Float = 1.0, alignment: TextAlignment = TextAlignment.center, xPosition: Float = 0, yPosition: Float = 0) -> XMLElement {
 		
 		let element = XMLElement(name: "title")
 		
@@ -397,7 +414,7 @@ extension XMLElement {
 			if bold == true {
 				textStyleDefTextStyle.setElementAttribute("bold", value: "1")
 			} else {
-				textStyleDefTextStyle.removeAttribute(forName: "italic")
+				textStyleDefTextStyle.removeAttribute(forName: "bold")
 			}
 			
 			if italic == true {
@@ -478,11 +495,11 @@ extension XMLElement {
 	public var fcpxDuration: CMTime? {
 		get {
 			if let attributeString = getElementAttribute("duration") {
-				return FCPXMLUtility.defaultForExtensions.CMTime(fromFCPXMLTime: attributeString)
+				return FCPXMLUtility.defaultForExtensions.cmTime(fromFCPXMLTime: attributeString)
 			} else {
 				return nil
 			}
-		} // TODO: When this is a compound resource or multicam resource, or project, this should be the duration of the sequence element.
+		} // Note: for compound/multicam resources or projects, should use the sequence element duration.
 		
 		set(value) {
 			if let value = value {
@@ -497,7 +514,7 @@ extension XMLElement {
 	public var fcpxTCStart: CMTime? {
 		get {
 			if let attributeString = getElementAttribute("tcStart") {
-				return FCPXMLUtility.defaultForExtensions.CMTime(fromFCPXMLTime: attributeString)
+				return FCPXMLUtility.defaultForExtensions.cmTime(fromFCPXMLTime: attributeString)
 			} else {
 				return nil
 			}
@@ -516,7 +533,7 @@ extension XMLElement {
 	public var fcpxStart: CMTime? {
 		get {
 			if let attributeString = getElementAttribute("start") {
-				return FCPXMLUtility.defaultForExtensions.CMTime(fromFCPXMLTime: attributeString)
+				return FCPXMLUtility.defaultForExtensions.cmTime(fromFCPXMLTime: attributeString)
 			} else {
 				return nil
 			}
@@ -539,7 +556,7 @@ extension XMLElement {
 			if let start = self.fcpxStart {
 				return start
 			} else {
-				return CMTime().zero()
+				return CMTime.fcpxmlZero
 			}
 		}
 	}
@@ -547,7 +564,7 @@ extension XMLElement {
 	public var fcpxOffset: CMTime? {
 		get {
 			if let attributeString = getElementAttribute("offset") {
-				return FCPXMLUtility.defaultForExtensions.CMTime(fromFCPXMLTime: attributeString)
+				return FCPXMLUtility.defaultForExtensions.cmTime(fromFCPXMLTime: attributeString)
 			} else {
 				return nil
 			}
@@ -702,7 +719,7 @@ extension XMLElement {
 		}
 		
 		set(value) {
-			if value == false {
+			if !value {
 				setElementAttribute("enabled", value: "0")
 			} else {
 				setElementAttribute("enabled", value: "1")
@@ -803,7 +820,7 @@ extension XMLElement {
 	public var fcpxFrameDuration: CMTime? {
 		get {
 			if let attributeString = getElementAttribute("frameDuration") {
-				return FCPXMLUtility.defaultForExtensions.CMTime(fromFCPXMLTime: attributeString)
+				return FCPXMLUtility.defaultForExtensions.cmTime(fromFCPXMLTime: attributeString)
 			} else {
 				return nil
 			}
@@ -1269,7 +1286,7 @@ extension XMLElement {
 				
 				let startDifference = CMTimeSubtract(clipOut, parentElement.fcpxLocalInPoint)
 				
-				guard let clipParentStart = fcpxParentInPoint else {
+				guard let clipParentStart = parentElement.fcpxParentInPoint else {
 					return nil
 				}
 				
@@ -1667,7 +1684,7 @@ extension XMLElement {
 			var clips: [XMLElement] = []
 			for child in children {
 				if child.kind == XMLNode.Kind.element {
-					let childElement = child as! XMLElement
+					guard let childElement = child as? XMLElement else { continue }
 					
 					if childElement.isFCPXStoryElement == true {
 						clips.append(childElement)
@@ -1686,19 +1703,19 @@ extension XMLElement {
 				return nil
 			}
 			
-			guard self.parent != nil else {
+			guard let parentNode = self.parent as? XMLElement else {
 				return nil
 			}
 			
-			var parentElement = self.parent as! XMLElement
+			var parentElement = parentNode
 			
 			while parentElement.name != "event" {
 				// If the parent is the top of the document, return nil
-				guard parentElement.parent != nil else {
+				guard let nextParent = parentElement.parent as? XMLElement else {
 					return nil
 				}
 				
-				parentElement = parentElement.parent as! XMLElement
+				parentElement = nextParent
 				
 			}
 			return parentElement
@@ -1731,7 +1748,7 @@ extension XMLElement {
 					return annotationElements
 				}
 				
-				let subElements = subNodes as! [XMLElement]
+				let subElements = subNodes as? [XMLElement] ?? []
 				
 				for subElement in subElements {
 					
@@ -1836,7 +1853,7 @@ extension XMLElement {
 				return []
 			}
 			
-			let itemElements = itemNodes as! [XMLElement]
+			let itemElements = itemNodes as? [XMLElement] ?? []
 			
 			return itemElements
 		}
@@ -1854,7 +1871,7 @@ extension XMLElement {
 				return []
 			}
 			
-			let itemElements = itemNodes as! [XMLElement]
+			let itemElements = itemNodes as? [XMLElement] ?? []
 			
 			let items = FCPXMLUtility.defaultForExtensions.filter(fcpxElements: itemElements, ofTypes: [.project])
 			
@@ -1874,7 +1891,7 @@ extension XMLElement {
 				return []
 			}
 			
-			let clipElements = clipNodes as! [XMLElement]
+			let clipElements = clipNodes as? [XMLElement] ?? []
 			
 			let clips = FCPXMLUtility.defaultForExtensions.filter(fcpxElements: clipElements, ofTypes: [.assetClip, .clip, .compoundClip, .multicamClip, .synchronizedClip])
 			
@@ -1891,7 +1908,7 @@ extension XMLElement {
 	public func eventClips(forResourceID resourceID: String) throws -> [XMLElement] {
 		
 		guard self.fcpxType == .event else {
-			throw FCPXMLElementError.notAnEvent(element: self)
+			throw FCPXMLElementError.notAnEvent(elementName: self.name ?? "unnamed")
 		}
 		
 		var matchingClips: [XMLElement] = []
@@ -1901,7 +1918,7 @@ extension XMLElement {
 			return matchingClips
 		}
 		
-		let clips = clipNodes as! [XMLElement]
+		let clips = clipNodes as? [XMLElement] ?? []
 		
 		for clip in clips {
 			
@@ -1915,14 +1932,6 @@ extension XMLElement {
 	}
 	
 	
-	/**
-	
-	
-	- parameter containingAsset:
-	
-	- returns:
-	*/
-	
 	/// Searches for items in an event that match a given asset resource. This method will also search inside synchronized clips, multicams, and compound clips for matches, but not inside projects. If this XMLElement is not an event, the method will return nil. Updated for FCPXML v1.6. ** NOTE: Currently only searches for matching video clips of all clip types.
 	///
 	/// - Parameter resource: The resource XMLElement to match with.
@@ -1930,7 +1939,7 @@ extension XMLElement {
 	public func eventClips(containingResource resource: XMLElement) throws -> [XMLElement] {
 		
 		guard self.fcpxType == .event else {
-			throw FCPXMLElementError.notAnEvent(element: self)
+			throw FCPXMLElementError.notAnEvent(elementName: self.name ?? "unnamed")
 		}
 		
 		var matchingItems: [XMLElement] = []
@@ -1976,7 +1985,7 @@ extension XMLElement {
 				}
 				
 				for itemChild in itemChildren {
-					let itemChildElement = itemChild as! XMLElement
+					guard let itemChildElement = itemChild as? XMLElement else { continue }
 					
 					// Find regular synchronized clips
 					if itemChildElement.fcpxType == .assetClip || itemChildElement.fcpxType == .clip { // Normal synchronized clip
@@ -1993,7 +2002,7 @@ extension XMLElement {
 							}
 							
 							for syncedClipChild in syncedClipChildren {
-								let syncedClipChildElement = syncedClipChild as! XMLElement
+								guard let syncedClipChildElement = syncedClipChild as? XMLElement else { continue }
 								
 								if syncedClipChildElement.fcpxRef == resource.fcpxID {
 									
@@ -2017,7 +2026,7 @@ extension XMLElement {
 							}
 							
 							for spineClipChild in spineClipChildren {
-								let spineClipChildElement = spineClipChild as! XMLElement
+								guard let spineClipChildElement = spineClipChild as? XMLElement else { continue }
 								
 								if spineClipChildElement.fcpxRef == resource.fcpxID {
 									
@@ -2057,7 +2066,7 @@ extension XMLElement {
 							continue
 						}
 						
-						let multicamElement = multicamNode as! XMLElement
+						guard let multicamElement = multicamNode as? XMLElement else { continue }
 						let multicamAngles = multicamElement.elements(forName: "mc-angle")
 						
 						// See if there are any angles that match the asset
@@ -2069,7 +2078,7 @@ extension XMLElement {
 							
 							for multicamAngleChild in multicamAngleChildren {
 								
-								let multicamAngleChildElement = multicamAngleChild as! XMLElement
+								guard let multicamAngleChildElement = multicamAngleChild as? XMLElement else { continue }
 								
 								guard multicamAngleChildElement.fcpxType == .assetClip || multicamAngleChildElement.fcpxType == .clip else {
 									continue
@@ -2103,15 +2112,15 @@ extension XMLElement {
 				for compound in compoundResources {
 					if item.fcpxRef == compound.fcpxID {
 						
-						let sequence = compound.next as! XMLElement
-						let spine = sequence.next as! XMLElement
+						guard let sequence = compound.next as? XMLElement,
+						  let spine = sequence.next as? XMLElement else { continue }
 						
 						guard let spineChildren = spine.children else {
 							continue
 						}
 						
 						for childClip in spineChildren {
-							let childClipElement = childClip as! XMLElement
+							guard let childClipElement = childClip as? XMLElement else { continue }
 							
 							if childClipElement.fcpxRef == resource.fcpxID {  // Check primary storyline clip
 								debugLog("Matching compound clip found: \(item.fcpxName ?? "unnamed element")")
@@ -2124,7 +2133,7 @@ extension XMLElement {
 								}
 								
 								for attachedClip in childClipElementChildren {
-									let attachedClipElement = attachedClip as! XMLElement
+									guard let attachedClipElement = attachedClip as? XMLElement else { continue }
 									
 									if attachedClipElement.fcpxRef == resource.fcpxID {
 										debugLog("Matching compound clip found: \(item.fcpxName ?? "unnamed element")")
@@ -2162,10 +2171,10 @@ extension XMLElement {
 	public func addToEvent(item: XMLElement) throws {
 		
 		guard self.fcpxType == .event else {
-			throw FCPXMLElementError.notAnEvent(element: self)
+			throw FCPXMLElementError.notAnEvent(elementName: self.name ?? "unnamed")
 		}
 		
-		let itemCopy = item.copy() as! XMLElement
+		guard let itemCopy = item.copy() as? XMLElement else { return }
 		
 		self.addChild(itemCopy)
 		
@@ -2179,11 +2188,11 @@ extension XMLElement {
 	public func addToEvent(items: [XMLElement]) throws {
 		
 		guard self.fcpxType == .event else {
-			throw FCPXMLElementError.notAnEvent(element: self)
+			throw FCPXMLElementError.notAnEvent(elementName: self.name ?? "unnamed")
 		}
 		
 		for item in items {
-			let itemCopy = item.copy() as! XMLElement
+			guard let itemCopy = item.copy() as? XMLElement else { continue }
 			self.addChild(itemCopy)
 		}
 	}
@@ -2196,7 +2205,7 @@ extension XMLElement {
 	/// - Throws: FCPXMLElementError.notAnEvent if the element is not an event.
 	public func removeFromEvent(itemIndex: Int) throws {
 		guard self.fcpxType == .event else {
-			throw FCPXMLElementError.notAnEvent(element: self)
+			throw FCPXMLElementError.notAnEvent(elementName: self.name ?? "unnamed")
 		}
 		
 		self.removeChild(at: itemIndex)
@@ -2209,7 +2218,7 @@ extension XMLElement {
 	/// - Throws: FCPXMLElementError.notAnEvent if the element is not an event.
 	public func removeFromEvent(itemIndexes: [Int]) throws {
 		guard self.fcpxType == .event else {
-			throw FCPXMLElementError.notAnEvent(element: self)
+			throw FCPXMLElementError.notAnEvent(elementName: self.name ?? "unnamed")
 		}
 		
 		for index in itemIndexes.sorted().reversed() {
@@ -2224,7 +2233,7 @@ extension XMLElement {
 	/// - Throws: FCPXMLElementError.notAnEvent if the element is not an event.
 	public func removeFromEvent(items: [XMLElement]) throws {
 		guard self.fcpxType == .event else {
-			throw FCPXMLElementError.notAnEvent(element: self)
+			throw FCPXMLElementError.notAnEvent(elementName: self.name ?? "unnamed")
 		}
 		
 		for item in items {
@@ -2241,7 +2250,7 @@ extension XMLElement {
 	public func addToClip(annotationElements elements: [XMLElement]) throws {
 		
 		guard self.fcpxType == .project || self.fcpxType == .synchronizedClip || self.fcpxType == .compoundClip || self.fcpxType == .multicamClip || self.fcpxType == .assetClip || self.fcpxType == .clip else {
-			throw FCPXMLElementError.notAnAnnotatableItem(element: self)
+			throw FCPXMLElementError.notAnAnnotatableItem(elementName: self.name ?? "unnamed")
 		}
 		
 		if let children = self.children {  // If there are children, insert the annotations at the appropriate point
@@ -2262,7 +2271,7 @@ extension XMLElement {
 			for element in elements {
 				
 				guard element.fcpxType == .note || element.fcpxType == .marker || element.fcpxType == .chapterMarker || element.fcpxType == .rating || element.fcpxType == .keyword || element.fcpxType == .analysisMarker else {
-					throw FCPXMLElementError.notAnAnnotation(element: element)
+					throw FCPXMLElementError.notAnAnnotation(elementName: element.name ?? "unnamed")
 				}
 				
 				element.detach()
@@ -2275,7 +2284,7 @@ extension XMLElement {
 			for element in elements {
 				
 				guard element.fcpxType == .note || element.fcpxType == .marker || element.fcpxType == .chapterMarker || element.fcpxType == .rating || element.fcpxType == .keyword || element.fcpxType == .analysisMarker else {
-					throw FCPXMLElementError.notAnAnnotation(element: element)
+					throw FCPXMLElementError.notAnAnnotation(elementName: element.name ?? "unnamed")
 				}
 				
 				element.detach()
@@ -2312,7 +2321,7 @@ extension XMLElement {
 		}
 		
 		for role in compoundClipRoles {
-			if projectRoles.contains(role) == false {
+			if !projectRoles.contains(role) {
 				projectRoles.append(role)
 			}
 		}
@@ -2369,7 +2378,7 @@ extension XMLElement {
 				return nil
 			}
 			
-			let nextElement = nextNode as! XMLElement
+			guard let nextElement = nextNode as? XMLElement else { return nil }
 			
 			return nextElement.fcpxFormatRef
 			
@@ -2537,15 +2546,13 @@ extension XMLElement {
 	}
 	
 	
-	/**
-	Returns child elements that fall within the specified in and out points. The element type can optionally be specified.
-	
-	- parameter inPoint: The in point as a CMTime value.
-	- parameter outPoint: The out point as a CMTime value.
-	- parameter elementType: The element type as an FCPXMLElementType enum value. If the value is nil, the method will return all child elements that match the criteria.
-	
-	- returns: An array of tuples. Each tuple contains the XML Element as an NSXMLElement, a boolean value indicating whether the element's in point overlaps with the range, and a boolean value indicating whether the element's out point overlaps with the range.
-	*/
+	/// Returns child elements that fall within the specified in and out points.
+	///
+	/// - Parameters:
+	///   - inPoint: The in point as a CMTime value.
+	///   - outPoint: The out point as a CMTime value.
+	///   - elementType: The element type. If nil, returns all matching child elements.
+	/// - Returns: An array of tuples containing the element, whether it overlaps the in point, and whether it overlaps the out point.
 	public func childElementsWithinRangeOf(_ inPoint: CMTime, outPoint: CMTime, elementType: FCPXMLElementType?) -> [(XMLElement: XMLElement, overlapsInPoint: Bool, overlapsOutPoint: Bool)] {
 		
 		var elementsInRange: [(XMLElement: XMLElement, overlapsInPoint: Bool, overlapsOutPoint: Bool)] = []
@@ -2558,7 +2565,7 @@ extension XMLElement {
 				return []
 			}
 			
-			children = childNodes as! [XMLElement]
+			children = childNodes as? [XMLElement] ?? []
 			
 		} else { // If a type is specified
 			
@@ -2601,11 +2608,9 @@ extension XMLElement {
 	}
 	
 	
-	/**
-	Retrieves the URLs from the elements contained within this resource.
-	
-	- returns: An array of NSURLs.
-	*/
+	/// Retrieves the URLs from the elements contained within this resource.
+	///
+	/// - Returns: An array of URLs.
 	public func urls() -> [URL] {
 		
 		var URLs: [URL] = []
@@ -2623,7 +2628,7 @@ extension XMLElement {
 			
 							let sourceParser = AttributeParserDelegate(element: resource, attribute: "src", inElementsWithName: nil)
 			
-					let values = sourceParser.getValues()
+					let values = sourceParser.values
 		if values.count > 0 {
 			for source in values {
 					let URL = Foundation.URL(string: source)
@@ -2639,14 +2644,12 @@ extension XMLElement {
 	}
 	
 	
-	/**
-	Searches the given element and its sub-elements for references and returns them.
-	
-	- returns: The references as an array of strings or nil if no reference is found.
-	*/
+	/// Searches this element and its sub-elements for references and returns them.
+	///
+	/// - Returns: The references as an array of strings, or nil if none found.
 	public func allReferenceIDs() -> [String]? {
 		let refParser = AttributeParserDelegate(element: self, attribute: "ref", inElementsWithName: nil)
-				let references = refParser.getValues()
+				let references = refParser.values
 
 		if references.count > 0 {
 			return references
@@ -2656,29 +2659,25 @@ extension XMLElement {
 	}
 	
 	
-	/**
-	This function goes through the element and all of its sub-elements, finding elements that match the given name. For example, this function can search a sequence and any embedded secondary storylines for matching elements.
-	
-	- parameter forName: A String of the element name to match with.
-	- parameter usingAbsoluteMatch: A boolean value of whether names must match absolutely or whether element names containing the string will yield a match.
-	
-	- returns: An array of matching elements as XMLElement objects.
-	*/
+	/// Finds all sub-elements matching the given name, including within secondary storylines.
+	///
+	/// - Parameters:
+	///   - name: The element name to match.
+	///   - usingAbsoluteMatch: If true, names must match exactly; otherwise, partial matches are returned.
+	/// - Returns: An array of matching XMLElement objects.
 	public func subelements(forName name: String, usingAbsoluteMatch: Bool) -> [XMLElement] {
 		
 		return self.subelements(forName: name, inElement: self, usingAbsoluteMatch: usingAbsoluteMatch)
 	}
 	
 	
-	/**
-	A recursive function that goes through an element and all its sub-elements, finding clips that match the given name. This function is used by the clips(forName name:usingAbsoluteMatch:) function and should not be called directly.
-	
-	- parameter forName: A String of the name to match clips with.
-	- parameter inElement: The XMLElement to recursively search. This is usually self.
-	- parameter usingAbsoluteMatch: A boolean value of whether names must match absolutely or whether clip names containing the string will yield a match.
-	
-	- returns: An array of matching clips as XMLElement objects.
-	*/
+	/// Recursively finds sub-elements matching the given name within the specified element.
+	///
+	/// - Parameters:
+	///   - name: The name to match.
+	///   - element: The element to recursively search.
+	///   - usingAbsoluteMatch: If true, names must match exactly; otherwise, partial matches are returned.
+	/// - Returns: An array of matching XMLElement objects.
 	private func subelements(forName name: String, inElement element: XMLElement, usingAbsoluteMatch: Bool) -> [XMLElement] {
 		
 		var matchingElements: [XMLElement] = []
@@ -2691,7 +2690,7 @@ extension XMLElement {
 					continue
 				}
 					
-				let childElement = child as! XMLElement
+				guard let childElement = child as? XMLElement else { continue }
 				guard let childElementName = childElement.name else {
 					continue
 				}
@@ -2731,12 +2730,10 @@ extension XMLElement {
 	}
 	
 	
-	/**
-	This function returns all clips within an element and its sub-elements.
-	- Note: The clips in the resulting array are not ordered by where they appear in the XML document.
-	
-	- returns: An array of clips as XMLElement objects.
-	*/
+	/// Returns all clips within this element and its sub-elements.
+	///
+	/// - Note: The clips in the resulting array are not ordered by document position.
+	/// - Returns: An array of clip XMLElement objects.
 	public func clips() -> [XMLElement] {
 		
 		let clipTypes: [FCPXMLElementType] = [.clip, .audio, .video, .gap, .transition, .title, .audition, .multicamClip, .compoundClip, .synchronizedClip, .assetClip, .liveDrawing]
@@ -2787,27 +2784,21 @@ extension XMLElement {
 		
 	}
 	
-	/**
-	This function goes through the element and all its sub-elements, finding clips that match the given type.
-	
-	- parameter elementType: A type of FCPXML element as FCPXMLElementType enumeration.
-	
-	- returns: An array of matching clips as XMLElement objects.
-	*/
+	/// Finds clips matching the given element type within this element and its sub-elements.
+	///
+	/// - Parameter elementType: The FCPXML element type to match.
+	/// - Returns: An array of matching clip XMLElement objects.
 	public func clips(forElementType elementType: FCPXMLElementType) -> [XMLElement] {
 		return self.clips(forElementType: elementType, inElement: self)
 	}
 	
 	
-	/**
-	A recursive function that goes through an element and all its sub-elements, finding clips that match the given type. This function is used by the clips(forElementType:) function and should not be called publicly.
-
-	
-	- parameter elementType: A type of FCPXML element as FCPXMLElementType enumeration.
-	- parameter inElement: The XMLElement to recursively search. This is usually self.
-	
-	- returns: An array of matching clips as XMLElement objects.
-	*/
+	/// Recursively finds clips matching the given element type.
+	///
+	/// - Parameters:
+	///   - elementType: The FCPXML element type to match.
+	///   - element: The element to recursively search.
+	/// - Returns: An array of matching clip XMLElement objects.
 	private func clips(forElementType elementType: FCPXMLElementType, inElement element: XMLElement) -> [XMLElement] {
 		
 		var matchingElements: [XMLElement] = []
@@ -2818,7 +2809,7 @@ extension XMLElement {
 				
 				if child.kind == XMLNode.Kind.element {
 					
-					let childElement = child as! XMLElement
+					guard let childElement = child as? XMLElement else { continue }
 					
 					if let childElementName = childElement.name {
 						
@@ -2908,7 +2899,7 @@ extension XMLElement {
 			}
 		}
 		
-		return (nextNode as! XMLElement)
+		return nextNode as? XMLElement
 	}
 	
 	/// Returns all sub-elements of this XMLElement.
@@ -2921,8 +2912,8 @@ extension XMLElement {
 		
 		var childElements: [XMLElement] = []
 		for child in children {
-			if child.kind == .element {
-				childElements.append(child as! XMLElement)
+			if child.kind == .element, let element = child as? XMLElement {
+				childElements.append(element)
 			}
 		}
 		
@@ -2943,10 +2934,7 @@ extension XMLElement {
 	///
 	/// - Parameters:
 	///   - element: The child element to insert.
-	///   - overrideDTDVersion: A string of the DTD filename to override with. The DTD must be stored in the framework. If nil, the function uses the latest DTD version.
-	public func addChildConformingToDTD(element: XMLElement, overrideDTDVersion: String?) {
-		// TODO: Add this function
-	}
+	// Note: addChildConformingToDTD was removed (unimplemented stub).
 	
 	
 	/// Converts a whitespace-only text value inside an XMLElement into an XMLNode object and inserts it as a child back into the XMLElement.
@@ -3032,34 +3020,34 @@ extension XMLElement {
 		// Parse the attributes using XMLParserDelegate
 		xmlParser.parse()
 		
-		return parserDelegate.getRoles()
+		return parserDelegate.roles
 		
 	}
 	
 	
 	// MARK: - Constants
-	enum FCPXMLElementError: Error, CustomStringConvertible, @unchecked Sendable {
-		case notAnEvent(element: XMLElement)
-		case notAnAnnotatableItem(element: XMLElement)
-		case notAnAnnotation(element: XMLElement)
+	enum FCPXMLElementError: Error, CustomStringConvertible, Sendable {
+		case notAnEvent(elementName: String)
+		case notAnAnnotatableItem(elementName: String)
+		case notAnAnnotation(elementName: String)
 		
 		var description: String {
 			switch self {
-			case .notAnEvent(let element):
-				return "The \"\(element.name ?? "unnamed")\" element is not an event."
-			case .notAnAnnotatableItem(let element):
-				return "The \"\(element.name ?? "unnamed")\" element cannot be annotated."
-			case .notAnAnnotation(let element):
-				return "The \"\(element.name ?? "unnamed")\" element is not an annotation."
+			case .notAnEvent(let elementName):
+				return "The \"\(elementName)\" element is not an event."
+			case .notAnAnnotatableItem(let elementName):
+				return "The \"\(elementName)\" element cannot be annotated."
+			case .notAnAnnotation(let elementName):
+				return "The \"\(elementName)\" element is not an annotation."
 			}
 		}
 	}
 	
 	public enum TextAlignment: String, Sendable {
-		case Left = "left"
-		case Center = "center"
-		case Right = "right"
-		case Justified = "justified"
+		case left = "left"
+		case center = "center"
+		case right = "right"
+		case justified = "justified"
 	}
 	
 	public enum TimecodeFormat: String, Sendable {
@@ -3083,6 +3071,10 @@ extension XMLElement {
 		case rate192kHz = "192k"
 	}
 	
+	/// Legacy render color space for existing FCPXML project/sequence attributes.
+	///
+	/// For new export workflows, prefer ``ColorSpace`` which includes HDR variants
+	/// and provides `fcpxmlValue` for attribute serialisation.
 	public enum RenderColorSpace: String, Sendable {
 		case rec601NTSC = "Rec. 601 (NTSC)"
 		case rec601PAL = "Rec. 601 (PAL)"
@@ -3105,75 +3097,75 @@ extension XMLElement {
 	
 	/// RFC 5646 language tags for use in caption role attributes. The languages included in this enum are those supported by FCPX.
 	public enum CaptionLanguage: String, Sendable {
-		case Afrikaans = "af"
-		case Arabic = "ar"
-		case Bangla = "bn"
-		case Bulgarian = "bg"
-		case Catalan = "ca"
-		case Chinese_Cantonese = "yue-Hant"
-		case Chinese_Simplified = "cmn-Hans"
-		case Chinese_Traditional = "cmn-Hant"
-		case Croatian = "hr"
-		case Czech = "cs"
-		case Danish = "da"
-		case Dutch = "nl"
-		case English = "en"
-		case English_Australia = "en-AU"
-		case English_Canada = "en-CA"
-		case English_UnitedKingdom = "en-GB"
-		case English_UnitedStates = "en-US"
-		case Estonian = "et"
-		case Finnish = "fi"
-		case French_Belgium = "fr-BE"
-		case French_Canada = "fr-CA"
-		case French_France = "fr-FR"
-		case French_Switzerland = "fr-CH"
-		case German = "de"
-		case German_Austria = "de-AT"
-		case German_Germany = "de-DE"
-		case German_Switzerland = "de-CH"
-		case Greek = "el"
-		case Greek_Cyprus = "el-CY"
-		case Hebrew = "he"
-		case Hindi = "hi"
-		case Hungarian = "hu"
-		case Icelandic = "is"
-		case Indonesian = "id"
-		case Italian = "it"
-		case Japanese = "ja"
-		case Kannada = "kn"
-		case Kazakh = "kk"
-		case Korean = "ko"
-		case Lao = "lo"
-		case Latvian = "lv"
-		case Lithuanian = "lt"
-		case Luxembourgish = "lb"
-		case Malay = "ms"
-		case Malayalam = "ml"
-		case Maltese = "mt"
-		case Marathi = "mr"
-		case Norwegian = "no"
-		case Polish = "pl"
-		case Portuguese_Brazil = "pt-BR"
-		case Portuguese_Portugal = "pt-PT"
-		case Punjabi = "pa"
-		case Romanian = "ro"
-		case Russian = "ru"
-		case Slovak = "sk"
-		case Slovenian = "sl"
-		case Spanish_LatinAmerica = "es-419"
-		case Spanish_Mexico = "es-MX"
-		case Spanish_Spain = "es-ES"
-		case Swedish = "sv"
-		case Tagalog = "tl"
-		case Tamil = "ta"
-		case Telugu = "te"
-		case Thai = "th"
-		case Turkish = "tr"
-		case Ukrainian = "uk"
-		case Urdu = "ur"
-		case Vietnamese = "vi"
-		case Zulu = "zu"
+		case afrikaans = "af"
+		case arabic = "ar"
+		case bangla = "bn"
+		case bulgarian = "bg"
+		case catalan = "ca"
+		case chineseCantonese = "yue-Hant"
+		case chineseSimplified = "cmn-Hans"
+		case chineseTraditional = "cmn-Hant"
+		case croatian = "hr"
+		case czech = "cs"
+		case danish = "da"
+		case dutch = "nl"
+		case english = "en"
+		case englishAustralia = "en-AU"
+		case englishCanada = "en-CA"
+		case englishUnitedKingdom = "en-GB"
+		case englishUnitedStates = "en-US"
+		case estonian = "et"
+		case finnish = "fi"
+		case frenchBelgium = "fr-BE"
+		case frenchCanada = "fr-CA"
+		case frenchFrance = "fr-FR"
+		case frenchSwitzerland = "fr-CH"
+		case german = "de"
+		case germanAustria = "de-AT"
+		case germanGermany = "de-DE"
+		case germanSwitzerland = "de-CH"
+		case greek = "el"
+		case greekCyprus = "el-CY"
+		case hebrew = "he"
+		case hindi = "hi"
+		case hungarian = "hu"
+		case icelandic = "is"
+		case indonesian = "id"
+		case italian = "it"
+		case japanese = "ja"
+		case kannada = "kn"
+		case kazakh = "kk"
+		case korean = "ko"
+		case lao = "lo"
+		case latvian = "lv"
+		case lithuanian = "lt"
+		case luxembourgish = "lb"
+		case malay = "ms"
+		case malayalam = "ml"
+		case maltese = "mt"
+		case marathi = "mr"
+		case norwegian = "no"
+		case polish = "pl"
+		case portugueseBrazil = "pt-BR"
+		case portuguesePortugal = "pt-PT"
+		case punjabi = "pa"
+		case romanian = "ro"
+		case russian = "ru"
+		case slovak = "sk"
+		case slovenian = "sl"
+		case spanishLatinAmerica = "es-419"
+		case spanishMexico = "es-MX"
+		case spanishSpain = "es-ES"
+		case swedish = "sv"
+		case tagalog = "tl"
+		case tamil = "ta"
+		case telugu = "te"
+		case thai = "th"
+		case turkish = "tr"
+		case ukrainian = "uk"
+		case urdu = "ur"
+		case vietnamese = "vi"
+		case zulu = "zu"
 	}
 	
 	/// Caption display style for CEA-608 captions

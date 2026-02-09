@@ -1,13 +1,21 @@
 # Pipeline Neo - Cursor Rules
 
+Pipeline Neo is a modern, fully modular Swift 6 framework for Final Cut Pro FCPXML processing with SwiftTimecode integration. The codebase underwent a complete rewrite and refactor: it is 100% protocol-oriented, with all major operations defined as protocols and implemented via dependency injection for maximum flexibility, testability, and future-proofing.
+
+Keep this file in sync with AGENT.md. Both should describe the same overview, architecture, test structure, and conventions. When you update one, update the other.
+
+---
+
 ## Table of Contents
 
 - [Project Overview](#project-overview)
-- [Modularity & Safety](#modularity--safety)
+- [Codebase Rewrite and Refactor](#codebase-rewrite-and-refactor)
+- [Modularity and Safety](#modularity-and-safety)
 - [Code Style and Formatting](#code-style-and-formatting)
 - [Architecture Guidelines](#architecture-guidelines)
 - [Dependencies](#dependencies)
 - [File Organisation](#file-organisation)
+- [Test Structure](#test-structure)
 - [Development Patterns](#development-patterns)
 - [Testing Requirements](#testing-requirements)
 - [Performance Considerations](#performance-considerations)
@@ -21,340 +29,215 @@
 - [Documentation Sync](#documentation-sync)
 - [Maintenance](#maintenance)
 
+---
+
 ## Project Overview
-Pipeline Neo is a modern, fully modular Swift 6 framework for Final Cut Pro FCPXML processing with SwiftTimecode integration. The codebase is 100% protocol-oriented, with all major operations defined as protocols and implemented via dependency injection for maximum flexibility, testability, and future-proofing. This project targets macOS 12+, Xcode 16+, and Swift 6.0 with full concurrency support.
 
-### Current Status
-- All 66 tests passing
-- Full FCPXML version support (1.5–1.14); DTDs for validation; full parsing; typed element-type coverage for all DTD elements (FCPXMLElementType)
-- Final Cut Pro frame rate support (23.976, 24, 25, 29.97, 30, 50, 59.94, 60)
-- Thread-safe and concurrency-compliant with comprehensive async/await support
-- No known security vulnerabilities
-- Comprehensive modular architecture with protocol-oriented design
+Pipeline Neo targets macOS 12+, Xcode 16+, and Swift 6.0 with full concurrency support. It provides FCPXML parsing, creation, and manipulation with timecode operations via SwiftTimecode. All core behaviour is behind protocols with both synchronous and async/await APIs; default implementations exist but any component can be swapped or extended via dependency injection.
 
-## Modularity & Safety
-- All core operations (parsing, timecode conversion, XML manipulation, error handling) are defined as protocols (e.g., FCPXMLParsing, TimecodeConversion, XMLDocumentOperations, ErrorHandling), with both sync and async/await APIs.
-- Default implementations are provided, but any component can be swapped or extended via dependency injection.
-- Extension APIs that cannot take parameters use a single shared instance, `FCPXMLUtility.defaultForExtensions` (concurrency-safe). No hidden concrete types in extensions; for custom pipelines use the modular API with `using:` parameter.
-- All code is Sendable or @unchecked Sendable as appropriate, and passes thread sanitizer checks. The project builds and tests with Swift 6 strict concurrency (`-strict-concurrency=complete`); CI runs a job that enforces this.
-- No known vulnerabilities in dependencies (including SwiftTimecode 3.0.0) as of July 2025.
-- No unsafe code patterns: no unsafe pointers, dynamic code execution, or C APIs. All concurrency is structured and type-safe.
+Current status: all 170 tests passing; FCPXML versions 1.5–1.14 supported (DTDs included, full parsing, typed element-type coverage for all DTD elements via FCPXMLElementType); Final Cut Pro frame rates (23.976, 24, 25, 29.97, 30, 50, 59.94, 60); thread-safe and concurrency-compliant with comprehensive async/await support; no known security vulnerabilities. Comprehensive code audit completed.
+
+---
+
+## Codebase Rewrite and Refactor
+
+The project was fully rewritten and refactored to achieve:
+
+- A protocol-oriented design: parsing, timecode conversion, XML manipulation, and error handling are defined as protocols (e.g. FCPXMLParsing, TimecodeConversion, XMLDocumentOperations, ErrorHandling) with sync and async/await methods.
+- A single injection point for extension APIs that cannot take parameters: FCPXMLUtility.defaultForExtensions (concurrency-safe). No hidden concrete types in extensions; for custom pipelines use the modular API with the using: parameter.
+- Consistent source layout: Analysis (EditPoint, CutDetectionResult), Classes, Delegates, Errors, Extensions (including +Modular), Implementations, Protocols, Services, Utilities, and FCPXML DTDs.
+- A structured test suite: shared resources, file tests per sample, logic/parsing tests, timeline/export/validation tests, API and edge-case tests, and performance tests, all documented in Tests/README.md.
+
+Foundation XML types (XMLDocument, XMLElement) and SwiftTimecode types are not Sendable. The codebase avoids Task-based concurrency for these types but provides async/await APIs that are concurrency-safe for Swift 6. If these dependencies become Sendable in the future, further parallelisation can be introduced.
+
+---
+
+## Modularity and Safety
+
+- All core operations are defined as protocols with both sync and async/await APIs. Default implementations are provided; any component can be swapped or extended via dependency injection. ErrorHandling protocol is sync-only (pure formatting, no I/O).
+- Extension APIs that cannot take parameters use a single shared instance, FCPXMLUtility.defaultForExtensions (concurrency-safe). No hidden concrete types in extensions; for custom pipelines use the modular API with using: parameter. CMTime.fcpxmlString delegates to FCPXMLUtility.defaultForExtensions.fcpxmlTime(fromCMTime:) for consistent formatting.
+- FCPXMLParser delegates URL loading to FCPXMLFileLoader for unified file/bundle handling and consistent FCPXML parse options. There is one code path for loading FCPXML from URLs.
+- ModularUtilities.validateDocument delegates to FCPXMLValidator for semantic validation (root element, resources, ref resolution). convertTimecodes uses the injected FCPXMLTimeStringConversion protocol rather than inline parsing.
+- FCPXMLUtility routes debugLog through its injected PipelineLogger; extension types use #if canImport(Logging) as a fallback for contexts without DI.
+- FCPXMLVersion (DTD validation, 1.5-1.14) and FinalCutPro.FCPXML.Version (parsing, 1.0-1.14) are bridged via .fcpxmlVersion, .dtdVersion, and init(from:) converters.
+- Module-scoped errors: FCPXMLError for parsing, FCPXMLLoadError for file I/O (notAFile, readFailed), FCPXMLExportError/FCPXMLBundleExportError for export, FinalCutPro.FCPXML.ParseError (with LocalizedError). Parse failures from all layers surface as FCPXMLError.parsingFailed. FCPXMLElementError uses String element names for Sendable compliance. FCPXMLDocumentError uses camelCase cases (dtdResourceNotFound, dtdResourceUnreadable).
+- All code is Sendable where appropriate; `@unchecked Sendable` removed from delegates (internal-only, used synchronously). The project builds and tests with Swift 6 strict concurrency (-strict-concurrency=complete). CI runs a job that enforces this.
+- No known vulnerabilities in dependencies (including SwiftTimecode 3.0.0) as of July 2025. No unsafe pointers, dynamic code execution, or C APIs; concurrency is structured and type-safe.
 - Async/await support is comprehensive across all protocols, implementations, services, and utilities.
+
+---
 
 ## Code Style and Formatting
 
-### Swift Conventions
-- Use Swift 6.0 syntax and features
-- Follow Swift API Design Guidelines
-- Use camelCase for variables and functions
-- Use PascalCase for types and protocols
-- Use descriptive, clear names for all identifiers
+Swift conventions: use Swift 6.0 syntax and features; follow Swift API Design Guidelines; camelCase for variables and functions; PascalCase for types and protocols; descriptive, clear names for all identifiers.
 
-### Documentation
-- Include comprehensive header comments for all public APIs
-- Use Swift documentation comments (///) for public interfaces
-- Provide usage examples in documentation
-- Document all parameters, return values, and exceptions
-- Follow the established header format in existing files
+Documentation: include comprehensive /// doc comments for all public APIs; provide usage examples; document all parameters, return values, and exceptions.
 
-### File Headers
-All Swift files must include the standard header format:
-```swift
-// Standard file header: replace [FileName], [Your Name], [Date], [Year].
+### File Header
+
+All new Swift files must use this exact header format:
+
+```
 //
-//  [FileName].swift
-//  PipelineNeo
+//  FileName.swift
+//  Pipeline Neo • https://github.com/TheAcharya/pipeline-neo
+//  © 2026 • Licensed under MIT License
+
+
 //
-//  Created by [Your Name] on [Date].
-//  Copyright © [Year] [Your Name]. All rights reserved.
+//	Brief description of the file's purpose.
 //
 ```
+
+Rules:
+- Replace `FileName.swift` with the actual file name.
+- Replace the purpose line with a concise description of what the file contains.
+- The purpose block uses a tab character after `//`, not spaces.
+- Two blank lines separate the header block from the purpose block.
+- Do not add `//  PipelineNeo`, `Created by`, or `Copyright ©` lines.
+
+---
 
 ## Architecture Guidelines
 
-### Concurrency Requirements
-- Use async/await for asynchronous operations (all major operations now have async/await APIs)
-- Implement proper Sendable compliance
-- Use @unchecked Sendable for classes that cannot be made final
-- Avoid capturing non-Sendable types in concurrent contexts
-- Use structured concurrency with Task and TaskGroup where types are Sendable
-- Note: Foundation XML types (XMLDocument, XMLElement) and SwiftTimecode types are not Sendable; async/await APIs are provided, but Task-based concurrency is avoided for these types
+Concurrency: use async/await for asynchronous operations (all major operations have async/await APIs). Implement proper Sendable compliance; use @unchecked Sendable for classes that cannot be made final. Avoid capturing non-Sendable types in concurrent contexts. Use structured concurrency (Task, TaskGroup) only where types are Sendable. Foundation XML types and SwiftTimecode types are not Sendable; async/await APIs are provided, but Task-based concurrency is avoided for these types.
 
-### Error Handling
-- Use Swift's Result type for operations that can fail
-- Provide meaningful error messages
-- Implement proper error propagation
-- Use do-catch blocks for synchronous operations
-- Create specific error types for different failure scenarios
+Error handling: use Swift Result for operations that can fail; provide meaningful error messages; implement proper error propagation; use do-catch for sync; create specific error types (FCPXMLError) for failure scenarios.
 
-### Type Safety
-- Use strongly typed enums for FCPXML elements
-- Implement type-safe timecode operations
-- Use optionals appropriately
-- Avoid force unwrapping unless absolutely necessary
+Type safety: use strongly typed enums for FCPXML elements (FCPXMLElementType); implement type-safe timecode operations; use optionals appropriately; avoid force unwrapping unless necessary.
+
+---
 
 ## Dependencies
 
-### Primary Dependencies
-- SwiftTimecode: 3.0.0+ for timecode operations
-- SwiftExtensions: 2.0.0+ ([orchetect/swift-extensions](https://github.com/orchetect/swift-extensions)) for String, Collection, Optional, XML helpers where useful
-- Foundation: Core XML and data handling
-- CoreMedia: CMTime operations and conversions
+Primary: SwiftTimecode 3.0.0+ for timecode operations; SwiftExtensions 2.0.0+ (orchetect/swift-extensions) for String, Collection, Optional, XML helpers where useful; Foundation for XML and data; CoreMedia for CMTime.
 
-### Version Requirements
-- Swift: 6.0+
-- Xcode: 16.0+
-- macOS: 12.0+
+Version requirements: Swift 6.0+, Xcode 16.0+, macOS 12.0+.
+
+SwiftTimecode usage: use Timecode(.realTime(seconds: seconds), at: frameRate) instead of the old realTime: at: initialiser. Use frame rate cases .fps23_976, .fps24, .fps25, .fps29_97, .fps30, .fps50, .fps59_94, .fps60 instead of ._24, ._25, etc.
+
+---
 
 ## File Organisation
 
-### Source Structure
-- Layout: Classes, Delegates, Errors (FCPXMLError), Extensions (including +Modular: CMTime+Modular, XMLDocument+Modular, XMLElement+Modular), Implementations, Protocols, Services, Utilities, FCPXML DTDs
-- Group related functionality in extensions
-- Keep files focused on single responsibilities
-- Use clear file naming conventions
-- Organise imports logically
-- Maintain the existing directory structure
+Source structure: layout is Classes (FinalCutPro, FCPXML core types, FCPXMLElementType, FCPXMLUtility, FCPXMLVersion, FCPXML Root, FCPXML Root Version), Delegates, Errors (FCPXMLError, FCPXML ParseError), Extensions (including +Modular: CMTime+Modular, XMLDocument+Modular, XMLElement+Modular), Implementations, Protocols, Services, Utilities (ModularUtilities, FCPXML Time Utilities, SequencePlusAnySequence, XMLElementAncestorWalking, XMLElementSequenceAttributes), Annotations (creation-oriented value types; for parsing models see Model/), Export (FCPXMLExporter, FCPXMLBundleExporter, FCPXMLExportAsset), Timeline (Timeline, TimelineClip), Validation (FCPXMLValidator, FCPXMLDTDValidator, ValidationResult, ValidationError/Warning), FileIO (FCPXMLFileLoader), Logging (PipelineLogger, NoOpPipelineLogger, PrintPipelineLogger), Format (ColorSpace), Model (element models with subfolders: Attributes, Clips, CommonElements, ElementTypes, Occlusion, Protocols, Resources, Roles, Structure), Parsing (XML parsing extensions), Extraction (extraction logic with Context/ and Presets/ subfolders), FCPXML DTDs. Group related functionality in extensions; keep files focused on single responsibilities; use clear file naming conventions; organise imports logically; maintain the existing directory structure.
 
-### Test Structure
-- One test file per main component
-- Descriptive test method names
-- Comprehensive test data
-- Proper setup and teardown
-- Test all supported frame rates (Final Cut Pro compatible)
+---
+
+## Test Structure
+
+Tests live under Tests/. Full description is in Tests/README.md. Summary:
+
+- Tests/README.md: test categories, how to run (Swift PM, Xcode, Linux), sample files, frame rates, FCPXML versions. Keep it current when adding or changing tests.
+
+- Tests/FCPXML Samples/FCPXML/: sample .fcpxml files. File tests and logic tests load these via shared utilities; tests that require a missing sample use XCTSkip.
+
+- Tests/PipelineNeoTests/: TestResources.swift (packageRoot, fcpxmlSamplesDirectory, urlForFCPXMLSample, FCPXMLSampleName); FCPXMLTestUtilities.swift (loadFCPXMLSampleData, loadFCPXMLSample, fcpxmlFrameRateSampleNames, allFCPXMLSampleNames; XCTSkip when sample missing). PipelineNeoTests.swift: main test class with injected dependencies; MARK sections group tests. FileTests/: one test class per sample or category (e.g. FCPXMLFileTest_24, FCPXMLFileTest_Structure, FCPXMLFileTest_AllSamples, FCPXMLFileTest_FrameRates). LogicAndParsing/: FCPXMLRootVersionTests, FCPXMLStructureTests. TimelineExportValidationTests: timeline, exporters, validators, file loader. APIAndEdgeCaseTests: async load API, PipelineLogger injection, edge cases. FCPXMLPerformanceTests: parameterised and basic performance tests.
+
+Use descriptive test method names; group related tests logically; include setup and teardown; use meaningful assertions. Current total: 170 comprehensive tests covering all functionality including async/await.
+
+---
 
 ## Development Patterns
 
-### Async Operations
-```swift
-// Standard async pattern for time conversions (implementation returns Timecode or nil).
-public func timecode(from time: CMTime, frameRate: TimecodeFrameRate) async -> Timecode? {
-    // Implementation
-}
+Async operations: standard async pattern for time conversions (implementation returns Timecode or nil). Task-based concurrent operations only when element types are Sendable.
 
-// Task-based concurrent operations: only when element types are Sendable.
-await withTaskGroup(of: Void.self) { group in
-    for element in elements {
-        group.addTask {
-            // Process element
-        }
-    }
-}
-```
+Error handling: Result-based for sync APIs; async APIs throw and propagate FCPXMLError (e.g. parsingFailed(error)). Use do-catch and meaningful error types.
 
-### Error Handling
-```swift
-// Result-based error handling for sync APIs.
-public func parseFCPXML(from url: URL) -> Result<XMLDocument, FCPXMLError> {
-    // Implementation with proper error types
-}
+SwiftTimecode integration: use SwiftTimecode for all timecode operations; support all FCPXML frame rates (Final Cut Pro compatible); implement proper frame rate conversions; use the new Timecode(.realTime(seconds:), at:) API and updated frame rate enum cases (.fps24, .fps25, etc.).
 
-// Async error handling: propagate FCPXMLError from underlying errors.
-do {
-    let document = try await loadFCPXML(from: url)
-    return document
-} catch {
-    throw FCPXMLError.parsingFailed(error)
-}
-```
-
-### SwiftTimecode Integration
-- Use SwiftTimecode for all timecode operations
-- Follow SwiftTimecode API conventions
-- Support all FCPXML frame rates (Final Cut Pro compatible)
-- Implement proper frame rate conversions
-- Use the new API: `Timecode(.realTime(seconds: seconds), at: frameRate)` instead of the old `Timecode(realTime:seconds, at: frameRate)`
-- Use updated frame rate enum cases: `.fps24`, `.fps25`, `.fps29_97`, `.fps30`, `.fps50`, `.fps59_94`, `.fps60`, `.fps23_976` instead of `._24`, `._25`, etc.
+---
 
 ## Testing Requirements
 
-### Test Coverage
-- Unit tests for all public APIs
-- Integration tests for complex workflows
-- Performance tests for time-critical operations
-- Concurrency tests for async operations
-- Test all supported frame rates (Final Cut Pro compatible)
-- Current: 66 comprehensive tests covering all functionality including async/await operations
+Test coverage: unit tests for all public APIs; integration tests for complex workflows; performance tests for time-critical operations; concurrency tests for async operations; test all supported frame rates (Final Cut Pro compatible). Current: 170 comprehensive tests covering all functionality including async/await.
 
-### Test Data
-- Use realistic FCPXML samples
-- Include edge cases and error conditions
-- Test all supported frame rates (Final Cut Pro compatible)
-- Validate against actual Final Cut Pro output
+Test data: use realistic FCPXML samples; include edge cases and error conditions; test all supported frame rates; validate against actual Final Cut Pro output where applicable.
 
-### Test Organisation
-- Use descriptive test method names
-- Group related tests logically
-- Include proper setup and teardown
-- Use meaningful assertions
+Test organisation: descriptive test method names; group related tests logically; proper setup and teardown; meaningful assertions.
 
-### Supported Frame Rates
-Only test with Final Cut Pro supported frame rates:
-- 23.976 fps
-- 24 fps
-- 25 fps
-- 29.97 fps
-- 30 fps
-- 50 fps
-- 59.94 fps
-- 60 fps
+Supported frame rates for testing: 23.976, 24, 25, 29.97, 30, 50, 59.94, 60 fps only.
+
+---
 
 ## Performance Considerations
 
-### Memory Management
-- Use value types where appropriate
-- Implement proper resource cleanup
-- Avoid retain cycles in closures
-- Use weak references for delegates
+Memory: use value types where appropriate; implement proper resource cleanup; avoid retain cycles in closures; use weak references for delegates.
 
-### Concurrency Performance
-- Use appropriate concurrency levels
-- Implement proper task cancellation
-- Avoid blocking operations on main thread
-- Use structured concurrency for complex operations
+Concurrency: use appropriate concurrency levels; implement proper task cancellation; avoid blocking the main thread; use structured concurrency for complex operations.
 
-### XML Processing
-- Stream large documents when possible
-- Use efficient XML parsing techniques
-- Implement proper memory management for large files
-- Cache frequently accessed data
+XML processing: stream large documents when possible; use efficient XML parsing techniques; implement proper memory management for large files; cache frequently accessed data.
+
+---
 
 ## Documentation Standards
 
-### Code Documentation
-- Comprehensive header comments for all public APIs
-- Parameter and return value documentation
-- Usage examples in comments
-- Exception documentation
+Code documentation: comprehensive header comments for all public APIs; parameter and return value documentation; usage examples in comments; exception documentation.
 
-### README Updates
-- Update README.md when adding new features
-- Include usage examples
-- Document breaking changes
-- Keep installation instructions current
+README updates: update README.md when adding new features; include usage examples; document breaking changes; keep installation instructions current.
 
-### Inline Comments
-- Explain complex algorithms
-- Document business logic
-- Clarify non-obvious code
-- Reference external specifications
+Inline comments: explain complex algorithms; document business logic; clarify non-obvious code; reference external specifications.
+
+---
 
 ## Git Workflow
 
-### Commit Messages
-- Use clear, descriptive commit messages
-- Reference issue numbers when applicable
-- Separate subject from body with blank line
-- Use imperative mood in commit messages
+Commit messages: use clear, descriptive commit messages; reference issue numbers when applicable; separate subject from body with blank line; use imperative mood.
 
-### Branch Strategy
-- main: Production-ready code
-- dev: Development branch
-- feature/*: Feature development
-- bugfix/*: Bug fixes
+Branch strategy: main (production-ready), dev, feature/*, bugfix/*.
+
+---
 
 ## Quality Assurance
 
-### Code Review Checklist
-- All tests passing
-- Documentation updated
-- Error handling implemented
-- Performance considerations addressed
-- Concurrency requirements met
+Code review checklist: all tests passing; documentation updated; error handling implemented; performance considerations addressed; concurrency requirements met.
 
-### Build Requirements
-- Swift build successful
-- All tests passing
-- No warnings or errors
-- Proper dependency resolution
+Build requirements: Swift build successful; all tests passing; no warnings or errors; proper dependency resolution.
+
+---
 
 ## Project-Specific Rules
 
-### FCPXML Handling
-- Support FCPXML versions 1.5 through 1.14 (DTDs included; full parsing; typed element-type coverage via FCPXMLElementType for all DTD elements)
-- Validate against DTD schemas
-- Handle all supported frame rates (Final Cut Pro compatible)
-- Implement proper XML formatting
+FCPXML handling: support FCPXML versions 1.5 through 1.14 (DTDs included; full parsing; typed element-type coverage via FCPXMLElementType for all DTD elements); validate against DTD schemas; handle all supported frame rates (Final Cut Pro compatible); implement proper XML formatting. Media extraction: extract media references (asset media-rep src, locator url) and copy referenced file URLs to a destination directory (MediaExtraction protocol, MediaExtractor).
 
-### Timecode Operations
-- Use SwiftTimecode for all timecode operations
-- Support all FCPXML frame rates (Final Cut Pro compatible)
-- Implement proper frame rate conversions
-- Handle drop frame and non-drop frame timecode
+Timecode operations: use SwiftTimecode for all timecode operations; support all FCPXML frame rates (Final Cut Pro compatible); implement proper frame rate conversions; handle drop frame and non-drop frame timecode.
 
-### Platform Support
-- Target macOS 12.0+
-- Use Xcode 16.0+ features
-- Implement Swift 6.0 concurrency
-- Follow Apple's platform guidelines
+Platform support: target macOS 12.0+; use Xcode 16.0+ features; implement Swift 6.0 concurrency; follow Apple platform guidelines.
+
+---
 
 ## External References
 
-### Documentation
-- [Final Cut Pro XML Documentation](https://fcp.cafe/developers/fcpxml/)
-- [SwiftTimecode Documentation](https://github.com/orchetect/swift-timecode)
-- [Swift Concurrency Documentation](https://docs.swift.org/swift-book/documentation/the-swift-programming-language/concurrency/)
+Documentation: Final Cut Pro XML (fcp.cafe/developers/fcpxml/), SwiftTimecode (github.com/orchetect/swift-timecode), Swift Concurrency (docs.swift.org). Standards: Swift API Design Guidelines, Apple Human Interface Guidelines, Final Cut Pro XML specifications, SwiftTimecode API conventions.
 
-### Standards
-- Swift API Design Guidelines
-- Apple's Human Interface Guidelines
-- Final Cut Pro XML specifications
-- SwiftTimecode API conventions
+---
 
 ## Common Tasks
 
-### Adding New Features
-1. Create feature branch
-2. Implement functionality with tests
-3. Update documentation
-4. Ensure all tests pass
-5. Create pull request
+Adding new features: create feature branch; implement functionality with tests; update documentation; ensure all tests pass; create pull request.
 
-### Bug Fixes
-1. Create bugfix branch
-2. Implement fix with regression tests
-3. Update documentation if needed
-4. Ensure all tests pass
-5. Create pull request
+Bug fixes: create bugfix branch; implement fix with regression tests; update documentation if needed; ensure all tests pass; create pull request.
 
-### Performance Improvements
-1. Measure current performance
-2. Implement improvements
-3. Add performance tests
-4. Measure improvement
-5. Document changes
+Performance improvements: measure current performance; implement improvements; add performance tests; measure improvement; document changes.
+
+---
 
 ## Code Generation Guidelines
 
-### When Generating Code
-- Follow existing patterns and conventions
-- Include comprehensive tests
-- Add proper documentation
-- Ensure concurrency compliance
-- Validate against project requirements
+When generating code: follow existing patterns and conventions; include comprehensive tests; add proper documentation; ensure concurrency compliance; validate against project requirements.
 
-### Code Review Process
-- Review for Swift 6.0 compliance
-- Check concurrency implementation
-- Validate error handling
-- Ensure test coverage
-- Verify documentation quality
+Code review process: review for Swift 6.0 compliance; check concurrency implementation; validate error handling; ensure test coverage; verify documentation quality.
+
+---
 
 ## Documentation Sync
-- Keep this file in sync with AGENT.md: same project overview, concurrency and modularity details, test count (66), FCPXML/version support, and source layout. When updating one, update the other.
+
+Keep this file in sync with AGENT.md. Both must reflect: project overview and codebase rewrite/refactor; architecture and single injection point (FCPXMLUtility.defaultForExtensions); source layout (Analysis, Classes, Delegates, Errors, Extensions including +Modular, Implementations, Media, Protocols, Services, Utilities, Annotations, Export, Timeline, Validation, FileIO, Logging, Format, Model, Parsing, Extraction, FCPXML DTDs); test structure (Tests/ layout, TestResources, FCPXMLTestUtilities, FileTests/, LogicAndParsing/, CutDetectionTests, VersionConversionTests, MediaExtractionTests, PipelineNeoTests.swift, TimelineExportValidationTests, APIAndEdgeCaseTests, FCPXMLPerformanceTests; 170 tests); FCPXML 1.5–1.14 and FCPXMLElementType; Final Cut Pro frame rates; Swift 6 concurrency (Sendable, async/await, CI strict-concurrency job). When updating either file, update both and keep terminology and examples consistent.
+
+---
 
 ## Maintenance
 
-### Regular Tasks
-- Update dependencies as needed
-- Review and update documentation
-- Monitor test coverage
-- Address any warnings or deprecations
-- Keep build configuration current
+Regular tasks: update dependencies as needed; review and update documentation; monitor test coverage; address warnings or deprecations; keep build configuration current.
 
-### Long-term Considerations
-- Plan for future Swift versions
-- Consider new FCPXML versions
-- Monitor SwiftTimecode updates
-- Plan for platform changes
-- Maintain backward compatibility where possible 
+Long-term: plan for future Swift versions; consider new FCPXML versions; monitor SwiftTimecode updates; plan for platform changes; maintain backward compatibility where possible.
