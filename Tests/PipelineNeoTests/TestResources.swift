@@ -24,11 +24,46 @@ func packageRoot(relativeToFile fileURL: URL = URL(fileURLWithPath: #file)) -> U
 }
 
 /// Directory containing FCPXML sample files (Tests/FCPXML Samples/FCPXML).
+/// Tries, in order: test bundle resource, CI env (GITHUB_WORKSPACE), current directory, then #file-based package root.
 func fcpxmlSamplesDirectory(relativeToFile fileURL: URL = URL(fileURLWithPath: #file)) -> URL {
-    packageRoot(relativeToFile: fileURL)
-        .appendingPathComponent("Tests", isDirectory: true)
-        .appendingPathComponent("FCPXML Samples", isDirectory: true)
-        .appendingPathComponent("FCPXML", isDirectory: true)
+    let samplesSubpath = ["Tests", "FCPXML Samples", "FCPXML"]
+    func samplesDir(fromRoot root: URL) -> URL {
+        samplesSubpath.reduce(root) { $0.appendingPathComponent($1, isDirectory: true) }
+    }
+
+    // 1. Test bundle (swift test / xcodebuild when resources are bundled)
+    if let resourceURL = Bundle.module.resourceURL {
+        let candidates = [
+            resourceURL.appendingPathComponent("FCPXML Samples", isDirectory: true).appendingPathComponent("FCPXML", isDirectory: true),
+            resourceURL.appendingPathComponent("FCPXML", isDirectory: true),
+        ]
+        for dir in candidates {
+            if FileManager.default.fileExists(atPath: dir.path) {
+                return dir
+            }
+        }
+    }
+
+    // 2. CI: GitHub Actions sets GITHUB_WORKSPACE to the repo root
+    if let workspace = ProcessInfo.processInfo.environment["GITHUB_WORKSPACE"], !workspace.isEmpty {
+        let root = URL(fileURLWithPath: workspace)
+        let dir = samplesDir(fromRoot: root)
+        if FileManager.default.fileExists(atPath: dir.path) {
+            return dir
+        }
+    }
+
+    // 3. Current working directory (e.g. xcodebuild runs from package root)
+    let cwd = URL(fileURLWithPath: FileManager.default.currentDirectoryPath)
+    if FileManager.default.fileExists(atPath: cwd.appendingPathComponent("Package.swift").path) {
+        let dir = samplesDir(fromRoot: cwd)
+        if FileManager.default.fileExists(atPath: dir.path) {
+            return dir
+        }
+    }
+
+    // 4. Walk up from #file (local Xcode / swift test from repo)
+    return samplesDir(fromRoot: packageRoot(relativeToFile: fileURL))
 }
 
 /// URL for a named FCPXML sample (e.g. "24", "Complex") with extension .fcpxml.

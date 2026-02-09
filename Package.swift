@@ -34,7 +34,8 @@ let package = Package(
             ]),
         .testTarget(
             name: "PipelineNeoTests",
-            dependencies: ["PipelineNeo"]),
+            dependencies: ["PipelineNeo"],
+            resources: [.process("../FCPXML Samples/FCPXML")]),
         .executableTarget(
             name: "PipelineNeoCLI",
             dependencies: [

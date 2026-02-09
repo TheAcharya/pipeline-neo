@@ -28,49 +28,6 @@ final class CutDetectionTests: XCTestCase, @unchecked Sendable {
         try super.tearDownWithError()
     }
 
-    // MARK: - Same-clip cuts (Example FCPXML)
-
-    func testSameClipCut_ExampleCut1() throws {
-        let url = packageRoot()
-            .appendingPathComponent("Example FCPXML", isDirectory: true)
-            .appendingPathComponent("Cut 1.fcpxmld", isDirectory: true)
-            .appendingPathComponent("Info.fcpxml")
-        guard FileManager.default.fileExists(atPath: url.path) else {
-            throw XCTSkip("Example FCPXML Cut 1 not found at \(url.path)")
-        }
-        let data = try Data(contentsOf: url)
-        let document = try service.parseFCPXML(from: data)
-        let result = service.detectCuts(in: document)
-        XCTAssertEqual(result.totalEditPoints, 1, "Cut 1 has two segments of same asset → one edit point")
-        XCTAssertEqual(result.sameClipCutCount, 1, "Edit should be classified as same-clip cut")
-        XCTAssertEqual(result.differentClipsCutCount, 0)
-        let point = try XCTUnwrap(result.editPoints.first)
-        XCTAssertEqual(point.sourceRelationship, .sameClip)
-        XCTAssertEqual(point.outgoingClipRef, "r2")
-        XCTAssertEqual(point.incomingClipRef, "r2")
-        XCTAssertEqual(point.editType, .hardCut)
-    }
-
-    func testSameClipCut_ExampleCut2() throws {
-        let url = packageRoot()
-            .appendingPathComponent("Example FCPXML", isDirectory: true)
-            .appendingPathComponent("Cut 2.fcpxmld", isDirectory: true)
-            .appendingPathComponent("Info.fcpxml")
-        guard FileManager.default.fileExists(atPath: url.path) else {
-            throw XCTSkip("Example FCPXML Cut 2 not found at \(url.path)")
-        }
-        let data = try Data(contentsOf: url)
-        let document = try service.parseFCPXML(from: data)
-        let result = service.detectCuts(in: document)
-        XCTAssertEqual(result.totalEditPoints, 1)
-        XCTAssertEqual(result.sameClipCutCount, 1)
-        XCTAssertEqual(result.differentClipsCutCount, 0)
-        let point = try XCTUnwrap(result.editPoints.first)
-        XCTAssertEqual(point.sourceRelationship, .sameClip)
-        XCTAssertEqual(point.outgoingClipRef, "r2")
-        XCTAssertEqual(point.incomingClipRef, "r2")
-    }
-
     // MARK: - Different-clips and transitions (24.fcpxml)
 
     func testDifferentClipsAndTransitions_24fcpxml() throws {

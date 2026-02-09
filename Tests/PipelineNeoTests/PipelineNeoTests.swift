@@ -349,7 +349,7 @@ final class PipelineNeoTests: XCTestCase, @unchecked Sendable {
         let resources = XMLElement(name: "resources")
         document.rootElement()?.addChild(resources)
         
-        let validation = await ModularUtilities.validateDocument(document, using: parser)
+        let validation = await ModularUtilities.validateDocument(document)
         XCTAssertTrue(validation.isValid)
         XCTAssertTrue(validation.errors.isEmpty)
     }
@@ -992,7 +992,7 @@ final class PipelineNeoTests: XCTestCase, @unchecked Sendable {
     func testModularUtilitiesValidateDocumentReturnsErrorsForInvalidDocument() {
         let doc = XMLDocument()
         doc.setRootElement(XMLElement(name: "wrongroot"))
-        let result = ModularUtilities.validateDocument(doc, using: parser)
+        let result = ModularUtilities.validateDocument(doc)
         XCTAssertFalse(result.isValid)
         XCTAssertFalse(result.errors.isEmpty)
     }
@@ -1008,7 +1008,7 @@ final class PipelineNeoTests: XCTestCase, @unchecked Sendable {
         try validFCPXML.data(using: .utf8)!.write(to: tempURL)
         defer { try? FileManager.default.removeItem(at: tempURL) }
 
-        let result = ModularUtilities.processFCPXML(from: tempURL, using: service, errorHandler: errorHandler)
+        let result = ModularUtilities.processFCPXML(from: tempURL, using: service)
         switch result {
         case .success(let document):
             XCTAssertNotNil(document.rootElement())
@@ -1030,7 +1030,7 @@ final class PipelineNeoTests: XCTestCase, @unchecked Sendable {
         try validFCPXML.data(using: .utf8)!.write(to: url2)
         defer { try? FileManager.default.removeItem(at: url1); try? FileManager.default.removeItem(at: url2) }
 
-        let results = await ModularUtilities.processMultipleFCPXML(from: [url1, url2], using: service, errorHandler: errorHandler)
+        let results = await ModularUtilities.processMultipleFCPXML(from: [url1, url2], using: service)
         XCTAssertEqual(results.count, 2)
         for (index, result) in results.enumerated() {
             switch result {

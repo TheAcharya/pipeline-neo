@@ -35,7 +35,7 @@ Keep this file in sync with AGENT.md. Both should describe the same overview, ar
 
 Pipeline Neo targets macOS 12+, Xcode 16+, and Swift 6.0 with full concurrency support. It provides FCPXML parsing, creation, and manipulation with timecode operations via SwiftTimecode. All core behaviour is behind protocols with both synchronous and async/await APIs; default implementations exist but any component can be swapped or extended via dependency injection.
 
-Current status: all 174 tests passing; FCPXML versions 1.5–1.14 supported (DTDs included, full parsing, typed element-type coverage for all DTD elements via FCPXMLElementType); Final Cut Pro frame rates (23.976, 24, 25, 29.97, 30, 50, 59.94, 60); thread-safe and concurrency-compliant with comprehensive async/await support; no known security vulnerabilities. Comprehensive code audit completed.
+Current status: all 170 tests passing; FCPXML versions 1.5–1.14 supported (DTDs included, full parsing, typed element-type coverage for all DTD elements via FCPXMLElementType); Final Cut Pro frame rates (23.976, 24, 25, 29.97, 30, 50, 59.94, 60); thread-safe and concurrency-compliant with comprehensive async/await support; no known security vulnerabilities. Comprehensive code audit completed.
 
 ---
 
@@ -134,7 +134,7 @@ Tests live under Tests/. Full description is in Tests/README.md. Summary:
 
 - Tests/PipelineNeoTests/: TestResources.swift (packageRoot, fcpxmlSamplesDirectory, urlForFCPXMLSample, FCPXMLSampleName); FCPXMLTestUtilities.swift (loadFCPXMLSampleData, loadFCPXMLSample, fcpxmlFrameRateSampleNames, allFCPXMLSampleNames; XCTSkip when sample missing). PipelineNeoTests.swift: main test class with injected dependencies; MARK sections group tests. FileTests/: one test class per sample or category (e.g. FCPXMLFileTest_24, FCPXMLFileTest_Structure, FCPXMLFileTest_AllSamples, FCPXMLFileTest_FrameRates). LogicAndParsing/: FCPXMLRootVersionTests, FCPXMLStructureTests. TimelineExportValidationTests: timeline, exporters, validators, file loader. APIAndEdgeCaseTests: async load API, PipelineLogger injection, edge cases. FCPXMLPerformanceTests: parameterised and basic performance tests.
 
-Use descriptive test method names; group related tests logically; include setup and teardown; use meaningful assertions. Current total: 174 comprehensive tests covering all functionality including async/await.
+Use descriptive test method names; group related tests logically; include setup and teardown; use meaningful assertions. Current total: 170 comprehensive tests covering all functionality including async/await.
 
 ---
 
@@ -150,7 +150,7 @@ SwiftTimecode integration: use SwiftTimecode for all timecode operations; suppor
 
 ## Testing Requirements
 
-Test coverage: unit tests for all public APIs; integration tests for complex workflows; performance tests for time-critical operations; concurrency tests for async operations; test all supported frame rates (Final Cut Pro compatible). Current: 174 comprehensive tests covering all functionality including async/await.
+Test coverage: unit tests for all public APIs; integration tests for complex workflows; performance tests for time-critical operations; concurrency tests for async operations; test all supported frame rates (Final Cut Pro compatible). Current: 170 comprehensive tests covering all functionality including async/await.
 
 Test data: use realistic FCPXML samples; include edge cases and error conditions; test all supported frame rates; validate against actual Final Cut Pro output where applicable.
 
@@ -232,7 +232,7 @@ Code review process: review for Swift 6.0 compliance; check concurrency implemen
 
 ## Documentation Sync
 
-Keep this file in sync with AGENT.md. Both must reflect: project overview and codebase rewrite/refactor; architecture and single injection point (FCPXMLUtility.defaultForExtensions); source layout (Analysis, Classes, Delegates, Errors, Extensions including +Modular, Implementations, Media, Protocols, Services, Utilities, Annotations, Export, Timeline, Validation, FileIO, Logging, Format, Model, Parsing, Extraction, FCPXML DTDs); test structure (Tests/ layout, TestResources, FCPXMLTestUtilities, FileTests/, LogicAndParsing/, CutDetectionTests, VersionConversionTests, MediaExtractionTests, PipelineNeoTests.swift, TimelineExportValidationTests, APIAndEdgeCaseTests, FCPXMLPerformanceTests; 174 tests); FCPXML 1.5–1.14 and FCPXMLElementType; Final Cut Pro frame rates; Swift 6 concurrency (Sendable, async/await, CI strict-concurrency job). When updating either file, update both and keep terminology and examples consistent.
+Keep this file in sync with AGENT.md. Both must reflect: project overview and codebase rewrite/refactor; architecture and single injection point (FCPXMLUtility.defaultForExtensions); source layout (Analysis, Classes, Delegates, Errors, Extensions including +Modular, Implementations, Media, Protocols, Services, Utilities, Annotations, Export, Timeline, Validation, FileIO, Logging, Format, Model, Parsing, Extraction, FCPXML DTDs); test structure (Tests/ layout, TestResources, FCPXMLTestUtilities, FileTests/, LogicAndParsing/, CutDetectionTests, VersionConversionTests, MediaExtractionTests, PipelineNeoTests.swift, TimelineExportValidationTests, APIAndEdgeCaseTests, FCPXMLPerformanceTests; 170 tests); FCPXML 1.5–1.14 and FCPXMLElementType; Final Cut Pro frame rates; Swift 6 concurrency (Sendable, async/await, CI strict-concurrency job). When updating either file, update both and keep terminology and examples consistent.
 
 ---
 

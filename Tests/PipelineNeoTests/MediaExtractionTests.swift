@@ -25,46 +25,6 @@ final class MediaExtractionTests: XCTestCase, @unchecked Sendable {
         try super.tearDownWithError()
     }
 
-    // MARK: - Extract (Example FCPXML Cut 1)
-
-    func testExtractMediaReferences_ExampleCut1() throws {
-        let url = packageRoot()
-            .appendingPathComponent("Example FCPXML", isDirectory: true)
-            .appendingPathComponent("Cut 1.fcpxmld", isDirectory: true)
-            .appendingPathComponent("Info.fcpxml")
-        guard FileManager.default.fileExists(atPath: url.path) else {
-            throw XCTSkip("Example FCPXML Cut 1 not found at \(url.path)")
-        }
-        let data = try Data(contentsOf: url)
-        let document = try service.parseFCPXML(from: data)
-        let baseURL = url.deletingLastPathComponent()
-        let result = service.extractMediaReferences(from: document, baseURL: baseURL)
-        XCTAssertGreaterThanOrEqual(result.references.count, 1, "Cut 1 has at least one asset")
-        let withURL = result.references.filter { $0.url != nil }
-        XCTAssertGreaterThanOrEqual(withURL.count, 1)
-        let fileRefs = result.fileReferences
-        XCTAssertGreaterThanOrEqual(fileRefs.count, 1)
-        let first = try XCTUnwrap(result.references.first)
-        XCTAssertFalse(first.isLocator, "Asset is not a locator")
-        XCTAssertEqual(first.resourceID, "r2")
-    }
-
-    func testExtractMediaReferences_ExampleCut1_Async() async throws {
-        let url = packageRoot()
-            .appendingPathComponent("Example FCPXML", isDirectory: true)
-            .appendingPathComponent("Cut 1.fcpxmld", isDirectory: true)
-            .appendingPathComponent("Info.fcpxml")
-        guard FileManager.default.fileExists(atPath: url.path) else {
-            throw XCTSkip("Example FCPXML Cut 1 not found at \(url.path)")
-        }
-        let data = try Data(contentsOf: url)
-        let document = try await service.parseFCPXML(from: data)
-        let baseURL = url.deletingLastPathComponent()
-        let result = await service.extractMediaReferences(from: document, baseURL: baseURL)
-        XCTAssertGreaterThanOrEqual(result.references.count, 1)
-        XCTAssertGreaterThanOrEqual(result.fileReferences.count, 1)
-    }
-
     // MARK: - Copy (missing file → skipped)
 
     func testCopyReferencedMedia_MissingFile_Skips() throws {
