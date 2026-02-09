@@ -21,6 +21,7 @@ This codebase is developed using AI agents.
 - [Core Features](#core-features)
 - [Requirements](#requirements)
 - [Installation](#installation)
+- [Before CLI Usage](#before-cli-usage)
 - [CLI Usage](#cli-usage)
 - [API Documentation](#api-documentation)
 - [FCPXML Version Support](#fcpxml-version-support)
@@ -87,6 +88,67 @@ let package = Package(
     ]
 )
 ```
+
+## Before CLI Usage
+
+First, ensure your system is configured to allow the tool to run:
+
+<details><summary>Privacy & Security Settings</summary>
+<p>
+
+Navigate to the `Privacy & Security` settings and set your preference to `App Store and identified developers`.
+
+<p align="center"> <img src="https://github.com/TheAcharya/pipeline-neo/blob/main/Assets/macOS-privacy.png?raw=true"> </p>
+
+</p>
+</details>
+
+### Pre-Compiled CLI Binary
+
+Download the latest release of the CLI universal binary [here](https://github.com/TheAcharya/pipeline-neo/releases).
+
+Extract the `pipeline-neo-cli-portable-x.x.x.zip` file from the release.
+
+### Using [Homebrew](https://brew.sh/)
+
+```bash
+$ brew install TheAcharya/homebrew-tap/pipeline-neo
+```
+```bash
+$ brew uninstall --cask pipeline-neo
+```
+
+Upon completion, find the installed binary `pipeline-neo` located within `/usr/local/bin`. Since this is a standard directory part of the environment search path, it will allow running `pipeline-neo` from any directory like a standard command.
+
+### Pre-Compiled CLI Binary (macOS Installer)
+
+#### Install
+
+Download the latest release of the CLI installer package [here](https://github.com/TheAcharya/pipeline-neo/releases).
+
+Use the `pipeline-neo-cli.pkg` installer to install the command-line binary into your system. Upon completion, find the installed binary `pipeline-neo` located within `/usr/local/bin`. Since this is a standard directory part of the environment search path, it will allow running `pipeline-neo` from any directory like a standard command.
+
+<p align="center"> <img src="https://github.com/TheAcharya/pipeline-neo/blob/main/Assets/macOS-installer.png?raw=true"> </p>
+
+#### Uninstall
+
+To uninstall, run this terminal command. It will require your account password.
+
+```bash
+sudo rm /usr/local/bin/pipeline-neo
+```
+
+### Compiled From Source
+
+```shell
+VERSION=2.0.0 # replace this with the git tag of the version you need
+git clone https://github.com/TheAcharya/pipeline-neo.git
+cd pipeline-neo
+git checkout "tags/$VERSION"
+swift build -c release
+```
+
+Once the build has finished, the `pipeline-neo` executable will be located at `.build/release/`.
 
 ## CLI Usage
 
