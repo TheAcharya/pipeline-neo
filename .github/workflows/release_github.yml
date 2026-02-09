@@ -69,18 +69,18 @@ jobs:
       env:
         APPLE_CERT_DATA: ${{ secrets.APPLE_CERT_DATA }}
         APPLE_CERT_PASSWORD: ${{ secrets.APPLE_CERT_PASSWORD }}
-        KEYCHAIN_PASSWORD_M: ${{ secrets.KEYCHAIN_PASSWORD_M }}
+        KEYCHAIN_PASSWORD_PN: ${{ secrets.KEYCHAIN_PASSWORD_PN }}
         APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
       run: |
         PARENT=$( cd "$(dirname "${BASH_SOURCE[0]}")" ; pwd -P )
         APP="$PARENT/dist/latest-build/pipeline-neo"
 
         echo $APPLE_CERT_DATA | base64 --decode > certificate.p12
-        security create-keychain -p $KEYCHAIN_PASSWORD_M build-m.keychain
-        security default-keychain -s build-m.keychain
-        security unlock-keychain -p $KEYCHAIN_PASSWORD_M build-m.keychain
-        security import certificate.p12 -k build-m.keychain -P $APPLE_CERT_PASSWORD -T /usr/bin/codesign
-        security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k $KEYCHAIN_PASSWORD_M build-m.keychain
+        security create-keychain -p $KEYCHAIN_PASSWORD_PN build-p.keychain
+        security default-keychain -s build-p.keychain
+        security unlock-keychain -p $KEYCHAIN_PASSWORD_PN build-p.keychain
+        security import certificate.p12 -k build-p.keychain -P $APPLE_CERT_PASSWORD -T /usr/bin/codesign
+        security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k $KEYCHAIN_PASSWORD_PN build-p.keychain
         /usr/bin/codesign --force -s $APPLE_TEAM_ID --options runtime "$APP" -v
 
     - name: Notarize PipelineNeo
