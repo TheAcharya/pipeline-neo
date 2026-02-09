@@ -100,23 +100,15 @@ Pipeline Neo supports FCPXML versions 1.5 through 1.14. All DTDs for these versi
 
 ## Modularity & Safety
 
-Pipeline Neo is protocol-oriented and dependency-injected. Core behaviour is defined by protocols (FCPXMLParsing, TimecodeConversion, XMLDocumentOperations, ErrorHandling) with default implementations you can replace or wrap. You inject these when creating FCPXMLService or FCPXMLUtility, or when calling the modular extension overloads (e.g. element.setAttribute(name:value:using: documentManager)). Extension APIs that cannot take a parameter (e.g. element.fcpxDuration, document.fcpxAssetResources) use FCPXMLUtility.defaultForExtensions so behaviour is consistent and concurrency-safe; for custom pipelines use the overloads that take a using: parameter. Extensions do not instantiate concrete types internally, so there is a single injection point and the design remains testable.
-
-The package is built with Swift 6 and strict concurrency. Public protocols and their implementations are Sendable where possible; error and option enums are Sendable. Internal delegates no longer use @unchecked Sendable; they are synchronous-only. All code passes thread sanitizer checks. Dependencies (SwiftTimecode 3.0.0, [SwiftExtensions](https://github.com/orchetect/swift-extensions) 2.0.0+) are up to date with no published security advisories as of July 2025. There are no unsafe pointers, dynamic code execution, or C APIs; concurrency is structured and type-safe.
+- Protocol-oriented and dependency-injected: core behaviour (parsing, timecode, document ops, error handling) is behind protocols with default implementations you can replace. Inject when creating FCPXMLService or FCPXMLUtility or when using modular extension overloads.
+- Extension APIs that can’t take a parameter use a single shared instance (FCPXMLUtility.defaultForExtensions) for consistency and concurrency safety; use overloads with a `using:` parameter for custom pipelines.
+- Built with Swift 6 and strict concurrency; Sendable where possible, no unsafe code. Dependencies ([SwiftTimecode](https://github.com/orchetect/swift-timecode) 3.0.0, [SwiftExtensions](https://github.com/orchetect/swift-extensions) 2.0.0+) are up to date.
 
 ## Architecture Overview
 
-Pipeline Neo is built around protocols, dependency injection, and a clear separation between parsing, timecode, document operations, and file I/O. You can use the default pipeline or assemble your own from the same building blocks.
-
-Protocols define all core behaviour. FCPXMLParsing covers parse and validate; TimecodeConversion covers CMTime, Timecode, and FCPXML time strings; XMLDocumentOperations covers create document, add resource/sequence, and element creation; ErrorHandling covers error formatting. Each protocol has a default implementation (FCPXMLParser, TimecodeConverter, XMLDocumentManager, ErrorHandler) that you can replace or wrap for custom behaviour or testing.
-
-The service layer (FCPXMLService) holds references to parser, timecode converter, document manager, and optional error handler and logger. It exposes sync and async APIs for parsing, validation, document creation, time conversion, element filtering, and time conforming. High-level helpers live in ModularUtilities: createPipeline(), createCustomPipeline(...), processFCPXML(from:using:), processMultipleFCPXML(...), validateDocument(_:), and convertTimecodes(...). These compose the service and components for common workflows.
-
-File and bundle loading is handled by FCPXMLFileLoader. It resolves .fcpxml and .fcpxmld URLs (including bundle Info.fcpxml), loads data or document, and reports errors via FCPXMLLoadError. Validation against the DTD uses FCPXMLValidator (structural and reference checks) and FCPXMLDTDValidator (schema validation); DTDs for FCPXML 1.5–1.14 are bundled and resolved at runtime.
-
-Extensions on CMTime, XMLElement, and XMLDocument provide convenience APIs. The modular overloads take an explicit dependency (e.g. setAttribute(name:value:using: documentManager)) so you can inject your own implementation. Extension APIs that cannot take a parameter use FCPXMLUtility.defaultForExtensions for consistency and concurrency safety; for custom pipelines use the modular overloads with a using: parameter.
-
-Error types are explicit and localised: FCPXMLError, FCPXMLLoadError, FCPXMLExportError, FCPXMLBundleExportError, ValidationError, ValidationWarning. The error handler protocol turns these into messages; you can inject a custom handler or use the default.
+- Protocols define parsing, timecode conversion, document operations, and error handling; each has a default implementation you can swap. FCPXMLService (and FCPXMLUtility) composes these and exposes sync and async APIs. ModularUtilities provides createPipeline, processFCPXML, validateDocument, convertTimecodes, and similar helpers.
+- FCPXMLFileLoader handles .fcpxml and .fcpxmld (including bundle Info.fcpxml). FCPXMLValidator and FCPXMLDTDValidator handle structural and schema validation; DTDs for 1.5–1.14 are bundled.
+- Extensions on CMTime, XMLElement, and XMLDocument offer convenience APIs; use modular overloads with an explicit dependency to inject your own. Error types are explicit (FCPXMLError, FCPXMLLoadError, export and validation errors); you can inject a custom error handler.
 
 See AGENT.md for a detailed breakdown for AI agents and contributors.
 
