@@ -7,10 +7,12 @@
 
 **🔧 Improvements:**
 - Complete codebase rewrite and refactor; protocol-oriented design and consistent source layout
-- Expanded test suite to 170 tests
+- Expanded test suite to 177 tests
 - Cut detection: find edit points on a project spine (hard cut, transition, gap) and whether each cut is same-clip or different-clips; sync and async
-- Version conversion: convert a document to another FCPXML version (e.g. 1.14 → 1.10); save as single .fcpxml file or .fcpxmld bundle (bundle requires version 1.10 or higher)
+- Version conversion: convert a document to another FCPXML version (e.g. 1.14 → 1.10) with automatic stripping of elements not in the target DTD (e.g. adjust-colorConform, adjust-stereo-3D); DTD validation after convert; save as single .fcpxml file or .fcpxmld bundle (bundle requires version 1.10 or higher)
+- Per-version DTD validation: validate any document against a specific FCPXML version (1.5–1.14) via `validateDocumentAgainstDTD(_:version:)` or against its declared root version via `validateDocumentAgainstDeclaredVersion(_:)`
 - Media extraction and copy: extract media file references from the document; copy those files to a folder (deduplicated, unique names); sync and async
+- Experimental CLI (`pipeline-neo`): `--check-version` (print FCPXML document version), `--convert-version <VERSION>` (convert to target version with stripping and DTD validation, write to output-dir), `--extract-media` (scan FCPXML/FCPXMLD and copy all referenced media to output-dir; reports video/audio/images detected and success message)
 - Documentation updated across AGENT.md, .cursorrules, Manual, README, and test docs
 
 ---

@@ -228,6 +228,56 @@ final class TimelineExportValidationTests: XCTestCase {
         XCTAssertTrue(result.isValid, "Expected valid FCPXML, got errors: \(result.errors.map(\.message))")
     }
 
+    // MARK: - FCPXMLService DTD validation (per-version)
+
+    func testValidateDocumentAgainstDTD_EachSupportedVersion() {
+        let service = FCPXMLService()
+        // 1.5 DTD requires (import-options?, resources?, library); the convenience init produces (resources?, events); use 1.6–1.14.
+        let versionsToTest = FCPXMLVersion.allCases.filter { $0 != .v1_5 }
+        for version in versionsToTest {
+            let doc = XMLDocument(resources: [], events: [], fcpxmlVersion: version)
+            let result = service.validateDocumentAgainstDTD(doc, version: version)
+            XCTAssertTrue(
+                result.isValid,
+                "Version \(version.rawValue) should validate against its own DTD. Errors: \(result.detailedDescription)"
+            )
+        }
+        // Version 1.5 DTD requires (import-options?, resources?, library). Build minimal valid doc.
+        let doc1_5 = XMLDocument()
+        doc1_5.setRootElement(XMLElement(name: "fcpxml"))
+        doc1_5.fcpxmlVersion = "1.5"
+        doc1_5.rootElement()?.addChild(XMLElement(name: "resources"))
+        doc1_5.rootElement()?.addChild(XMLElement(name: "library"))
+        let result1_5 = service.validateDocumentAgainstDTD(doc1_5, version: .v1_5)
+        XCTAssertTrue(result1_5.isValid, "Version 1.5 with library should validate. Errors: \(result1_5.detailedDescription)")
+    }
+
+    func testValidateDocumentAgainstDeclaredVersion_ValidDocument() {
+        let service = FCPXMLService()
+        let doc = XMLDocument(resources: [], events: [], fcpxmlVersion: .v1_10)
+        let result = service.validateDocumentAgainstDeclaredVersion(doc)
+        XCTAssertTrue(result.isValid, "Declared version 1.10 should validate. Errors: \(result.detailedDescription)")
+    }
+
+    func testValidateDocumentAgainstDeclaredVersion_MissingVersion() {
+        let service = FCPXMLService()
+        let doc = XMLDocument()
+        doc.setRootElement(XMLElement(name: "fcpxml"))
+        // No version attribute
+        let result = service.validateDocumentAgainstDeclaredVersion(doc)
+        XCTAssertFalse(result.isValid)
+        XCTAssertTrue(result.errors.contains { $0.message.contains("no FCPXML version") })
+    }
+
+    func testValidateDocumentAgainstDeclaredVersion_UnsupportedVersion() {
+        let service = FCPXMLService()
+        let doc = XMLDocument(resources: [], events: [], fcpxmlVersion: .v1_14)
+        doc.fcpxmlVersion = "99.99"
+        let result = service.validateDocumentAgainstDeclaredVersion(doc)
+        XCTAssertFalse(result.isValid)
+        XCTAssertTrue(result.errors.contains { $0.message.contains("Unsupported") || $0.message.contains("99.99") })
+    }
+
     // MARK: - FCPXMLFileLoader (.fcpxml / .fcpxmld file I/O)
 
     func testFCPXMLFileLoaderLoadsSingleFile() throws {

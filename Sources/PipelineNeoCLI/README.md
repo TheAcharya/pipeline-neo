@@ -8,7 +8,7 @@ Command-line interface for the Pipeline Neo library. Use it to inspect and proce
 
 - **Executable name:** `pipeline-neo`
 - **Entry point:** `PipelineNeoCLI.swift` (root command; no subcommands)
-- **Arguments:** `<fcpxml-path>` (required), `<output-dir>` (optional when using `--check-version`)
+- **Arguments:** `<fcpxml-path>` (required), `<output-dir>` (optional for `--check-version`; required for `--convert-version`, `--extract-media`, and for default process)
 - **Options:** Grouped under **GENERAL** and standard **OPTIONS** (`--version`, `--help`)
 
 ---
@@ -27,11 +27,19 @@ pipeline-neo --version
 pipeline-neo --check-version /path/to/project.fcpxml
 pipeline-neo --check-version /path/to/project.fcpxmld
 
+# Convert FCPXML to a target version (writes to output-dir; e.g. project_1.10.fcpxml)
+pipeline-neo --convert-version 1.10 /path/to/project.fcpxml /path/to/output-dir
+pipeline-neo --convert-version 1.14 /path/to/project.fcpxmld /path/to/output-dir
+
+# Extract all media referenced in FCPXML/FCPXMLD to output-dir (copied file paths to stdout; summary to stderr)
+pipeline-neo --extract-media /path/to/project.fcpxml /path/to/output-dir
+pipeline-neo --extract-media /path/to/project.fcpxmld /path/to/output-dir
+
 # Process: input + output (output-dir required)
 pipeline-neo /path/to/project.fcpxml /path/to/output-dir
 ```
 
-**Validation:** If you omit `--check-version`, you must provide both `<fcpxml-path>` and `<output-dir>`.
+**Validation:** Use only one of `--check-version`, `--convert-version`, or `--extract-media`. When using `--convert-version` or `--extract-media`, or when running the default process, you must provide `<output-dir>`.
 
 ---
 
@@ -43,6 +51,8 @@ pipeline-neo /path/to/project.fcpxml /path/to/output-dir
 | `Options/` | Option groups for help sections. `GeneralOptions` supplies the **GENERAL** flags (e.g. `--check-version`). |
 | `Commands/` | Feature modules. Each feature has its own subfolder and a `run(...)` entry point called from the root command (e.g. **CheckVersion** for `--check-version`). |
 | `Commands/CheckVersion/` | Implements `--check-version`: loads FCPXML and prints the document version. |
+| `Commands/ConvertVersion/` | Implements `--convert-version`: loads FCPXML, converts to target version (1.5–1.14), saves to output-dir. |
+| `Commands/ExtractMedia/` | Implements `--extract-media`: loads FCPXML/FCPXMLD and copies all referenced media files to output-dir. |
 
 All Swift in `Sources/PipelineNeoCLI/` is a single module; no extra imports are needed between these files.
 

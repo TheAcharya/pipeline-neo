@@ -1,6 +1,6 @@
 <p align="center">
   <a href="https://github.com/TheAcharya/pipeline-neo"><img src="Assets/Pipeline Neo_Icon.png" height="200">
-  <h1 align="center">Pipeline Neo</h1>
+  <h1 align="center">Pipeline Neo (CLI & Library)</h1>
 </p>
 
 <p align="center"><a href="https://github.com/TheAcharya/pipeline-neo/blob/main/LICENSE"><img src="http://img.shields.io/badge/license-MIT-lightgrey.svg?style=flat" alt="license"/></a>&nbsp;<a href="https://github.com/TheAcharya/pipeline-neo"><img src="https://img.shields.io/badge/platform-macOS-lightgrey.svg?style=flat" alt="platform"/></a>&nbsp;<a href="https://github.com/TheAcharya/pipeline-neo/actions/workflows/build.yml"><img src="https://github.com/TheAcharya/pipeline-neo/actions/workflows/build.yml/badge.svg" alt="build"/></a>&nbsp;<img src="https://img.shields.io/badge/Swift-6.0-orange.svg?style=flat" alt="Swift"/>&nbsp;<img src="https://img.shields.io/badge/Xcode-16+-blue.svg?style=flat" alt="Xcode"/></p>
@@ -21,7 +21,8 @@ This codebase is developed using AI agents.
 - [Core Features](#core-features)
 - [Requirements](#requirements)
 - [Installation](#installation)
-- [Documentation](#documentation)
+- [CLI Usage](#cli-usage)
+- [API Documentation](#api-documentation)
 - [FCPXML Version Support](#fcpxml-version-support)
 - [Modularity & Safety](#modularity--safety)
 - [Architecture Overview](#architecture-overview)
@@ -39,9 +40,11 @@ This codebase is developed using AI agents.
 - Timecode and timing via SwiftTimecode: CMTime, Timecode, FCPXML time strings; all Final Cut Pro frame rates (23.976, 24, 25, 29.97, 30, 50, 59.94, 60); conform to frame boundaries.
 - Typed element filtering via FCPXMLElementType (every DTD element; multicam vs compound media inferred from first child).
 - Cut detection on project spines: edit points with boundary type (hard cut, transition, gap) and source relationship (same-clip vs different-clips); CutDetectionResult and EditPoint; sync and async.
-- Version conversion: convert document to a target version (e.g. 1.14 → 1.10); save as single .fcpxml or .fcpxmld bundle (bundle only for version 1.10 or higher).
+- Version conversion: convert document to a target version (e.g. 1.14 → 1.10); automatically drop elements not in the target version’s DTD (e.g. adjust-colorConform, adjust-stereo-3D), similar to Capacitor; save as single .fcpxml or .fcpxmld bundle (bundle only for version 1.10 or higher). DTD validation runs after conversion so output imports in Final Cut Pro.
+- Per-version DTD validation: validate any document against a specific FCPXML version (1.5–1.14) via FCPXMLService.validateDocumentAgainstDTD(_:version:) or against its declared root version via validateDocumentAgainstDeclaredVersion(_:).
 - Media extraction and copy: extract asset media-rep and locator URLs (optional baseURL); copy referenced file URLs to a directory with deduplication and unique filenames; MediaExtractionResult and MediaCopyResult; sync and async.
 - Timeline and export: build Timeline with TimelineClip and TimelineFormat; export to FCPXML string (FCPXMLExporter) or .fcpxmld bundle (FCPXMLBundleExporter, optional media copy) with FCPXMLExportAsset per asset.
+- Experimental CLI: the `pipeline-neo` executable provides `--check-version` (print FCPXML document version), `--convert-version <VERSION>` (convert to target version 1.5–1.14 with automatic element stripping and DTD validation; writes to output-dir), and `--extract-media` (scan FCPXML/FCPXMLD and copy all referenced media to output-dir). See `Sources/PipelineNeoCLI/README.md` for usage and building.
 - Sync and async APIs (async/await) for all major operations; dependency-injected, concurrency-safe design for Swift 6.
 
 ## Requirements
@@ -85,11 +88,38 @@ let package = Package(
 )
 ```
 
-## Documentation
+## CLI Usage
+
+```plain
+$ pipeline-neo --help
+
+OOVERVIEW: Experimental tool to read and validate Final Cut Pro FCPXML/FCPXMLD.
+
+https://github.com/TheAcharya/pipeline-neo
+
+USAGE: [<options>] <fcpxml-path> [<output-dir>]
+
+ARGUMENTS:
+  <fcpxml-path>           Input FCPXML file / FCPXMLD bundle.
+  <output-dir>            Output directory.
+
+GENERAL:
+  --check-version         Check and print FCPXML document version.
+  --convert-version <version>
+                          Convert FCPXML to the given version (e.g. 1.10, 1.14) and write to output-dir.
+  --extract-media         Scan FCPXML/FCPXMLD and copy all referenced media files to output-dir.
+
+OPTIONS:
+  --version               Show the version.
+  -h, --help              Show help information.
+```
+
+## API Documentation
 
 Complete manual, usage guide, and examples are in the [Documentation](Documentation/) folder:
 
-- [Manual](Documentation/Manual.md) — Full user manual: loading, modular operations, time conversions, logging, error handling, async/await, task groups, extensions, and step-by-step examples.
+- [Manual](Documentation/Manual.md) — Full user manual: loading, modular operations, time conversions, logging, error handling, async/await, task groups, extensions, validation, version conversion, and step-by-step examples.
+- [CLI](Sources/PipelineNeoCLI/README.md) — Experimental command-line interface: `--check-version`, `--convert-version`, `--extract-media`, building and extending.
 
 ## FCPXML Version Support
 

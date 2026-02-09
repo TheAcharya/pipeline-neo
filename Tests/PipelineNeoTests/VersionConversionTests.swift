@@ -51,6 +51,51 @@ final class VersionConversionTests: XCTestCase, @unchecked Sendable {
         XCTAssertEqual(converted.fcpxmlVersion, "1.10")
     }
 
+    /// When converting to 1.10, elements not in the 1.10 DTD (e.g. adjust-colorConform from 1.11+) are stripped so FCP can import.
+    func testConvertToVersion_1_10_StripsAdjustColorConform() throws {
+        let doc = service.createFCPXMLDocument(version: "1.14")
+        guard let root = doc.rootElement() else { return XCTFail("No root") }
+        let assetClip = XMLElement(name: "asset-clip")
+        let adjustColorConform = XMLElement(name: "adjust-colorConform")
+        adjustColorConform.setAttributesWith(["enabled": "1", "autoOrManual": "automatic", "conformType": "conformNone", "peakNitsOfPQSource": "1000", "peakNitsOfSDRToPQSource": "100"])
+        assetClip.addChild(adjustColorConform)
+        root.addChild(assetClip)
+
+        let converted = try service.convertToVersion(doc, targetVersion: .v1_10)
+        XCTAssertEqual(converted.fcpxmlVersion, "1.10")
+
+        let found = findElement(named: "adjust-colorConform", in: converted)
+        XCTAssertNil(found, "adjust-colorConform must be stripped when converting to 1.10 for FCP DTD validation")
+    }
+
+    /// When converting to 1.12, adjust-stereo-3D (1.13+) is stripped.
+    func testConvertToVersion_1_12_StripsAdjustStereo3D() throws {
+        let doc = service.createFCPXMLDocument(version: "1.14")
+        guard let root = doc.rootElement() else { return XCTFail("No root") }
+        let assetClip = XMLElement(name: "asset-clip")
+        let adjustStereo = XMLElement(name: "adjust-stereo-3D")
+        assetClip.addChild(adjustStereo)
+        root.addChild(assetClip)
+
+        let converted = try service.convertToVersion(doc, targetVersion: .v1_12)
+        XCTAssertEqual(converted.fcpxmlVersion, "1.12")
+        let found = findElement(named: "adjust-stereo-3D", in: converted)
+        XCTAssertNil(found, "adjust-stereo-3D must be stripped when converting to 1.12")
+    }
+
+    private func findElement(named name: String, in document: XMLDocument) -> XMLElement? {
+        guard let root = document.rootElement() else { return nil }
+        return findElement(named: name, in: root)
+    }
+
+    private func findElement(named name: String, in element: XMLElement) -> XMLElement? {
+        if element.name == name { return element }
+        for node in element.children ?? [] {
+            if let el = node as? XMLElement, let match = findElement(named: name, in: el) { return match }
+        }
+        return nil
+    }
+
     // MARK: - Save as .fcpxml
 
     func testSaveAsFCPXML() throws {

@@ -26,6 +26,7 @@ public final class FCPXMLService: Sendable {
     private let cutDetector: CutDetection
     private let versionConverter: FCPXMLVersionConverting
     private let mediaExtractor: MediaExtraction
+    private let dtdValidator: FCPXMLDTDValidator
 
     // MARK: - Initialisation
 
@@ -33,7 +34,7 @@ public final class FCPXMLService: Sendable {
     ///
     /// All parameters have sensible defaults. Pass custom implementations
     /// to override parsing, timecode conversion, document management,
-    /// error handling, cut detection, version conversion, or logging behaviour.
+    /// error handling, cut detection, version conversion, DTD validation, or logging behaviour.
     ///
     /// - Parameters:
     ///   - parser: FCPXML parser and element filter (default: `FCPXMLParser()`).
@@ -43,6 +44,7 @@ public final class FCPXMLService: Sendable {
     ///   - cutDetector: Cut detection implementation (default: `CutDetector()`).
     ///   - versionConverter: FCPXML version conversion (default: `FCPXMLVersionConverter()`).
     ///   - mediaExtractor: Media reference extraction and copy (default: `MediaExtractor()`).
+    ///   - dtdValidator: DTD validator for per-version schema checks (default: `FCPXMLDTDValidator()`).
     ///   - logger: Pipeline logger (default: `NoOpPipelineLogger()`).
     public init(
         parser: FCPXMLParsing & FCPXMLElementFiltering = FCPXMLParser(),
@@ -52,6 +54,7 @@ public final class FCPXMLService: Sendable {
         cutDetector: CutDetection = CutDetector(),
         versionConverter: FCPXMLVersionConverting = FCPXMLVersionConverter(),
         mediaExtractor: MediaExtraction = MediaExtractor(),
+        dtdValidator: FCPXMLDTDValidator = FCPXMLDTDValidator(),
         logger: PipelineLogger = NoOpPipelineLogger()
     ) {
         self.parser = parser
@@ -61,6 +64,7 @@ public final class FCPXMLService: Sendable {
         self.cutDetector = cutDetector
         self.versionConverter = versionConverter
         self.mediaExtractor = mediaExtractor
+        self.dtdValidator = dtdValidator
         self.logger = logger
     }
     
@@ -139,11 +143,55 @@ public final class FCPXMLService: Sendable {
         try documentManager.saveDocument(document, to: url)
     }
     
-    /// Validates FCPXML document
+    /// Validates FCPXML document (root element and basic structure only).
+    ///
+    /// For schema validation against a specific FCPXML version’s DTD, use
+    /// `validateDocumentAgainstDTD(_:version:)` or `validateDocumentAgainstDeclaredVersion(_:)`.
     /// - Parameter document: Document to validate
     /// - Returns: True if valid, false otherwise
     public func validateDocument(_ document: XMLDocument) -> Bool {
         return parser.validate(document)
+    }
+
+    /// Validates the document against the DTD for the given FCPXML version (1.5–1.14).
+    ///
+    /// Use this to ensure a document conforms to a specific version’s schema before
+    /// import or after conversion. Each FCPXML version has a distinct DTD in the package.
+    /// - Parameters:
+    ///   - document: The FCPXML document to validate.
+    ///   - version: The FCPXML version whose DTD to use (e.g. `.v1_10`, `.v1_14`).
+    /// - Returns: `.success` if the document conforms to that version’s DTD; otherwise a result with `dtd_validation` error(s).
+    public func validateDocumentAgainstDTD(_ document: XMLDocument, version: FCPXMLVersion) -> ValidationResult {
+        dtdValidator.validate(document, version: version)
+    }
+
+    /// Validates the document against the DTD for its declared root version.
+    ///
+    /// Reads the document’s `fcpxml` root `version` attribute and validates against
+    /// the matching DTD (1.5–1.14). Use to check that a document conforms to the schema
+    /// it claims. If the version is missing or not supported, returns an error result.
+    /// - Parameter document: The FCPXML document to validate.
+    /// - Returns: `.success` if the document conforms to its declared version’s DTD; otherwise a result with errors (e.g. unknown version or DTD validation failure).
+    public func validateDocumentAgainstDeclaredVersion(_ document: XMLDocument) -> ValidationResult {
+        _validateDocumentAgainstDeclaredVersion(document)
+    }
+
+    private func _validateDocumentAgainstDeclaredVersion(_ document: XMLDocument) -> ValidationResult {
+        guard let versionString = document.fcpxmlVersion, !versionString.isEmpty else {
+            return .error(ValidationError(
+                type: .invalidAttributeValue,
+                message: "Document has no FCPXML version attribute on root",
+                context: [:]
+            ))
+        }
+        guard let version = FCPXMLVersion(string: versionString) else {
+            return .error(ValidationError(
+                type: .invalidAttributeValue,
+                message: "Unsupported or invalid FCPXML version: '\(versionString)'",
+                context: ["version": versionString]
+            ))
+        }
+        return dtdValidator.validate(document, version: version)
     }
     
     /// Converts FCPXML time string to CMTime
@@ -308,11 +356,19 @@ public final class FCPXMLService: Sendable {
         try await documentManager.saveDocument(document, to: url)
     }
     
-    /// Asynchronously validates FCPXML document
-    /// - Parameter document: Document to validate
-    /// - Returns: True if valid, false otherwise
+    /// Asynchronously validates FCPXML document (root element and basic structure only).
     public func validateDocument(_ document: XMLDocument) async -> Bool {
         return await parser.validate(document)
+    }
+
+    /// Asynchronously validates the document against the DTD for the given FCPXML version (1.5–1.14).
+    public func validateDocumentAgainstDTD(_ document: XMLDocument, version: FCPXMLVersion) async -> ValidationResult {
+        dtdValidator.validate(document, version: version)
+    }
+
+    /// Asynchronously validates the document against the DTD for its declared root version.
+    public func validateDocumentAgainstDeclaredVersion(_ document: XMLDocument) async -> ValidationResult {
+        _validateDocumentAgainstDeclaredVersion(document)
     }
     
     /// Asynchronously converts FCPXML time string to CMTime

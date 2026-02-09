@@ -15,7 +15,7 @@ import PipelineNeo
 struct PipelineNeoCLI: ParsableCommand {
     static let configuration = CommandConfiguration(
         commandName: "pipeline-neo",
-        abstract: "Tool to read and test Final Cut Pro FCPXML/FCPXMLD.",
+        abstract: "Experimental tool to read and validate Final Cut Pro FCPXML/FCPXMLD.",
         usage: "[<options>] <fcpxml-path> [<output-dir>]",
         discussion: "https://github.com/TheAcharya/pipeline-neo",
         version: packageVersion,
@@ -32,14 +32,35 @@ struct PipelineNeoCLI: ParsableCommand {
     var outputDir: URL?
 
     mutating func validate() throws {
-        if !general.checkVersion && outputDir == nil {
-            throw ValidationError("output-dir is required when not using --check-version.")
+        let modeCount = [general.checkVersion, general.convertVersion != nil, general.extractMedia].filter { $0 }.count
+        if modeCount > 1 {
+            throw ValidationError("Use only one of --check-version, --convert-version, or --extract-media.")
+        }
+        if general.checkVersion {
+            return
+        }
+        if general.convertVersion != nil || general.extractMedia {
+            if outputDir == nil {
+                throw ValidationError("output-dir is required when using --convert-version or --extract-media.")
+            }
+            return
+        }
+        if outputDir == nil {
+            throw ValidationError("output-dir is required when not using --check-version, --convert-version, or --extract-media.")
         }
     }
 
     func run() throws {
         if general.checkVersion {
             try CheckVersion.run(fcpxmlPath: fcpxmlPath)
+            return
+        }
+        if let targetVersion = general.convertVersion {
+            try ConvertVersion.run(fcpxmlPath: fcpxmlPath, targetVersionString: targetVersion, outputDir: outputDir!)
+            return
+        }
+        if general.extractMedia {
+            try ExtractMedia.run(fcpxmlPath: fcpxmlPath, outputDir: outputDir!)
             return
         }
         let out = outputDir!

@@ -1,6 +1,6 @@
 # Pipeline Neo — Test Suite
 
-This directory contains the test suite for Pipeline Neo, a Swift 6 framework for Final Cut Pro FCPXML processing with SwiftTimecode integration. The suite currently has 170 tests. They ensure correctness, concurrency safety, and performance across parsing, timecode conversion, document and element operations, file loading, timeline export, validation, and all supported FCPXML versions and frame rates. The suite is modular: shared utilities resolve sample paths, file tests exercise individual FCPXML samples, and logic-and-parsing tests cover model types and structure.
+This directory contains the test suite for Pipeline Neo, a Swift 6 framework for Final Cut Pro FCPXML processing with SwiftTimecode integration. The suite currently has 177 tests. They ensure correctness, concurrency safety, and performance across parsing, timecode conversion, document and element operations, file loading, timeline export, validation, and all supported FCPXML versions and frame rates. The suite is modular: shared utilities resolve sample paths, file tests exercise individual FCPXML samples, and logic-and-parsing tests cover model types and structure.
 
 ---
 
@@ -147,7 +147,7 @@ XMLElement extension: testXMLElementExtensionFcpxTypeAndIsFCPX, testXMLElementEx
 
 Parser filter: testParserFilterMulticamAndCompoundResources, testFCPXMLUtilityDefaultForExtensions. Filter media by first child (multicam or compound); FCPXMLUtility.defaultForExtensions filtering.
 
-Media extraction: MediaExtractionTests. extractMediaReferences (Example Cut 1, baseURL, sync/async); copyReferencedMedia (missing file skipped, real file copied, sync/async). Covers MediaExtractor, MediaExtractionResult, MediaCopyResult.
+Media extraction: MediaExtractionTests. extractMediaReferences (Example Cut 1, baseURL, sync/async); copyReferencedMedia (missing file skipped, real file copied, sync/async); testExtractThenCopy_MultipleTypes_DetectedAndCopied (extract then copy with video + audio refs, same flow as CLI --extract-media). Covers MediaExtractor, MediaExtractionResult, MediaCopyResult.
 
 ---
 

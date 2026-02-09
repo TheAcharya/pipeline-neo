@@ -128,4 +128,48 @@ final class MediaExtractionTests: XCTestCase, @unchecked Sendable {
         XCTAssertEqual(result.copied.count, 1)
         XCTAssertTrue(FileManager.default.fileExists(atPath: result.copied[0].destination.path))
     }
+
+    // MARK: - Extract then copy (flow used by CLI --extract-media)
+
+    /// Verifies the extract-then-copy flow used by the CLI: extraction returns file refs (video/audio/image by extension), then copy succeeds.
+    func testExtractThenCopy_MultipleTypes_DetectedAndCopied() throws {
+        let tempDir = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        try FileManager.default.createDirectory(at: tempDir, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: tempDir) }
+        let videoFile = tempDir.appendingPathComponent("clip.mov")
+        let audioFile = tempDir.appendingPathComponent("sound.wav")
+        try Data("video".utf8).write(to: videoFile)
+        try Data("audio".utf8).write(to: audioFile)
+        let fcpxml = """
+        <?xml version="1.0" encoding="UTF-8"?>
+        <!DOCTYPE fcpxml>
+        <fcpxml version="1.10">
+            <resources>
+                <format id="r1" name="FFVideoFormat1080p25" frameDuration="100/2500s" width="1920" height="1080"/>
+                <asset id="r2" name="V" format="r1">
+                    <media-rep kind="original-media" src="\(videoFile.absoluteString)"/>
+                </asset>
+                <asset id="r3" name="A" format="r1">
+                    <media-rep kind="original-media" src="\(audioFile.absoluteString)"/>
+                </asset>
+            </resources>
+            <library><event name="E"><project name="P"><sequence format="r1" duration="100/25s" tcStart="0s"/></project></event></library>
+        </fcpxml>
+        """
+        let data = Data(fcpxml.utf8)
+        let document = try service.parseFCPXML(from: data)
+        let extraction = service.extractMediaReferences(from: document, baseURL: tempDir)
+        let fileRefs = extraction.fileReferences
+        XCTAssertEqual(fileRefs.count, 2, "Two file references (video + audio)")
+        let extensions = Set(fileRefs.compactMap { $0.url?.pathExtension.lowercased() })
+        XCTAssertTrue(extensions.contains("mov"), "Video reference (.mov) detected")
+        XCTAssertTrue(extensions.contains("wav"), "Audio reference (.wav) detected")
+
+        let destDir = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        try FileManager.default.createDirectory(at: destDir, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: destDir) }
+        let copyResult = service.copyReferencedMedia(from: document, to: destDir, baseURL: tempDir)
+        XCTAssertEqual(copyResult.copied.count, 2, "Both files copied")
+        XCTAssertEqual(copyResult.failed.count, 0)
+    }
 }

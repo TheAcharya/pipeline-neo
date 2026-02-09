@@ -25,7 +25,7 @@ Complete manual and usage guide for Pipeline Neo, a Swift 6 framework for Final 
    - [Validation API](#314-validation-api)
    - [Cut detection API](#315-cut-detection-api)
    - [Version conversion and save](#316-version-conversion-and-save)
-   - [Timeline and export API](#317-timeline-and-export-api)
+   - [Experimental CLI](#316b-experimental-cli)
    - [Media extraction and copy](#318-media-extraction-and-copy)
    - [Timeline and export API](#319-timeline-and-export-api)
    - [XMLDocument extension API](#320-xmldocument-extension-api)
@@ -373,7 +373,7 @@ let elementType = someElement.fcpxType  // FCPXMLElementType from XMLElement ext
 
 ### 3.14 Validation API
 
-FCPXMLValidator performs semantic validation (root, resources, ref resolution). FCPXMLDTDValidator validates against the DTD for a given version. Both return or use ValidationResult (errors, warnings, isValid).
+FCPXMLValidator performs semantic validation (root, resources, ref resolution). FCPXMLDTDValidator validates against the DTD for a given version. FCPXMLService provides per-version DTD validation: validateDocumentAgainstDTD(_:version:) validates against a specific FCPXML version (1.5–1.14); validateDocumentAgainstDeclaredVersion(_:) reads the document’s root version attribute and validates against that DTD (returns errors if version is missing or unsupported). All return or use ValidationResult (errors, warnings, isValid).
 
 ```swift
 // Structural and reference validation
@@ -383,12 +383,17 @@ if result.isValid { /* proceed */ } else {
     for err in result.errors { print(err.message) }
 }
 
-// DTD schema validation
+// DTD schema validation (standalone)
 let dtdValidator = FCPXMLDTDValidator()
 let dtdResult = dtdValidator.validate(document, version: .default)
 if dtdResult.isValid { /* valid */ } else {
     for err in dtdResult.errors { print(err.message) }
 }
+
+// Per-version DTD validation via service (e.g. after convert or for any version)
+let service = FCPXMLService()
+let resultFor1_10 = service.validateDocumentAgainstDTD(document, version: .v1_10)
+let resultDeclared = service.validateDocumentAgainstDeclaredVersion(document)
 ```
 
 ### 3.15 Cut detection API
@@ -406,14 +411,18 @@ for point in result.editPoints {
 
 ### 3.16 Version conversion and save
 
-Convert an FCPXML document to a target format version (e.g. 1.14 → 1.10), then save as a single **.fcpxml** file or as a **.fcpxmld** bundle. Saving as a bundle is only supported when the document version is **1.10 or higher**; otherwise `FCPXMLBundleExportError.bundleRequiresVersion1_10OrHigher` is thrown.
+Convert an FCPXML document to a target format version (e.g. 1.14 → 1.10), then save as a single **.fcpxml** file or as a **.fcpxmld** bundle. Conversion (FCPXMLVersionConverter) sets the root `version` attribute and **automatically removes elements not in the target version’s DTD** (e.g. adjust-colorConform, adjust-stereo-3D), similar to Capacitor, so the output validates and imports in Final Cut Pro. Saving as a bundle is only supported when the document version is **1.10 or higher**; otherwise `FCPXMLBundleExportError.bundleRequiresVersion1_10OrHigher` is thrown.
 
 ```swift
 let service = ModularUtilities.createPipeline()
 let document = try service.parseFCPXML(from: url)
 
-// Convert to 1.10
+// Convert to 1.10 (strips elements not in 1.10 DTD)
 let converted = try service.convertToVersion(document, targetVersion: .v1_10)
+
+// Optionally validate against target DTD before save
+let validation = service.validateDocumentAgainstDTD(converted, version: .v1_10)
+guard validation.isValid else { /* handle errors */ }
 
 // Save as single .fcpxml file
 try service.saveAsFCPXML(converted, to: URL(fileURLWithPath: "/path/to/Project.fcpxml"))
@@ -422,7 +431,20 @@ try service.saveAsFCPXML(converted, to: URL(fileURLWithPath: "/path/to/Project.f
 let bundleURL = try service.saveAsBundle(converted, to: outputDirectory, bundleName: "My Project")
 ```
 
-Use `convertToVersion(_:targetVersion:)`, `saveAsFCPXML(_:to:)`, and `saveAsBundle(_:to:bundleName:)` (sync and async). Conversion sets the root `version` attribute and returns a new document; content is otherwise preserved.
+Use `convertToVersion(_:targetVersion:)`, `saveAsFCPXML(_:to:)`, and `saveAsBundle(_:to:bundleName:)` (sync and async).
+
+### 3.16b Experimental CLI
+
+The package includes an experimental command-line tool, `pipeline-neo`, for inspecting and converting FCPXML files and .fcpxmld bundles. Build with `swift build` (or use the PipelineNeoCLI scheme in Xcode); run with `swift run pipeline-neo --help`.
+
+- **--check-version** — Load the FCPXML at the given path and print its document version. Does not require an output directory.
+- **--convert-version &lt;VERSION&gt;** — Load the FCPXML, convert to the target version (1.5–1.14) with automatic element stripping and DTD validation, and save to the output directory as `&lt;basename&gt;_&lt;version&gt;.fcpxml`. Fails if the converted document does not pass DTD validation.
+- **--extract-media** — Load the FCPXML or FCPXMLD at the given path, scan for all referenced media (asset media-rep and locator file URLs), and copy those files to the output directory. Reports how many media files were detected by type (video, audio, images) and prints a success message when copying completes. Prints each destination path to stdout; prints "Media detected: X video, Y audio, Z images (N total)" and "Successfully copied N media file(s) to &lt;path&gt;" (or errors) to stderr. Exits with an error if any copy failed.
+
+Example: `pipeline-neo --convert-version 1.10 /path/to/project.fcpxml /path/to/output-dir`  
+Example: `pipeline-neo --extract-media /path/to/project.fcpxmld /path/to/media-folder`
+
+For full CLI usage, options, and how to extend it, see [PipelineNeoCLI/README.md](../Sources/PipelineNeoCLI/README.md).
 
 ### 3.18 Media extraction and copy
 
