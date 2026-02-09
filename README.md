@@ -38,19 +38,19 @@ This codebase is developed using AI agents.
 
 ## Core Features
 
-- Read, create, and modify FCPXML documents through a protocol-oriented API; add resources, events, projects, and sequences via the document manager.
-- Load single .fcpxml files or .fcpxmld bundles via FCPXMLFileLoader (resolves bundle Info.fcpxml; sync and async).
-- Parse and validate against bundled DTDs (FCPXML 1.5–1.14); structural and reference validation (FCPXMLValidator), DTD schema validation (FCPXMLDTDValidator).
-- Access and edit resources, events, clips, and projects via typed properties and helpers (fcpxEventNames, fcpxAssetResources, resource(matchingID:), event/project/clip APIs).
-- Timecode and timing via SwiftTimecode: CMTime, Timecode, FCPXML time strings; all Final Cut Pro frame rates (23.976, 24, 25, 29.97, 30, 50, 59.94, 60); conform to frame boundaries.
-- Typed element filtering via FCPXMLElementType (every DTD element; multicam vs compound media inferred from first child).
-- Cut detection on project spines: edit points with boundary type (hard cut, transition, gap) and source relationship (same-clip vs different-clips); CutDetectionResult and EditPoint; sync and async.
-- Version conversion: convert document to a target version (e.g. 1.14 → 1.10); automatically drop elements not in the target version’s DTD (e.g. adjust-colorConform, adjust-stereo-3D), similar to Capacitor; save as single .fcpxml or .fcpxmld bundle (bundle only for version 1.10 or higher). DTD validation runs after conversion so output imports in Final Cut Pro.
-- Per-version DTD validation: validate any document against a specific FCPXML version (1.5–1.14) via FCPXMLService.validateDocumentAgainstDTD(_:version:) or against its declared root version via validateDocumentAgainstDeclaredVersion(_:).
-- Media extraction and copy: extract asset media-rep and locator URLs (optional baseURL); copy referenced file URLs to a directory with deduplication and unique filenames; MediaExtractionResult and MediaCopyResult; sync and async.
-- Timeline and export: build Timeline with TimelineClip and TimelineFormat; export to FCPXML string (FCPXMLExporter) or .fcpxmld bundle (FCPXMLBundleExporter, optional media copy) with FCPXMLExportAsset per asset.
-- Experimental CLI: the `pipeline-neo` executable provides `--check-version` (print FCPXML document version), `--convert-version <VERSION>` (convert to target version 1.5–1.14 with automatic element stripping and DTD validation; writes to output-dir), and `--extract-media` (scan FCPXML/FCPXMLD and copy all referenced media to output-dir). See `Sources/PipelineNeoCLI/README.md` for usage and building.
-- Sync and async APIs (async/await) for all major operations; dependency-injected, concurrency-safe design for Swift 6.
+- Read, create, and modify FCPXML documents via a protocol-oriented API (resources, events, projects, sequences).
+- Load single .fcpxml files or .fcpxmld bundles (FCPXMLFileLoader; sync and async).
+- Parse and validate against bundled DTDs (1.5–1.14): structural/reference validation and DTD schema validation.
+- Typed access to resources, events, clips, and projects (helpers and APIs).
+- Timecode and timing with SwiftTimecode: CMTime, Timecode, FCPXML time strings; all FCP frame rates; frame-boundary conform.
+- Typed element filtering (FCPXMLElementType; multicam vs compound inferred from structure).
+- Cut detection on project spines: edit points (hard cut, transition, gap) and same-clip vs different-clips; sync and async.
+- Version conversion: convert to a target version (e.g. 1.14 → 1.10), strip elements not in target DTD, validate; save as .fcpxml or .fcpxmld (bundle from 1.10+).
+- Per-version DTD validation against a chosen version or the document’s declared version.
+- Media extraction and copy: extract asset/locator URLs, copy to a directory with deduplication; sync and async.
+- Timeline and export: build Timeline, export to FCPXML string or .fcpxmld bundle (optional media copy).
+- Experimental CLI: `pipeline-neo` with `--check-version`, `--convert-version`, `--extract-media` (see CLI README).
+- Sync and async APIs; dependency-injected, concurrency-safe design for Swift 6.
 
 ## Requirements
 
