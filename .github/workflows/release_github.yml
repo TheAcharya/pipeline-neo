@@ -97,10 +97,10 @@ jobs:
         xcrun notarytool store-credentials "notarytool-profile" --apple-id $APPLE_DEV_ID --password $APPLE_DEV_ID_PASSWORD --team-id $APPLE_TEAM_ID
 
         echo "Creating temp notarization archive"
-        ditto -c -k --keepParent "$APP" "notarization-m.zip"
+        ditto -c -k --keepParent "$APP" "notarization-p.zip"
 
         echo "Notarize app"
-        xcrun notarytool submit "notarization-m.zip" --keychain-profile "notarytool-profile" --progress --wait
+        xcrun notarytool submit "notarization-p.zip" --keychain-profile "notarytool-profile" --progress --wait
 
         cp -R "$APP" dist/
         zip -q -r dist_bin/pipeline-neo-cli-portable-${{ env.VERSION }}.zip "dist/"
