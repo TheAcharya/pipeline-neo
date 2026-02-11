@@ -382,13 +382,14 @@ let document = try await loader.load(from: url)
 
 ### 3.13 FCPXML version and element types
 
-Use FCPXMLVersion for document version (1.5–1.14). Use FCPXMLElementType for typed filtering of elements (every DTD element is represented).
+Use FCPXMLVersion for document version (1.5–1.14). Use FCPXMLElementType for typed filtering of elements (every DTD element is represented). `FCPXMLVersion.supportsBundleFormat` is `true` for 1.10 and later (`.fcpxmld` bundle); 1.5–1.9 support only single-file `.fcpxml`.
 
 ```swift
 // Version: create documents or validate
 let version = FCPXMLVersion.default  // .v1_14
 let doc = service.createFCPXMLDocument(version: version.stringValue)
 try document.validateFCPXMLAgainst(version: .v1_14)
+if version.supportsBundleFormat { /* can save as .fcpxmld */ }
 
 // Element types: filter elements by type
 let types: [FCPXMLElementType] = [.assetResource, .sequence, .event]
@@ -472,17 +473,20 @@ The package includes an experimental command-line tool, `pipeline-neo`, for insp
 **General options:**
 
 - **--check-version** — Load the FCPXML at the given path and print its document version. Does not require an output directory.
-- **--convert-version &lt;VERSION&gt;** — Load the FCPXML, convert to the target version (1.5–1.14) with automatic element stripping and DTD validation, and save to the output directory as `&lt;basename&gt;_&lt;version&gt;.fcpxml`. Fails if the converted document does not pass DTD validation.
+- **--convert-version &lt;VERSION&gt;** — Load the FCPXML, convert to the target version (1.5–1.14) with automatic element stripping and DTD validation, and save to the output directory. Output format is controlled by **--extension-type**: default is **.fcpxmld** (bundle) for target versions 1.10 and higher; for target versions 1.5–1.9 the output is always **.fcpxml** (single file), since the bundle format is not supported for those versions. Fails if the converted document does not pass DTD validation.
+- **--extension-type &lt;fcpxml|fcpxmld&gt;** — Output format for `--convert-version`: `fcpxmld` (bundle, default) or `fcpxml` (single file). For target versions 1.5–1.9, `.fcpxml` is always used regardless of this option.
 - **--validate** — Load the FCPXML or FCPXMLD at the given path and perform robust validation: semantic (root, resources, ref resolution) and DTD (against the document’s declared version). Shows a progress indicator when not using `--quiet`. Prints a summary and, if invalid, full error/warning details. Does not require an output directory. Exits with a non-zero code when validation fails.
 - **--media-copy** — Load the FCPXML or FCPXMLD at the given path, scan for all referenced media (asset media-rep and locator file URLs), and copy those files to the output directory. Shows a progress bar when not using `--quiet`. Reports how many media files were detected by type (video, audio, images) and prints a success message when copying completes. Prints each destination path to stdout; prints "Media detected: X video, Y audio, Z images (N total)" and "Successfully copied N media file(s) to &lt;path&gt;" (or errors) to stderr. Exits with an error if any copy failed.
 
 **Log options:**
 
-- **--log &lt;path&gt;** — Append log output to this file. Also prints to the console unless `--quiet` is set.
+- **--log &lt;path&gt;** — Append log output to this file. When set, all CLI commands (check-version, convert-version, validate, media-copy) write their user-visible messages (version, write path, validation summary, media detected/copied, errors) to the log file in addition to library-level logs. Also prints to the console unless `--quiet` is set.
 - **--log-level &lt;level&gt;** — Minimum log level: `trace`, `debug`, `info`, `notice`, `warning`, `error`, or `critical`. Default: `info`.
 - **--quiet** — Disable all log output.
 
 Example: `pipeline-neo --convert-version 1.10 /path/to/project.fcpxml /path/to/output-dir`  
+Example: `pipeline-neo --convert-version 1.14 --extension-type fcpxmld /path/to/project.fcpxmld /path/to/output-dir`  
+Example: `pipeline-neo --convert-version 1.9 /path/to/project.fcpxml /path/to/output-dir` (output is always .fcpxml)  
 Example: `pipeline-neo --validate /path/to/project.fcpxmld`  
 Example: `pipeline-neo --media-copy /path/to/project.fcpxmld /path/to/media-folder`  
 Example: `pipeline-neo --log /tmp/pipeline.log --log-level debug --check-version /path/to/project.fcpxml`
