@@ -49,11 +49,11 @@ struct PipelineNeoCLI: ParsableCommand {
         if PipelineLogLevel.from(string: logOptions.logLevel) == nil {
             throw ValidationError("Invalid log level: '\(logOptions.logLevel)'. Use one of: trace, debug, info, notice, warning, error, critical.")
         }
-        let modeCount = [general.checkVersion, general.convertVersion != nil, extraction.mediaCopy].filter { $0 }.count
+        let modeCount = [general.checkVersion, general.convertVersion != nil, general.validate, extraction.mediaCopy].filter { $0 }.count
         if modeCount > 1 {
-            throw ValidationError("Use only one of --check-version, --convert-version, or --media-copy.")
+            throw ValidationError("Use only one of --check-version, --convert-version, --validate, or --media-copy.")
         }
-        if general.checkVersion {
+        if general.checkVersion || general.validate {
             return
         }
         if general.convertVersion != nil || extraction.mediaCopy {
@@ -63,14 +63,20 @@ struct PipelineNeoCLI: ParsableCommand {
             return
         }
         if outputDir == nil {
-            throw ValidationError("output-dir is required when not using --check-version, --convert-version, or --media-copy.")
+            throw ValidationError("output-dir is required when not using --check-version, --convert-version, --validate, or --media-copy.")
         }
     }
 
     func run() throws {
+        // Use hardcoded DTDs when no bundle is present (single-binary deployment).
+        EmbeddedDTDProvider.provide = { EmbeddedDTDs.data(for: $0) }
         let logger = logOptions.makeLogger()
         if general.checkVersion {
             try CheckVersion.run(fcpxmlPath: fcpxmlPath, logger: logger)
+            return
+        }
+        if general.validate {
+            try Validate.run(fcpxmlPath: fcpxmlPath, logger: logger, showProgress: !logOptions.quiet)
             return
         }
         guard let outDir = outputDir else {
@@ -81,7 +87,7 @@ struct PipelineNeoCLI: ParsableCommand {
             return
         }
         if extraction.mediaCopy {
-            try ExtractMedia.run(fcpxmlPath: fcpxmlPath, outputDir: outDir, logger: logger)
+            try ExtractMedia.run(fcpxmlPath: fcpxmlPath, outputDir: outDir, logger: logger, showProgress: !logOptions.quiet)
             return
         }
         print("Input: \(fcpxmlPath.path)")

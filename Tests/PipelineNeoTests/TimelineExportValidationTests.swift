@@ -278,6 +278,49 @@ final class TimelineExportValidationTests: XCTestCase {
         XCTAssertTrue(result.errors.contains { $0.message.contains("Unsupported") || $0.message.contains("99.99") })
     }
 
+    // MARK: - performValidation (semantic + DTD)
+
+    func testPerformValidation_ValidDocument() {
+        let service = FCPXMLService()
+        let doc = XMLDocument(resources: [], events: [], fcpxmlVersion: .v1_10)
+        // Ensure resources element exists (semantic validator requires it)
+        if doc.fcpxmlElement?.firstChildElement(named: "resources") == nil {
+            let resourcesEl = XMLElement(name: "resources")
+            doc.fcpxmlElement?.addChild(resourcesEl)
+        }
+        let report = service.performValidation(doc)
+        XCTAssertTrue(report.isValid, "Valid document should pass full validation. \(report.summary)")
+        XCTAssertTrue(report.semantic.isValid)
+        XCTAssertTrue(report.dtd.isValid)
+    }
+
+    func testPerformValidation_InvalidSemantic() {
+        let service = FCPXMLService()
+        let doc = XMLDocument(resources: [], events: [], fcpxmlVersion: .v1_10)
+        if doc.fcpxmlElement?.firstChildElement(named: "resources") == nil {
+            doc.fcpxmlElement?.addChild(XMLElement(name: "resources"))
+        }
+        let root = doc.fcpxmlElement!
+        let clip = XMLElement(name: "ref-clip")
+        clip.addAttribute(withName: "ref", value: "missing-resource")
+        root.addChild(clip)
+        let report = service.performValidation(doc)
+        XCTAssertFalse(report.isValid)
+        XCTAssertFalse(report.semantic.isValid, "Semantic validation should fail for unresolved ref")
+        XCTAssertTrue(report.semantic.errors.contains { $0.message.contains("missing-resource") || $0.message.contains("Reference") })
+    }
+
+    func testPerformValidation_InvalidDTD() {
+        let service = FCPXMLService()
+        let doc = XMLDocument()
+        doc.setRootElement(XMLElement(name: "fcpxml"))
+        // No version attribute -> DTD validation fails
+        let report = service.performValidation(doc)
+        XCTAssertFalse(report.isValid)
+        XCTAssertFalse(report.semantic.isValid) // also missing resources
+        XCTAssertFalse(report.dtd.isValid)
+    }
+
     // MARK: - FCPXMLFileLoader (.fcpxml / .fcpxmld file I/O)
 
     func testFCPXMLFileLoaderLoadsSingleFile() throws {

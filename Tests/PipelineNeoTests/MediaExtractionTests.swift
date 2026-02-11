@@ -48,7 +48,7 @@ final class MediaExtractionTests: XCTestCase, @unchecked Sendable {
         let destDir = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
         try FileManager.default.createDirectory(at: destDir, withIntermediateDirectories: true)
         defer { try? FileManager.default.removeItem(at: destDir) }
-        let result = service.copyReferencedMedia(from: document, to: destDir, baseURL: nil)
+        let result = service.copyReferencedMedia(from: document, to: destDir, baseURL: nil, progress: nil)
         XCTAssertEqual(result.entries.count, 1)
         let entry = try XCTUnwrap(result.entries.first)
         if case .skipped(_, let reason) = entry {
@@ -92,7 +92,7 @@ final class MediaExtractionTests: XCTestCase, @unchecked Sendable {
         let destDir = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
         try FileManager.default.createDirectory(at: destDir, withIntermediateDirectories: true)
         defer { try? FileManager.default.removeItem(at: destDir) }
-        let result = service.copyReferencedMedia(from: document, to: destDir, baseURL: nil)
+        let result = service.copyReferencedMedia(from: document, to: destDir, baseURL: nil, progress: nil)
         XCTAssertEqual(result.copied.count, 1, "One file should be copied")
         let (src, dest) = try XCTUnwrap(result.copied.first)
         XCTAssertEqual(src.lastPathComponent, "test_media.mp4")
@@ -125,7 +125,7 @@ final class MediaExtractionTests: XCTestCase, @unchecked Sendable {
         let destDir = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
         try FileManager.default.createDirectory(at: destDir, withIntermediateDirectories: true)
         defer { try? FileManager.default.removeItem(at: destDir) }
-        let result = await service.copyReferencedMedia(from: document, to: destDir, baseURL: nil)
+        let result = await service.copyReferencedMedia(from: document, to: destDir, baseURL: nil, progress: nil)
         XCTAssertEqual(result.copied.count, 1)
         XCTAssertTrue(FileManager.default.fileExists(atPath: result.copied[0].destination.path))
     }
@@ -169,7 +169,7 @@ final class MediaExtractionTests: XCTestCase, @unchecked Sendable {
         let destDir = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
         try FileManager.default.createDirectory(at: destDir, withIntermediateDirectories: true)
         defer { try? FileManager.default.removeItem(at: destDir) }
-        let copyResult = service.copyReferencedMedia(from: document, to: destDir, baseURL: tempDir)
+        let copyResult = service.copyReferencedMedia(from: document, to: destDir, baseURL: tempDir, progress: nil)
         XCTAssertEqual(copyResult.copied.count, 2, "Both files copied")
         XCTAssertEqual(copyResult.failed.count, 0)
     }

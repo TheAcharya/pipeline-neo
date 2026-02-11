@@ -1,6 +1,6 @@
 # Pipeline Neo — Test Suite
 
-This directory contains the test suite for Pipeline Neo, a Swift 6 framework for Final Cut Pro FCPXML processing with SwiftTimecode integration. The suite currently has 178 tests. They ensure correctness, concurrency safety, and performance across parsing, timecode conversion, document and element operations, file loading, timeline export, validation, and all supported FCPXML versions and frame rates. The suite is modular: shared utilities resolve sample paths, file tests exercise individual FCPXML samples, and logic-and-parsing tests cover model types and structure.
+This directory contains the test suite for Pipeline Neo, a Swift 6 framework for Final Cut Pro FCPXML processing with SwiftTimecode integration. The suite currently has 181 tests. They ensure correctness, concurrency safety, and performance across parsing, timecode conversion, document and element operations, file loading, timeline export, validation, and all supported FCPXML versions and frame rates. The suite is modular: shared utilities resolve sample paths, file tests exercise individual FCPXML samples, and logic-and-parsing tests cover model types and structure.
 
 ---
 

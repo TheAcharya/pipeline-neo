@@ -23,8 +23,8 @@ public final class MediaExtractor: MediaExtraction, Sendable {
         _extract(from: document, baseURL: baseURL)
     }
 
-    public func copyReferencedMedia(from document: XMLDocument, to destinationURL: URL, baseURL: URL?) -> MediaCopyResult {
-        _copy(from: document, to: destinationURL, baseURL: baseURL)
+    public func copyReferencedMedia(from document: XMLDocument, to destinationURL: URL, baseURL: URL?, progress: (any ProgressReporter)? = nil) -> MediaCopyResult {
+        _copy(from: document, to: destinationURL, baseURL: baseURL, progress: progress)
     }
 
     // MARK: - MediaExtraction (Async)
@@ -33,8 +33,8 @@ public final class MediaExtractor: MediaExtraction, Sendable {
         _extract(from: document, baseURL: baseURL)
     }
 
-    public func copyReferencedMedia(from document: XMLDocument, to destinationURL: URL, baseURL: URL?) async -> MediaCopyResult {
-        _copy(from: document, to: destinationURL, baseURL: baseURL)
+    public func copyReferencedMedia(from document: XMLDocument, to destinationURL: URL, baseURL: URL?, progress: (any ProgressReporter)? = nil) async -> MediaCopyResult {
+        _copy(from: document, to: destinationURL, baseURL: baseURL, progress: progress)
     }
 
     // MARK: - Private
@@ -99,12 +99,13 @@ public final class MediaExtractor: MediaExtraction, Sendable {
         return URL(string: srcString)
     }
 
-    private func _copy(from document: XMLDocument, to destinationURL: URL, baseURL: URL?) -> MediaCopyResult {
+    private func _copy(from document: XMLDocument, to destinationURL: URL, baseURL: URL?, progress: (any ProgressReporter)?) -> MediaCopyResult {
         let result = _extract(from: document, baseURL: baseURL)
         let fileRefs = result.fileReferences
         var seenSourceURLs: Set<URL> = []
         var usedFilenames: Set<String> = []
         var entries: [MediaCopyEntry] = []
+        var processed = 0
 
         let fm = FileManager.default
         for ref in fileRefs {
@@ -139,7 +140,10 @@ public final class MediaExtractor: MediaExtraction, Sendable {
             } catch {
                 entries.append(.failed(source: sourceURL, error: error.localizedDescription))
             }
+            processed += 1
+            progress?.advance(by: 1)
         }
+        progress?.finish()
         return MediaCopyResult(entries: entries)
     }
 

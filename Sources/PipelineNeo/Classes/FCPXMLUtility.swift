@@ -171,8 +171,8 @@ public final class FCPXMLUtility: Sendable {
 	}
 
 	/// Copies referenced media files (file URLs only) to the destination directory; deduplicates by source URL.
-	public func copyReferencedMedia(from document: XMLDocument, to destinationURL: URL, baseURL: URL? = nil) -> MediaCopyResult {
-		mediaExtractor.copyReferencedMedia(from: document, to: destinationURL, baseURL: baseURL)
+	public func copyReferencedMedia(from document: XMLDocument, to destinationURL: URL, baseURL: URL? = nil, progress: (any ProgressReporter)? = nil) -> MediaCopyResult {
+		mediaExtractor.copyReferencedMedia(from: document, to: destinationURL, baseURL: baseURL, progress: progress)
 	}
 
 	/// Asynchronously extracts media references from the document.
@@ -181,8 +181,8 @@ public final class FCPXMLUtility: Sendable {
 	}
 
 	/// Asynchronously copies referenced media files to the destination directory.
-	public func copyReferencedMedia(from document: XMLDocument, to destinationURL: URL, baseURL: URL? = nil) async -> MediaCopyResult {
-		await mediaExtractor.copyReferencedMedia(from: document, to: destinationURL, baseURL: baseURL)
+	public func copyReferencedMedia(from document: XMLDocument, to destinationURL: URL, baseURL: URL? = nil, progress: (any ProgressReporter)? = nil) async -> MediaCopyResult {
+		await mediaExtractor.copyReferencedMedia(from: document, to: destinationURL, baseURL: baseURL, progress: progress)
 	}
 	
 	/// Converts a project counter value to the project's timecode.

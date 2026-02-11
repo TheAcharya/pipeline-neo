@@ -16,4 +16,7 @@ struct GeneralOptions: ParsableArguments {
 
     @Option(name: .long, help: ArgumentHelp("Convert FCPXML to the given version (e.g. 1.10, 1.14) and write to output-dir.", valueName: "version"))
     var convertVersion: String?
+
+    @Flag(name: .long, help: "Perform robust check and validation of FCPXML/FCPXMLD (semantic + DTD).")
+    var validate: Bool = false
 }

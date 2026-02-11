@@ -44,9 +44,10 @@ public struct FCPXMLValidator: Sendable {
             ))
         }
 
-        let resourceIDs = Set(document.fcpxResources.compactMap { el in
-            el.attribute(forName: "id")?.stringValue
-        })
+        // Collect all element IDs in the document (resources + text-style-def, etc.).
+        // Refs can point to top-level resources or to elements like <text-style-def id="ts1"> inside titles/captions.
+        var resourceIDs: Set<String> = []
+        collectIDs(from: root, into: &resourceIDs)
 
         var refs: [String] = []
         collectRefs(from: root, into: &refs)
@@ -73,6 +74,16 @@ public struct FCPXMLValidator: Sendable {
         }
         for child in element.childElements {
             collectRefs(from: child, into: &refs)
+        }
+    }
+
+    /// Recursively collects all element `id` attribute values (resources, text-style-def, etc.).
+    private func collectIDs(from element: XMLElement, into ids: inout Set<String>) {
+        if let id = element.attribute(forName: "id")?.stringValue, !id.isEmpty {
+            ids.insert(id)
+        }
+        for child in element.childElements {
+            collectIDs(from: child, into: &ids)
         }
     }
 

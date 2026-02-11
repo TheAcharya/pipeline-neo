@@ -8,10 +8,15 @@
 **🔧 Improvements:**
 - Logging: seven levels (trace through critical), optional log file and console, quiet mode to disable output
 - CLI log options: `--log` (log file path), `--log-level` (trace, debug, info, notice, warning, error, critical; default info), `--quiet` (no log output); all commands use the configured logger
-- CLI: `--extract-media` renamed to `--media-copy`; media copy option moved under its own **EXTRACTION** help category
-- Service now logs parsing, version conversion, save, DTD validation, media extraction counts, and copy results
-- Test suite expanded to 178 tests
-- Documentation updated (README, CLI README, Manual)
+- CLI: `--extract-media` renamed to `--media-copy`; media copy option moved under **EXTRACTION** help category
+- CLI: `--validate` added (semantic + DTD validation; progress indicator when not `--quiet`)
+- CLI: single binary with embedded FCPXML DTDs (1.5–1.14); no resource bundle required; run from any directory or external storage
+- Progress bar (TQDM-style) for CLI `--media-copy` (per file) and `--validate` (one-step)
+- Semantic validation: refs now resolved against all element IDs in the document (e.g. `text-style-def` in titles/captions), not only top-level resources
+- Scripts: `Scripts/generate_embedded_dtds.sh` and `swift run GenerateEmbeddedDTDs` to regenerate `Sources/PipelineNeoCLI/Generated/EmbeddedDTDs.swift` from `Sources/PipelineNeo/FCPXML DTDs/`; `Scripts/README.md` added
+- Service logs parsing, version conversion, save, DTD validation, media extraction counts, and copy results
+- Test suite: 181 tests
+- Documentation updated (README, CLI README, Manual, Documentation/, Scripts/README)
 
 ---
 

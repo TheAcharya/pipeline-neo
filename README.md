@@ -49,7 +49,7 @@ This codebase is developed using AI agents.
 - Per-version DTD validation against a chosen version or the document’s declared version.
 - Media extraction and copy: extract asset/locator URLs, copy to a directory with deduplication; sync and async.
 - Timeline and export: build Timeline, export to FCPXML string or .fcpxmld bundle (optional media copy).
-- Experimental CLI: `pipeline-neo` with `--check-version`, `--convert-version`, `--media-copy`, and logging options `--log`, `--log-level`, `--quiet` (see CLI README).
+- Experimental CLI: `pipeline-neo` with `--check-version`, `--convert-version`, `--validate`, `--media-copy`, and logging options `--log`, `--log-level`, `--quiet` (see CLI README).
 - Sync and async APIs; dependency-injected, concurrency-safe design for Swift 6.
 
 ## Requirements
@@ -173,6 +173,7 @@ GENERAL:
   --check-version         Check and print FCPXML document version.
   --convert-version <version>
                           Convert FCPXML to the given version (e.g. 1.10, 1.14) and write to output-dir.
+  --validate              Perform robust check and validation of FCPXML/FCPXMLD (semantic + DTD).
 
 EXTRACTION:
   --media-copy            Scan FCPXML/FCPXMLD and copy all referenced media files to output-dir.
@@ -193,7 +194,7 @@ OPTIONS:
 Complete manual, usage guide, and examples are in the [Documentation](Documentation/) folder:
 
 - [Manual](Documentation/Manual.md) — Full user manual: loading, modular operations, time conversions, logging, error handling, async/await, task groups, extensions, validation, version conversion, and step-by-step examples.
-- [CLI](Sources/PipelineNeoCLI/README.md) — Experimental command-line interface: `--check-version`, `--convert-version`, `--media-copy`, building and extending.
+- [CLI](Sources/PipelineNeoCLI/README.md) — Experimental command-line interface: `--check-version`, `--convert-version`, `--validate`, `--media-copy`, building and extending.
 
 ## FCPXML Version Support
 

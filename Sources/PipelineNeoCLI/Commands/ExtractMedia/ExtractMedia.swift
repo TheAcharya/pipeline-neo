@@ -27,7 +27,8 @@ enum ExtractMedia {
     }
 
     /// Loads the FCPXML at the given URL and copies all referenced media files to outputDir.
-    static func run(fcpxmlPath: URL, outputDir: URL, logger: PipelineLogger = NoOpPipelineLogger()) throws {
+    /// - Parameter showProgress: When true and there are files to copy, shows a progress bar (unless stdout is not a TTY).
+    static func run(fcpxmlPath: URL, outputDir: URL, logger: PipelineLogger = NoOpPipelineLogger(), showProgress: Bool = true) throws {
         let service = FCPXMLService(logger: logger)
         let document = try service.parseFCPXML(from: fcpxmlPath)
 
@@ -49,7 +50,10 @@ enum ExtractMedia {
         let totalDetected = fileRefs.count
         fputs("Media detected: \(videoCount) video, \(audioCount) audio, \(imageCount) images (\(totalDetected) total).\n", stderr)
 
-        let result = service.copyReferencedMedia(from: document, to: outputDir, baseURL: baseURL)
+        let progress: (any ProgressReporter)? = (showProgress && totalDetected > 0)
+            ? ProgressBar(total: totalDetected, desc: "Copying media")
+            : nil
+        let result = service.copyReferencedMedia(from: document, to: outputDir, baseURL: baseURL, progress: progress)
 
         let copiedCount = result.copied.count
         let skippedCount = result.skipped.count

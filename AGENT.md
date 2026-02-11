@@ -31,7 +31,7 @@ Keep this file in sync with `.cursorrules`. Both should describe the same overvi
 
 Pipeline Neo targets macOS 12+, Xcode 16+, and Swift 6.0 with full concurrency support. It provides FCPXML parsing, creation, and manipulation with timecode operations via SwiftTimecode. All core behaviour is behind protocols with both synchronous and async/await APIs; default implementations exist but any component can be swapped or extended via dependency injection.
 
-Current status: all 178 tests passing; FCPXML versions 1.5–1.14 supported (DTDs included, full parsing, typed element-type coverage for all DTD elements via FCPXMLElementType); Final Cut Pro frame rates (23.976, 24, 25, 29.97, 30, 50, 59.94, 60); thread-safe and concurrency-compliant with comprehensive async/await support; no known security vulnerabilities. Version conversion (FCPXMLVersionConverter) automatically strips elements not in the target version’s DTD (e.g. adjust-colorConform, adjust-stereo-3D); per-version DTD validation via FCPXMLService.validateDocumentAgainstDTD(_:version:) and validateDocumentAgainstDeclaredVersion(_:); CLI convert runs DTD validation after conversion. Experimental CLI (pipeline-neo): --check-version, --convert-version; see Sources/PipelineNeoCLI/README.md.
+Current status: all 181 tests passing; FCPXML versions 1.5–1.14 supported (DTDs included, full parsing, typed element-type coverage for all DTD elements via FCPXMLElementType); Final Cut Pro frame rates (23.976, 24, 25, 29.97, 30, 50, 59.94, 60); thread-safe and concurrency-compliant with comprehensive async/await support; no known security vulnerabilities. Version conversion (FCPXMLVersionConverter) automatically strips elements not in the target version’s DTD (e.g. adjust-colorConform, adjust-stereo-3D); per-version DTD validation via FCPXMLService.validateDocumentAgainstDTD(_:version:) and validateDocumentAgainstDeclaredVersion(_:); CLI convert runs DTD validation after conversion. Experimental CLI (pipeline-neo): --check-version, --convert-version; see Sources/PipelineNeoCLI/README.md.
 
 ---
 
@@ -219,7 +219,7 @@ Keep AGENT.md and .cursorrules in sync. Both must reflect:
 - Project overview and codebase rewrite/refactor.
 - Architecture (protocols, implementations, extensions, service, utilities) and single injection point (FCPXMLUtility.defaultForExtensions).
 - Source layout (Classes, Delegates, Errors, Extensions including +Modular, Implementations, Protocols, Services, Utilities, Annotations, Export, Timeline, Validation, FileIO, Logging, Format, Model, Parsing, Extraction, FCPXML DTDs).
-- Test structure (Tests/ layout, TestResources, FCPXMLTestUtilities, FileTests/, LogicAndParsing/, CutDetectionTests, VersionConversionTests, PipelineNeoTests.swift, TimelineExportValidationTests, APIAndEdgeCaseTests, FCPXMLPerformanceTests; 178 tests).
+- Test structure (Tests/ layout, TestResources, FCPXMLTestUtilities, FileTests/, LogicAndParsing/, CutDetectionTests, VersionConversionTests, PipelineNeoTests.swift, TimelineExportValidationTests, APIAndEdgeCaseTests, FCPXMLPerformanceTests; 181 tests).
 - FCPXML 1.5–1.14 and FCPXMLElementType; version conversion with element stripping and per-version DTD validation; experimental CLI (pipeline-neo, --check-version, --convert-version); Final Cut Pro frame rates; Swift 6 concurrency (Sendable, async/await, CI strict-concurrency job).
 
 When updating either file, apply the same information to both and keep terminology and examples consistent.
