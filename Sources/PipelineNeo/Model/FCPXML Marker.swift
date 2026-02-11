@@ -2,7 +2,7 @@
 //  FCPXML Marker.swift
 //  Pipeline Neo • https://github.com/TheAcharya/pipeline-neo
 //  © 2026 • Licensed under MIT License
-
+//
 
 //
 //	Marker element model (standard, to-do, chapter) for the parsing layer.

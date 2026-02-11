@@ -2,7 +2,7 @@
 //  CMTimeExtension.swift
 //  Pipeline Neo • https://github.com/TheAcharya/pipeline-neo
 //  © 2026 • Licensed under MIT License
-
+//
 
 //
 //	CMTime extensions for FCPXML time string formatting and time calculations.

@@ -2,7 +2,7 @@
 //  FCPXMLParsing.swift
 //  Pipeline Neo • https://github.com/TheAcharya/pipeline-neo
 //  © 2026 • Licensed under MIT License
-
+//
 
 //
 //	Protocols for FCPXML parsing and element filtering operations.

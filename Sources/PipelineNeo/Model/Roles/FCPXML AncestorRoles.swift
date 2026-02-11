@@ -2,7 +2,7 @@
 //  FCPXML AncestorRoles.swift
 //  Pipeline Neo • https://github.com/TheAcharya/pipeline-neo
 //  © 2026 • Licensed under MIT License
-
+//
 
 //
 //	Structure describing ancestors and their interpolated roles.

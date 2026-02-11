@@ -2,6 +2,7 @@
 //  MediaReference.swift
 //  Pipeline Neo • https://github.com/TheAcharya/pipeline-neo
 //  © 2026 • Licensed under MIT License
+
 //
 //
 //	A single media file reference extracted from FCPXML (asset media-rep or locator).

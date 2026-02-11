@@ -2,7 +2,8 @@
 //  FCPXMLVersionConverting.swift
 //  Pipeline Neo • https://github.com/TheAcharya/pipeline-neo
 //  © 2026 • Licensed under MIT License
-//
+
+
 //
 //	Protocol for converting an FCPXML document to a target format version.
 //

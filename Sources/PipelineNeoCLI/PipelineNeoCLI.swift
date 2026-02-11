@@ -3,6 +3,7 @@
 //  Pipeline Neo • https://github.com/TheAcharya/pipeline-neo
 //  © 2026 • Licensed under MIT License
 //
+
 //
 //  CLI for Pipeline Neo.
 //
@@ -55,16 +56,18 @@ struct PipelineNeoCLI: ParsableCommand {
             try CheckVersion.run(fcpxmlPath: fcpxmlPath)
             return
         }
+        guard let outDir = outputDir else {
+            throw ValidationError("output-dir is required.")
+        }
         if let targetVersion = general.convertVersion {
-            try ConvertVersion.run(fcpxmlPath: fcpxmlPath, targetVersionString: targetVersion, outputDir: outputDir!)
+            try ConvertVersion.run(fcpxmlPath: fcpxmlPath, targetVersionString: targetVersion, outputDir: outDir)
             return
         }
         if general.extractMedia {
-            try ExtractMedia.run(fcpxmlPath: fcpxmlPath, outputDir: outputDir!)
+            try ExtractMedia.run(fcpxmlPath: fcpxmlPath, outputDir: outDir)
             return
         }
-        let out = outputDir!
         print("Input: \(fcpxmlPath.path)")
-        print("Output: \(out.path)")
+        print("Output: \(outDir.path)")
     }
 }

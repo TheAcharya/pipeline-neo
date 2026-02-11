@@ -3,6 +3,7 @@
 //  Pipeline Neo • https://github.com/TheAcharya/pipeline-neo
 //  © 2026 • Licensed under MIT License
 //
+
 //
 //  Check and print FCPXML document version (used by --check-version).
 //

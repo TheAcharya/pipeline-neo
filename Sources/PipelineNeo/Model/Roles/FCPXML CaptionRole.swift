@@ -2,7 +2,7 @@
 //  FCPXML CaptionRole.swift
 //  Pipeline Neo • https://github.com/TheAcharya/pipeline-neo
 //  © 2026 • Licensed under MIT License
-
+//
 
 //
 //	Caption role model with format and language code.

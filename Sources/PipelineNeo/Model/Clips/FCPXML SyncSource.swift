@@ -2,7 +2,7 @@
 //  FCPXML SyncSource.swift
 //  Pipeline Neo • https://github.com/TheAcharya/pipeline-neo
 //  © 2026 • Licensed under MIT License
-
+//
 
 //
 //	Sync source element model for audio component of synchronized clips.

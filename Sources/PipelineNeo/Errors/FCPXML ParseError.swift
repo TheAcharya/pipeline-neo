@@ -2,7 +2,7 @@
 //  FCPXML ParseError.swift
 //  Pipeline Neo • https://github.com/TheAcharya/pipeline-neo
 //  © 2026 • Licensed under MIT License
-
+//
 
 //
 //	Parse error enum for the FinalCutPro FCPXML parsing layer.

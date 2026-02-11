@@ -2,7 +2,7 @@
 //  FCPXML Video.swift
 //  Pipeline Neo • https://github.com/TheAcharya/pipeline-neo
 //  © 2026 • Licensed under MIT License
-
+//
 
 //
 //	Video element model referencing video data.

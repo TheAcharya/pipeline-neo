@@ -2,7 +2,7 @@
 //  FCPXMLRole.swift
 //  Pipeline Neo • https://github.com/TheAcharya/pipeline-neo
 //  © 2026 • Licensed under MIT License
-
+//
 
 //
 //	Core protocol for FCPXML roles.
@@ -230,7 +230,7 @@ extension FinalCutPro.FCPXML {
         
         // re-cast Substrings as Strings
         let mainRoleString = String(mainRole)
-        let subRoleString = roleAndSubrole[3] != nil ? String(roleAndSubrole[3]!) : nil
+        let subRoleString = roleAndSubrole.count > 3 ? roleAndSubrole[3].map { String($0) } : nil
         
         return (role: mainRoleString, subRole: subRoleString)
     }

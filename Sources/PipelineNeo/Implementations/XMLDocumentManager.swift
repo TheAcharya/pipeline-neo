@@ -2,7 +2,7 @@
 //  XMLDocumentManager.swift
 //  Pipeline Neo • https://github.com/TheAcharya/pipeline-neo
 //  © 2026 • Licensed under MIT License
-
+//
 
 //
 //	Implementation of XML document creation, resource management, and save operations.

@@ -2,7 +2,7 @@
 //  TimelineClip.swift
 //  Pipeline Neo • https://github.com/TheAcharya/pipeline-neo
 //  © 2026 • Licensed under MIT License
-
+//
 
 //
 //	Single clip within a Timeline, with source reference, offset, and duration.

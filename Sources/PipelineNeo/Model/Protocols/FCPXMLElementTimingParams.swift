@@ -2,7 +2,7 @@
 //  FCPXMLElementTimingParams.swift
 //  Pipeline Neo • https://github.com/TheAcharya/pipeline-neo
 //  © 2026 • Licensed under MIT License
-
+//
 
 //
 //	Protocol for timing parameters (conform-rate, timeMap).

@@ -3,10 +3,10 @@
 //  Pipeline Neo • https://github.com/TheAcharya/pipeline-neo
 //  © 2026 • Licensed under MIT License
 //
+
 //
-//	Default implementation of CutDetection: finds edit points on a spine and
-//	classifies them by boundary type and source relationship.
-//
+//	Default implementation of CutDetection: finds edit points on a spine and classifies them by boundary type and source relationship.
+//	
 
 import Foundation
 import SwiftExtensions

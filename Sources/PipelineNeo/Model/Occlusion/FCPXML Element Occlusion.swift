@@ -2,7 +2,7 @@
 //  FCPXML Element Occlusion.swift
 //  Pipeline Neo • https://github.com/TheAcharya/pipeline-neo
 //  © 2026 • Licensed under MIT License
-
+//
 
 //
 //	Utility function for calculating element occlusion.
@@ -79,7 +79,7 @@ extension XMLElement {
             let partialAncestors = ancestors.dropFirst(ancestorWalkedCount)
             
             let getLane = ancestor.fcpLane
-            let lane = getLane != nil ? Int(getLane!) : nil
+            let lane = getLane.flatMap { Int($0) }
             defer { lastLane = lane }
             
             if let getLastLane = lastLane {

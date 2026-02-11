@@ -2,7 +2,7 @@
 //  Timeline.swift
 //  Pipeline Neo • https://github.com/TheAcharya/pipeline-neo
 //  © 2026 • Licensed under MIT License
-
+//
 
 //
 //	Timeline model with clips, format settings, and duration calculation.

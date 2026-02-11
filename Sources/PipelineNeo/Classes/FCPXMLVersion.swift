@@ -2,7 +2,7 @@
 //  FCPXMLVersion.swift
 //  Pipeline Neo • https://github.com/TheAcharya/pipeline-neo
 //  © 2026 • Licensed under MIT License
-
+//
 
 //
 //	Type-safe FCPXML version handling for DTD validation and document creation.

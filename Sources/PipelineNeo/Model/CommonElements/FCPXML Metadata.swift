@@ -2,7 +2,7 @@
 //  FCPXML Metadata.swift
 //  Pipeline Neo • https://github.com/TheAcharya/pipeline-neo
 //  © 2026 • Licensed under MIT License
-
+//
 
 //
 //	Metadata container element model.

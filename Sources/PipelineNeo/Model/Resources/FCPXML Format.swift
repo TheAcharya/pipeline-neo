@@ -2,7 +2,7 @@
 //  FCPXML Format.swift
 //  Pipeline Neo • https://github.com/TheAcharya/pipeline-neo
 //  © 2026 • Licensed under MIT License
-
+//
 
 //
 //	Format shared resource model for video format definitions.

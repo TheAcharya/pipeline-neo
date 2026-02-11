@@ -2,7 +2,7 @@
 //  FCPXML Asset.swift
 //  Pipeline Neo • https://github.com/TheAcharya/pipeline-neo
 //  © 2026 • Licensed under MIT License
-
+//
 
 //
 //	Asset shared resource model for file-based media.

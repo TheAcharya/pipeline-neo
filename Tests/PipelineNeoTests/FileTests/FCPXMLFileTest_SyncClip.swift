@@ -2,7 +2,7 @@
 //  FCPXMLFileTest_SyncClip.swift
 //  Pipeline Neo • https://github.com/TheAcharya/pipeline-neo
 //  © 2026 • Licensed under MIT License
-
+//
 
 //
 //	File Tests: SyncClip.fcpxml.

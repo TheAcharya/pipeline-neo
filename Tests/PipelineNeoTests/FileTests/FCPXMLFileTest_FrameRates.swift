@@ -2,7 +2,7 @@
 //  FCPXMLFileTest_FrameRates.swift
 //  Pipeline Neo • https://github.com/TheAcharya/pipeline-neo
 //  © 2026 • Licensed under MIT License
-
+//
 
 //
 //	File Tests: All frame-rate samples (23.98, 24, 24With25Media, 25i, 29.97, 29.97d, 30, 50, 59.94, 60). Mirrors DAW one-file-per-frame-rate pattern.

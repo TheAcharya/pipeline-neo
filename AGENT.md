@@ -93,7 +93,7 @@ All new Swift files must use this exact header format:
 //  FileName.swift
 //  Pipeline Neo • https://github.com/TheAcharya/pipeline-neo
 //  © 2026 • Licensed under MIT License
-
+//
 
 //
 //	Brief description of the file's purpose.

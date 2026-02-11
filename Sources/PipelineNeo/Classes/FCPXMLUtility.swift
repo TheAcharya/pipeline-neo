@@ -2,7 +2,7 @@
 //  FCPXMLUtility.swift
 //  Pipeline Neo • https://github.com/TheAcharya/pipeline-neo
 //  © 2026 • Licensed under MIT License
-
+//
 
 //
 //	Utility methods for FCPXML processing; single injection point for extension APIs.

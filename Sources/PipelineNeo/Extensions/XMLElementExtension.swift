@@ -2419,20 +2419,20 @@ extension XMLElement {
 		var frameDuration: CMTime? = nil
 		var frameSize: CGSize? = nil
 		
-		if element.fcpxID != nil {
-			formatID = element.fcpxID!
+		if let id = element.fcpxID {
+			formatID = id
 		}
 		
-		if element.fcpxName != nil {
-			formatName = element.fcpxName!
+		if let name = element.fcpxName {
+			formatName = name
 		}
 		
-		if element.fcpxFrameDuration != nil {
-			frameDuration = element.fcpxFrameDuration!
+		if let fd = element.fcpxFrameDuration {
+			frameDuration = fd
 		}
 		
-		if element.fcpxHeight != nil && element.fcpxWidth != nil {
-			frameSize = CGSize(width: element.fcpxWidth!, height: element.fcpxHeight!)
+		if let w = element.fcpxWidth, let h = element.fcpxHeight {
+			frameSize = CGSize(width: w, height: h)
 		}
 		
 		return (formatID, formatName, frameDuration, frameSize)
@@ -2631,10 +2631,8 @@ extension XMLElement {
 					let values = sourceParser.values
 		if values.count > 0 {
 			for source in values {
-					let URL = Foundation.URL(string: source)
-					
-					if URL != nil {
-						URLs.append(URL!)
+					if let url = Foundation.URL(string: source) {
+						URLs.append(url)
 					}
 				}
 			}

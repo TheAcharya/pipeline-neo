@@ -2,7 +2,7 @@
 //  FCPXMLFileTest_AllSamples.swift
 //  Pipeline Neo • https://github.com/TheAcharya/pipeline-neo
 //  © 2026 • Licensed under MIT License
-
+//
 
 //
 //	File Tests: Smoke test — every available sample in FCPXML Samples parses successfully.

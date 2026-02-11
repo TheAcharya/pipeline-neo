@@ -3,6 +3,7 @@
 //  Pipeline Neo • https://github.com/TheAcharya/pipeline-neo
 //  © 2026 • Licensed under MIT License
 //
+
 //
 //	Aggregate result of cut detection on an FCPXML spine.
 //

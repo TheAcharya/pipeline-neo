@@ -1,5 +1,15 @@
 # Changelog
 
+### 2.0.1
+
+**🎉 Released:**
+- TBA
+
+**🔧 Improvements:**
+-- Here
+
+---
+
 ### 2.0.0
 
 **🎉 Released:**

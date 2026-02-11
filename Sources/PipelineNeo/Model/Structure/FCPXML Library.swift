@@ -2,7 +2,7 @@
 //  FCPXML Library.swift
 //  Pipeline Neo • https://github.com/TheAcharya/pipeline-neo
 //  © 2026 • Licensed under MIT License
-
+//
 
 //
 //	Library element model for library location on disk.

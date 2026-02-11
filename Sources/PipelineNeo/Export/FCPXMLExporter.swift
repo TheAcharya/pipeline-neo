@@ -2,7 +2,7 @@
 //  FCPXMLExporter.swift
 //  Pipeline Neo • https://github.com/TheAcharya/pipeline-neo
 //  © 2026 • Licensed under MIT License
-
+//
 
 //
 //	Exports Timeline and assets to an FCPXML document string.

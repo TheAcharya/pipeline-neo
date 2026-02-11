@@ -2,7 +2,7 @@
 //  FCPXML AnyRole.swift
 //  Pipeline Neo • https://github.com/TheAcharya/pipeline-neo
 //  © 2026 • Licensed under MIT License
-
+//
 
 //
 //	Type-erased box for specialized role instances (audio, video, caption).

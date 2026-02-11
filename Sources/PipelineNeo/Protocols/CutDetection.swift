@@ -3,6 +3,7 @@
 //  Pipeline Neo • https://github.com/TheAcharya/pipeline-neo
 //  © 2026 • Licensed under MIT License
 //
+
 //
 //	Protocol for detecting edit points (cuts) in FCPXML spines.
 //

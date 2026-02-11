@@ -2,6 +2,7 @@
 //  ExtractMedia.swift
 //  Pipeline Neo • https://github.com/TheAcharya/pipeline-neo
 //  © 2026 • Licensed under MIT License
+
 //
 //
 //  Scan FCPXML/FCPXMLD and copy all referenced media to output-dir (used by --extract-media).

@@ -2,7 +2,7 @@
 //  FCPXMLService.swift
 //  Pipeline Neo • https://github.com/TheAcharya/pipeline-neo
 //  © 2026 • Licensed under MIT License
-
+//
 
 //
 //	Service orchestrating modular components for high-level FCPXML workflows.

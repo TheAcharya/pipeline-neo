@@ -3,6 +3,7 @@
 //  Pipeline Neo • https://github.com/TheAcharya/pipeline-neo
 //  © 2026 • Licensed under MIT License
 //
+
 //
 //	Tests for cut detection: edit points, same-clip vs different-clips, boundary types.
 //

@@ -2,7 +2,7 @@
 //  FCPXML Audition.swift
 //  Pipeline Neo • https://github.com/TheAcharya/pipeline-neo
 //  © 2026 • Licensed under MIT License
-
+//
 
 //
 //	Audition element model with active and alternative story elements.

@@ -2,7 +2,7 @@
 //  FCPXML ElementModelType.swift
 //  Pipeline Neo • https://github.com/TheAcharya/pipeline-neo
 //  © 2026 • Licensed under MIT License
-
+//
 
 //
 //	Generic struct for element model types.

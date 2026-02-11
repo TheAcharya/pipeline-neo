@@ -2,7 +2,7 @@
 //  FCPXMLValidator.swift
 //  Pipeline Neo • https://github.com/TheAcharya/pipeline-neo
 //  © 2026 • Licensed under MIT License
-
+//
 
 //
 //	Semantic validator for FCPXML documents: root, resources, ref resolution.

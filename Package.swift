@@ -35,12 +35,16 @@ let package = Package(
         .testTarget(
             name: "PipelineNeoTests",
             dependencies: ["PipelineNeo"],
-            resources: [.process("../FCPXML Samples/FCPXML")]),
+            path: "Tests",
+            exclude: ["README.md"],
+            sources: ["PipelineNeoTests"],
+            resources: [.process("FCPXML Samples/FCPXML")]),
         .executableTarget(
             name: "PipelineNeoCLI",
             dependencies: [
                 "PipelineNeo",
                 .product(name: "ArgumentParser", package: "swift-argument-parser"),
-            ]),
+            ],
+            exclude: ["README.md"]),
     ]
 )

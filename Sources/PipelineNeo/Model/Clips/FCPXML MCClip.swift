@@ -2,7 +2,7 @@
 //  FCPXML MCClip.swift
 //  Pipeline Neo • https://github.com/TheAcharya/pipeline-neo
 //  © 2026 • Licensed under MIT License
-
+//
 
 //
 //	Multicam clip element model referencing multicam media.
