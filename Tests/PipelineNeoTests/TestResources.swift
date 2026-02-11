@@ -23,8 +23,15 @@ func packageRoot(relativeToFile fileURL: URL = URL(fileURLWithPath: #file)) -> U
     return url
 }
 
+/// Returns whether the directory appears to contain FCPXML samples (has at least one .fcpxml file).
+private func directoryContainsFCPXMLSamples(_ dir: URL) -> Bool {
+    guard FileManager.default.fileExists(atPath: dir.path) else { return false }
+    let probe = dir.appendingPathComponent("24.fcpxml")
+    return FileManager.default.fileExists(atPath: probe.path)
+}
+
 /// Directory containing FCPXML sample files (Tests/FCPXML Samples/FCPXML).
-/// Tries, in order: test bundle resource, CI env (GITHUB_WORKSPACE), current directory, then #file-based package root.
+/// Tries, in order: test bundle resource (several layouts), CI env (GITHUB_WORKSPACE), current directory, then #file-based package root.
 func fcpxmlSamplesDirectory(relativeToFile fileURL: URL = URL(fileURLWithPath: #file)) -> URL {
     let samplesSubpath = ["Tests", "FCPXML Samples", "FCPXML"]
     func samplesDir(fromRoot root: URL) -> URL {
@@ -33,12 +40,13 @@ func fcpxmlSamplesDirectory(relativeToFile fileURL: URL = URL(fileURLWithPath: #
 
     // 1. Test bundle (swift test / xcodebuild when resources are bundled)
     if let resourceURL = Bundle.module.resourceURL {
-        let candidates = [
+        let bundleCandidates: [URL] = [
             resourceURL.appendingPathComponent("FCPXML Samples", isDirectory: true).appendingPathComponent("FCPXML", isDirectory: true),
             resourceURL.appendingPathComponent("FCPXML", isDirectory: true),
+            resourceURL,
         ]
-        for dir in candidates {
-            if FileManager.default.fileExists(atPath: dir.path) {
+        for dir in bundleCandidates {
+            if directoryContainsFCPXMLSamples(dir) {
                 return dir
             }
         }
@@ -46,18 +54,17 @@ func fcpxmlSamplesDirectory(relativeToFile fileURL: URL = URL(fileURLWithPath: #
 
     // 2. CI: GitHub Actions sets GITHUB_WORKSPACE to the repo root
     if let workspace = ProcessInfo.processInfo.environment["GITHUB_WORKSPACE"], !workspace.isEmpty {
-        let root = URL(fileURLWithPath: workspace)
-        let dir = samplesDir(fromRoot: root)
-        if FileManager.default.fileExists(atPath: dir.path) {
+        let dir = samplesDir(fromRoot: URL(fileURLWithPath: workspace))
+        if directoryContainsFCPXMLSamples(dir) {
             return dir
         }
     }
 
-    // 3. Current working directory (e.g. xcodebuild runs from package root)
+    // 3. Current working directory (e.g. swift test from package root; xcodebuild may use DerivedData)
     let cwd = URL(fileURLWithPath: FileManager.default.currentDirectoryPath)
     if FileManager.default.fileExists(atPath: cwd.appendingPathComponent("Package.swift").path) {
         let dir = samplesDir(fromRoot: cwd)
-        if FileManager.default.fileExists(atPath: dir.path) {
+        if directoryContainsFCPXMLSamples(dir) {
             return dir
         }
     }
