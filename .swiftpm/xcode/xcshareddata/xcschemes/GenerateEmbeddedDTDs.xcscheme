@@ -14,23 +14,9 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "PipelineNeo"
-               BuildableName = "PipelineNeo"
-               BlueprintName = "PipelineNeo"
-               ReferencedContainer = "container:">
-            </BuildableReference>
-         </BuildActionEntry>
-         <BuildActionEntry
-            buildForTesting = "YES"
-            buildForRunning = "YES"
-            buildForProfiling = "YES"
-            buildForArchiving = "YES"
-            buildForAnalyzing = "YES">
-            <BuildableReference
-               BuildableIdentifier = "primary"
-               BlueprintIdentifier = "PipelineNeoCLI"
-               BuildableName = "pipeline-neo"
-               BlueprintName = "PipelineNeoCLI"
+               BlueprintIdentifier = "GenerateEmbeddedDTDs"
+               BuildableName = "GenerateEmbeddedDTDs"
+               BlueprintName = "GenerateEmbeddedDTDs"
                ReferencedContainer = "container:">
             </BuildableReference>
          </BuildActionEntry>
@@ -45,9 +31,9 @@
                <EnvironmentBuildable>
                   <BuildableReference
                      BuildableIdentifier = "primary"
-                     BlueprintIdentifier = "PipelineNeoCLI"
-                     BuildableName = "pipeline-neo"
-                     BlueprintName = "PipelineNeoCLI"
+                     BlueprintIdentifier = "GenerateEmbeddedDTDs"
+                     BuildableName = "GenerateEmbeddedDTDs"
+                     BlueprintName = "GenerateEmbeddedDTDs"
                      ReferencedContainer = "container:">
                   </BuildableReference>
                </EnvironmentBuildable>
@@ -61,16 +47,6 @@
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
       shouldUseLaunchSchemeArgsEnv = "YES">
       <Testables>
-         <TestableReference
-            skipped = "NO">
-            <BuildableReference
-               BuildableIdentifier = "primary"
-               BlueprintIdentifier = "PipelineNeoTests"
-               BuildableName = "PipelineNeoTests"
-               BlueprintName = "PipelineNeoTests"
-               ReferencedContainer = "container:">
-            </BuildableReference>
-         </TestableReference>
       </Testables>
    </TestAction>
    <LaunchAction
@@ -87,9 +63,9 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "PipelineNeoCLI"
-            BuildableName = "pipeline-neo"
-            BlueprintName = "PipelineNeoCLI"
+            BlueprintIdentifier = "GenerateEmbeddedDTDs"
+            BuildableName = "GenerateEmbeddedDTDs"
+            BlueprintName = "GenerateEmbeddedDTDs"
             ReferencedContainer = "container:">
          </BuildableReference>
       </BuildableProductRunnable>
@@ -104,9 +80,9 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "PipelineNeoCLI"
-            BuildableName = "pipeline-neo"
-            BlueprintName = "PipelineNeoCLI"
+            BlueprintIdentifier = "GenerateEmbeddedDTDs"
+            BuildableName = "GenerateEmbeddedDTDs"
+            BlueprintName = "GenerateEmbeddedDTDs"
             ReferencedContainer = "container:">
          </BuildableReference>
       </BuildableProductRunnable>

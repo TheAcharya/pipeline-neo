@@ -3,14 +3,28 @@
 //  Pipeline Neo • https://github.com/TheAcharya/pipeline-neo
 //  © 2026 • Licensed under MIT License
 //
-//  Generates EmbeddedDTDs.swift from FCPXML DTDs in this package.
-//  Run from package root: swift run GenerateEmbeddedDTDs
+//  Generates EmbeddedDTDs.swift from Sources/PipelineNeo/FCPXML DTDs so the CLI
+//  can run as a single binary without a resource bundle. Run from package root:
+//  swift run GenerateEmbeddedDTDs  or  ./Scripts/generate_embedded_dtds.sh
 //
 
 import Foundation
 
 @main
 struct GenerateEmbeddedDTDs {
+    /// Parses version from DTD filename (e.g. "Final_Cut_Pro_XML_DTD_version_1.10.dtd" → (1, 10)).
+    private static func version(from dtdFileName: String) -> (major: Int, minor: Int)? {
+        let prefix = "Final_Cut_Pro_XML_DTD_version_"
+        let suffix = ".dtd"
+        guard dtdFileName.hasPrefix(prefix), dtdFileName.hasSuffix(suffix) else { return nil }
+        let middle = String(dtdFileName.dropFirst(prefix.count).dropLast(suffix.count))
+        let parts = middle.split(separator: ".")
+        guard parts.count == 2,
+              let major = Int(parts[0]),
+              let minor = Int(parts[1]) else { return nil }
+        return (major, minor)
+    }
+
     static func main() throws {
         let fileManager = FileManager.default
         let cwd = fileManager.currentDirectoryPath
@@ -23,7 +37,15 @@ struct GenerateEmbeddedDTDs {
             exit(1)
         }
 
-        let dtdFiles = contents.filter { $0.hasSuffix(".dtd") }.sorted()
+        let dtdFiles = contents
+            .filter { $0.hasSuffix(".dtd") }
+            .sorted { a, b in
+                guard let va = version(from: a), let vb = version(from: b) else {
+                    return a < b
+                }
+                if va.major != vb.major { return va.major < vb.major }
+                return va.minor < vb.minor
+            }
         var entries: [String] = []
 
         for f in dtdFiles {

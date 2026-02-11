@@ -21,6 +21,25 @@
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
+      <PostActions>
+         <ExecutionAction
+            ActionType = "Xcode.IDEStandardExecutionActionsCore.ExecutionActionType.ShellScriptAction">
+            <ActionContent
+               title = "Remove GenerateEmbeddedDTDs binary"
+               scriptText = "[ &quot;$ACTION&quot; = &quot;clean&quot; ] &amp;&amp; exit 0&#10;rm -f &quot;$BUILT_PRODUCTS_DIR/GenerateEmbeddedDTDs&quot;&#10;"
+               shellToUse = "/bin/sh">
+               <EnvironmentBuildable>
+                  <BuildableReference
+                     BuildableIdentifier = "primary"
+                     BlueprintIdentifier = "PipelineNeoCLI"
+                     BuildableName = "pipeline-neo"
+                     BlueprintName = "PipelineNeoCLI"
+                     ReferencedContainer = "container:">
+                  </BuildableReference>
+               </EnvironmentBuildable>
+            </ActionContent>
+         </ExecutionAction>
+      </PostActions>
    </BuildAction>
    <TestAction
       buildConfiguration = "Debug"

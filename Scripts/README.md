@@ -21,3 +21,5 @@ bash /path/to/pipeline-neo/Scripts/generate_embedded_dtds.sh
 ```
 
 The script invokes `swift run GenerateEmbeddedDTDs`. You can run that directly from the package root if you prefer.
+
+**Xcode builds:** The shared schemes (PipelineNeoCLI, PipelineNeo-Package, GenerateEmbeddedDTDs) include a Build post-action that removes the `GenerateEmbeddedDTDs` binary from the products directory after each build.
