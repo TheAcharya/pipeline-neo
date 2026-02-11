@@ -8,8 +8,8 @@ Command-line interface for the Pipeline Neo library. Use it to inspect and proce
 
 - **Executable name:** `pipeline-neo`
 - **Entry point:** `PipelineNeoCLI.swift` (root command; no subcommands)
-- **Arguments:** `<fcpxml-path>` (required), `<output-dir>` (optional for `--check-version`; required for `--convert-version`, `--extract-media`, and for default process)
-- **Options:** Grouped under **GENERAL** and standard **OPTIONS** (`--version`, `--help`)
+- **Arguments:** `<fcpxml-path>` (required), `<output-dir>` (optional for `--check-version`; required for `--convert-version`, `--media-copy`, and for default process)
+- **Options:** Grouped under **GENERAL**, **LOG**, and standard **OPTIONS** (`--version`, `--help`)
 
 ---
 
@@ -32,14 +32,33 @@ pipeline-neo --convert-version 1.10 /path/to/project.fcpxml /path/to/output-dir
 pipeline-neo --convert-version 1.14 /path/to/project.fcpxmld /path/to/output-dir
 
 # Extract all media referenced in FCPXML/FCPXMLD to output-dir (copied file paths to stdout; summary to stderr)
-pipeline-neo --extract-media /path/to/project.fcpxml /path/to/output-dir
-pipeline-neo --extract-media /path/to/project.fcpxmld /path/to/output-dir
+pipeline-neo --media-copy /path/to/project.fcpxml /path/to/output-dir
+pipeline-neo --media-copy /path/to/project.fcpxmld /path/to/output-dir
 
 # Process: input + output (output-dir required)
 pipeline-neo /path/to/project.fcpxml /path/to/output-dir
+
+# Logging: write to file and console (default level: info)
+pipeline-neo --log /tmp/pipeline.log --check-version /path/to/project.fcpxml
+pipeline-neo --log-level debug --convert-version 1.10 /path/to/project.fcpxml /path/to/out
+
+# Quiet: no log output
+pipeline-neo --quiet --media-copy /path/to/project.fcpxml /path/to/media
 ```
 
-**Validation:** Use only one of `--check-version`, `--convert-version`, or `--extract-media`. When using `--convert-version` or `--extract-media`, or when running the default process, you must provide `<output-dir>`.
+**Validation:** Use only one of `--check-version`, `--convert-version`, or `--media-copy`. When using `--convert-version` or `--media-copy`, or when running the default process, you must provide `<output-dir>`. If `--log` is set and the file exists, it must be writable. Invalid `--log-level` values produce an error.
+
+---
+
+## LOG options
+
+| Option | Description |
+|--------|-------------|
+| `--log <path>` | Append log output to this file. Also prints to the console unless `--quiet` is set. |
+| `--log-level <level>` | Minimum log level: `trace`, `debug`, `info`, `notice`, `warning`, `error`, or `critical`. Default: `info`. |
+| `--quiet` | Disable all log output (no file, no console). |
+
+Log messages include parsing, version conversion, validation, save, and media extraction/copy. Use `--log-level debug` or `trace` for verbose output.
 
 ---
 
@@ -47,12 +66,12 @@ pipeline-neo /path/to/project.fcpxml /path/to/output-dir
 
 | Path | Purpose |
 |------|--------|
-| `PipelineNeoCLI.swift` | Root command: configuration, GENERAL option group, arguments, validation, and `run()` dispatch. |
-| `Options/` | Option groups for help sections. `GeneralOptions` supplies the **GENERAL** flags (e.g. `--check-version`). |
+| `PipelineNeoCLI.swift` | Root command: configuration, GENERAL and LOG option groups, arguments, validation, and `run()` dispatch. |
+| `Options/` | Option groups for help sections. `GeneralOptions` supplies **GENERAL** flags; `LogOptions` supplies **LOG** options (`--log`, `--log-level`, `--quiet`). |
 | `Commands/` | Feature modules. Each feature has its own subfolder and a `run(...)` entry point called from the root command (e.g. **CheckVersion** for `--check-version`). |
 | `Commands/CheckVersion/` | Implements `--check-version`: loads FCPXML and prints the document version. |
 | `Commands/ConvertVersion/` | Implements `--convert-version`: loads FCPXML, converts to target version (1.5–1.14), saves to output-dir. |
-| `Commands/ExtractMedia/` | Implements `--extract-media`: loads FCPXML/FCPXMLD and copies all referenced media files to output-dir. |
+| `Commands/ExtractMedia/` | Implements `--media-copy`: loads FCPXML/FCPXMLD and copies all referenced media files to output-dir. |
 
 All Swift in `Sources/PipelineNeoCLI/` is a single module; no extra imports are needed between these files.
 

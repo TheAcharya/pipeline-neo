@@ -46,7 +46,7 @@ Complete manual and usage guide for Pipeline Neo, a Swift 6 framework for Final 
 
 Pipeline Neo provides a comprehensive API for parsing, creating, and manipulating FCPXML files with advanced timecode operations, async/await patterns, and robust error handling. The framework is protocol-oriented: you inject parsers, timecode converters, document managers, and error handlers to build a pipeline that fits your app. All major operations are available both synchronously and asynchronously.
 
-Main entry points: FCPXMLService (orchestrates parse, validate, create document, time conversion, filter, save); ModularUtilities (createPipeline, createCustomPipeline, processFCPXML, processMultipleFCPXML, validateDocument, convertTimecodes); FCPXMLFileLoader (resolveFCPXMLFileURL, loadData, loadDocument, loadFCPXMLDocument, load async); FCPXMLValidator and FCPXMLDTDValidator (structural and DTD validation); FCPXMLExporter and FCPXMLBundleExporter (Timeline and FCPXMLExportAsset to FCPXML string or .fcpxmld bundle). Protocols: FCPXMLParsing, TimecodeConversion, XMLDocumentOperations, ErrorHandling, PipelineLogger. Default implementations: FCPXMLParser, TimecodeConverter, XMLDocumentManager, ErrorHandler, NoOpPipelineLogger, PrintPipelineLogger. Extensions on XMLDocument and XMLElement provide fcpx* properties and methods; use the modular overloads (e.g. addResource(_:using: documentManager)) when injecting dependencies. FinalCutPro.FCPXML wraps a document for high-level access (root, version, allEvents, allProjects).
+Main entry points: FCPXMLService (orchestrates parse, validate, create document, time conversion, filter, save); ModularUtilities (createPipeline, createCustomPipeline, processFCPXML, processMultipleFCPXML, validateDocument, convertTimecodes); FCPXMLFileLoader (resolveFCPXMLFileURL, loadData, loadDocument, loadFCPXMLDocument, load async); FCPXMLValidator and FCPXMLDTDValidator (structural and DTD validation); FCPXMLExporter and FCPXMLBundleExporter (Timeline and FCPXMLExportAsset to FCPXML string or .fcpxmld bundle). Protocols: FCPXMLParsing, TimecodeConversion, XMLDocumentOperations, ErrorHandling, PipelineLogger. Default implementations: FCPXMLParser, TimecodeConverter, XMLDocumentManager, ErrorHandler, NoOpPipelineLogger, PrintPipelineLogger, FilePipelineLogger. Log levels: PipelineLogLevel (trace, debug, info, notice, warning, error, critical). Extensions on XMLDocument and XMLElement provide fcpx* properties and methods; use the modular overloads (e.g. addResource(_:using: documentManager)) when injecting dependencies. FinalCutPro.FCPXML wraps a document for high-level access (root, version, allEvents, allProjects).
 
 This manual covers usage patterns, code examples, and practical workflows. For project overview, installation, and architecture, see the main [README](../README.md).
 
@@ -132,13 +132,36 @@ let fcpxmlTime = cmTime.fcpxmlTime(using: timecodeConverter)
 
 ### 3.4 Optional logging
 
-You can inject a `PipelineLogger` into `FCPXMLService` or `FCPXMLUtility` to observe parse/load operations. Default is no-op.
+You can inject a `PipelineLogger` into `FCPXMLService` or `FCPXMLUtility` to observe parse, conversion, validation, save, and media operations. Default is no-op.
+
+**Log levels** (from most to least verbose): `trace`, `debug`, `info`, `notice`, `warning`, `error`, `critical`. Use `PipelineLogLevel.from(string:)` to parse a level from a string.
+
+**Implementations:**
+
+- **NoOpPipelineLogger** — No output (default when no logger is injected).
+- **PrintPipelineLogger** — Writes to stdout with a level prefix; set `minimumLevel` to control verbosity.
+- **FilePipelineLogger** — Writes to a file (and optionally to console); supports `minimumLevel`, `fileURL`, `alsoPrint`, and `quiet`. Thread-safe; uses a serial queue for file writes. Use for CLI or when you need persistent logs.
 
 ```swift
+// Console only, info and above
 let logger = PrintPipelineLogger(minimumLevel: .info)
 let service = FCPXMLService(logger: logger)
-// parse and load calls will log at the specified level
+
+// File and console, debug and above
+let fileLogger = FilePipelineLogger(
+    minimumLevel: .debug,
+    fileURL: URL(fileURLWithPath: "/tmp/pipeline.log"),
+    alsoPrint: true,
+    quiet: false
+)
+let serviceWithFile = FCPXMLService(logger: fileLogger)
+
+// No output
+let noOp = NoOpPipelineLogger()
+let quietService = FCPXMLService(logger: noOp)
 ```
+
+The service logs parsing (from data or URL), version conversion, DTD validation, save operations, media reference extraction, and media copy results. Use `--log`, `--log-level`, and `--quiet` in the CLI to control logging from the command line (see [Experimental CLI](#316b-experimental-cli)).
 
 ### 3.5 Working with modular XML operations
 
@@ -437,12 +460,21 @@ Use `convertToVersion(_:targetVersion:)`, `saveAsFCPXML(_:to:)`, and `saveAsBund
 
 The package includes an experimental command-line tool, `pipeline-neo`, for inspecting and converting FCPXML files and .fcpxmld bundles. Build with `swift build` (or use the PipelineNeoCLI scheme in Xcode); run with `swift run pipeline-neo --help`.
 
+**General options:**
+
 - **--check-version** — Load the FCPXML at the given path and print its document version. Does not require an output directory.
 - **--convert-version &lt;VERSION&gt;** — Load the FCPXML, convert to the target version (1.5–1.14) with automatic element stripping and DTD validation, and save to the output directory as `&lt;basename&gt;_&lt;version&gt;.fcpxml`. Fails if the converted document does not pass DTD validation.
-- **--extract-media** — Load the FCPXML or FCPXMLD at the given path, scan for all referenced media (asset media-rep and locator file URLs), and copy those files to the output directory. Reports how many media files were detected by type (video, audio, images) and prints a success message when copying completes. Prints each destination path to stdout; prints "Media detected: X video, Y audio, Z images (N total)" and "Successfully copied N media file(s) to &lt;path&gt;" (or errors) to stderr. Exits with an error if any copy failed.
+- **--media-copy** — Load the FCPXML or FCPXMLD at the given path, scan for all referenced media (asset media-rep and locator file URLs), and copy those files to the output directory. Reports how many media files were detected by type (video, audio, images) and prints a success message when copying completes. Prints each destination path to stdout; prints "Media detected: X video, Y audio, Z images (N total)" and "Successfully copied N media file(s) to &lt;path&gt;" (or errors) to stderr. Exits with an error if any copy failed.
+
+**Log options:**
+
+- **--log &lt;path&gt;** — Append log output to this file. Also prints to the console unless `--quiet` is set.
+- **--log-level &lt;level&gt;** — Minimum log level: `trace`, `debug`, `info`, `notice`, `warning`, `error`, or `critical`. Default: `info`.
+- **--quiet** — Disable all log output.
 
 Example: `pipeline-neo --convert-version 1.10 /path/to/project.fcpxml /path/to/output-dir`  
-Example: `pipeline-neo --extract-media /path/to/project.fcpxmld /path/to/media-folder`
+Example: `pipeline-neo --media-copy /path/to/project.fcpxmld /path/to/media-folder`  
+Example: `pipeline-neo --log /tmp/pipeline.log --log-level debug --check-version /path/to/project.fcpxml`
 
 For full CLI usage, options, and how to extend it, see [PipelineNeoCLI/README.md](../Sources/PipelineNeoCLI/README.md).
 

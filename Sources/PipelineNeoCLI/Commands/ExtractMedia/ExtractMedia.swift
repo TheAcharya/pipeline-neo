@@ -5,7 +5,7 @@
 
 //
 //
-//  Scan FCPXML/FCPXMLD and copy all referenced media to output-dir (used by --extract-media).
+//  Scan FCPXML/FCPXMLD and copy all referenced media to output-dir (used by --media-copy).
 //
 
 import Foundation
@@ -27,15 +27,13 @@ enum ExtractMedia {
     }
 
     /// Loads the FCPXML at the given URL and copies all referenced media files to outputDir.
-    static func run(fcpxmlPath: URL, outputDir: URL) throws {
-        let loader = FCPXMLFileLoader()
-        let document = try loader.loadDocument(from: fcpxmlPath)
+    static func run(fcpxmlPath: URL, outputDir: URL, logger: PipelineLogger = NoOpPipelineLogger()) throws {
+        let service = FCPXMLService(logger: logger)
+        let document = try service.parseFCPXML(from: fcpxmlPath)
 
         let baseURL: URL? = fcpxmlPath.hasDirectoryPath
             ? fcpxmlPath
             : fcpxmlPath.deletingLastPathComponent()
-
-        let service = FCPXMLService()
 
         let extraction = service.extractMediaReferences(from: document, baseURL: baseURL)
         let fileRefs = extraction.fileReferences

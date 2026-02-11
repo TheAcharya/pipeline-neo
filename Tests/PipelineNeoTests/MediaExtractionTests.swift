@@ -130,7 +130,7 @@ final class MediaExtractionTests: XCTestCase, @unchecked Sendable {
         XCTAssertTrue(FileManager.default.fileExists(atPath: result.copied[0].destination.path))
     }
 
-    // MARK: - Extract then copy (flow used by CLI --extract-media)
+    // MARK: - Extract then copy (flow used by CLI --media-copy)
 
     /// Verifies the extract-then-copy flow used by the CLI: extraction returns file refs (video/audio/image by extension), then copy succeeds.
     func testExtractThenCopy_MultipleTypes_DetectedAndCopied() throws {

@@ -13,15 +13,13 @@ import PipelineNeo
 
 enum ConvertVersion {
     /// Loads the FCPXML at the given URL, converts it to the target version, and writes to output-dir.
-    static func run(fcpxmlPath: URL, targetVersionString: String, outputDir: URL) throws {
+    static func run(fcpxmlPath: URL, targetVersionString: String, outputDir: URL, logger: PipelineLogger = NoOpPipelineLogger()) throws {
         guard let targetVersion = FCPXMLVersion(string: targetVersionString) else {
             throw ConvertVersionError.unsupportedVersion(targetVersionString)
         }
 
-        let loader = FCPXMLFileLoader()
-        let document = try loader.loadDocument(from: fcpxmlPath)
-
-        let service = FCPXMLService()
+        let service = FCPXMLService(logger: logger)
+        let document = try service.parseFCPXML(from: fcpxmlPath)
         let converted = try service.convertToVersion(document, targetVersion: targetVersion)
 
         let validationResult = service.validateDocumentAgainstDTD(converted, version: targetVersion)

@@ -1,6 +1,6 @@
 # Pipeline Neo — Test Suite
 
-This directory contains the test suite for Pipeline Neo, a Swift 6 framework for Final Cut Pro FCPXML processing with SwiftTimecode integration. The suite currently has 177 tests. They ensure correctness, concurrency safety, and performance across parsing, timecode conversion, document and element operations, file loading, timeline export, validation, and all supported FCPXML versions and frame rates. The suite is modular: shared utilities resolve sample paths, file tests exercise individual FCPXML samples, and logic-and-parsing tests cover model types and structure.
+This directory contains the test suite for Pipeline Neo, a Swift 6 framework for Final Cut Pro FCPXML processing with SwiftTimecode integration. The suite currently has 178 tests. They ensure correctness, concurrency safety, and performance across parsing, timecode conversion, document and element operations, file loading, timeline export, validation, and all supported FCPXML versions and frame rates. The suite is modular: shared utilities resolve sample paths, file tests exercise individual FCPXML samples, and logic-and-parsing tests cover model types and structure.
 
 ---
 
@@ -147,7 +147,7 @@ XMLElement extension: testXMLElementExtensionFcpxTypeAndIsFCPX, testXMLElementEx
 
 Parser filter: testParserFilterMulticamAndCompoundResources, testFCPXMLUtilityDefaultForExtensions. Filter media by first child (multicam or compound); FCPXMLUtility.defaultForExtensions filtering.
 
-Media extraction: MediaExtractionTests. extractMediaReferences (Example Cut 1, baseURL, sync/async); copyReferencedMedia (missing file skipped, real file copied, sync/async); testExtractThenCopy_MultipleTypes_DetectedAndCopied (extract then copy with video + audio refs, same flow as CLI --extract-media). Covers MediaExtractor, MediaExtractionResult, MediaCopyResult.
+Media extraction: MediaExtractionTests. extractMediaReferences (Example Cut 1, baseURL, sync/async); copyReferencedMedia (missing file skipped, real file copied, sync/async); testExtractThenCopy_MultipleTypes_DetectedAndCopied (extract then copy with video + audio refs, same flow as CLI --media-copy). Covers MediaExtractor, MediaExtractionResult, MediaCopyResult.
 
 ---
 
@@ -215,7 +215,7 @@ APIAndEdgeCaseTests covers the async load API, optional logging, edge cases, and
 
 FCPXMLFileLoader async load(from:): testFCPXMLFileLoaderAsyncLoadFromURL writes a minimal fcpxml to a temp file and calls loader.load(from:) async, asserting root element and name. testFCPXMLFileLoaderAsyncLoadThrowsForMissingFile calls load(from:) with a nonexistent URL and asserts FCPXMLLoadError (notAFile, readFailed, or parseFailed).
 
-PipelineLogger injection: testFCPXMLServiceWithNoOpLoggerParsesSuccessfully creates FCPXMLService(logger: NoOpPipelineLogger()) and parses minimal XML successfully. testFCPXMLServiceWithPrintLoggerParsesSuccessfully does the same with PrintPipelineLogger. testCreateCustomPipelineWithLogger creates a pipeline via ModularUtilities.createCustomPipeline with a NoOpPipelineLogger and parses minimal XML.
+PipelineLogger injection: testFCPXMLServiceWithNoOpLoggerParsesSuccessfully creates FCPXMLService(logger: NoOpPipelineLogger()) and parses minimal XML successfully. testFCPXMLServiceWithPrintLoggerParsesSuccessfully does the same with PrintPipelineLogger. testCreateCustomPipelineWithLogger creates a pipeline via ModularUtilities.createCustomPipeline with a NoOpPipelineLogger and parses minimal XML. PipelineLogLevel tests: testPipelineLogLevelComparable (ordering and allCases count), testPipelineLogLevelFromStringAndLabel (from(string:), label).
 
 Edge cases: testParseEmptyDataThrows, testParseInvalidXMLThrows, testParseMalformedXMLThrows assert that FCPXMLService.parseFCPXML(from: Data) throws for empty data, non-XML text, and malformed XML. testLoadDocumentFromInvalidPathThrowsCorrectError and testResolveFCPXMLFileURLForNonexistentPathThrows assert FCPXMLFileLoader throws FCPXMLLoadError for a nonexistent path and that resolveFCPXMLFileURL(from:) throws notAFile.
 

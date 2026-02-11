@@ -16,7 +16,4 @@ struct GeneralOptions: ParsableArguments {
 
     @Option(name: .long, help: ArgumentHelp("Convert FCPXML to the given version (e.g. 1.10, 1.14) and write to output-dir.", valueName: "version"))
     var convertVersion: String?
-
-    @Flag(name: .long, help: "Scan FCPXML/FCPXMLD and copy all referenced media files to output-dir.")
-    var extractMedia: Bool = false
 }

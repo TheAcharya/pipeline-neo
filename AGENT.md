@@ -31,7 +31,7 @@ Keep this file in sync with `.cursorrules`. Both should describe the same overvi
 
 Pipeline Neo targets macOS 12+, Xcode 16+, and Swift 6.0 with full concurrency support. It provides FCPXML parsing, creation, and manipulation with timecode operations via SwiftTimecode. All core behaviour is behind protocols with both synchronous and async/await APIs; default implementations exist but any component can be swapped or extended via dependency injection.
 
-Current status: all 177 tests passing; FCPXML versions 1.5–1.14 supported (DTDs included, full parsing, typed element-type coverage for all DTD elements via FCPXMLElementType); Final Cut Pro frame rates (23.976, 24, 25, 29.97, 30, 50, 59.94, 60); thread-safe and concurrency-compliant with comprehensive async/await support; no known security vulnerabilities. Version conversion (FCPXMLVersionConverter) automatically strips elements not in the target version’s DTD (e.g. adjust-colorConform, adjust-stereo-3D); per-version DTD validation via FCPXMLService.validateDocumentAgainstDTD(_:version:) and validateDocumentAgainstDeclaredVersion(_:); CLI convert runs DTD validation after conversion. Experimental CLI (pipeline-neo): --check-version, --convert-version; see Sources/PipelineNeoCLI/README.md.
+Current status: all 178 tests passing; FCPXML versions 1.5–1.14 supported (DTDs included, full parsing, typed element-type coverage for all DTD elements via FCPXMLElementType); Final Cut Pro frame rates (23.976, 24, 25, 29.97, 30, 50, 59.94, 60); thread-safe and concurrency-compliant with comprehensive async/await support; no known security vulnerabilities. Version conversion (FCPXMLVersionConverter) automatically strips elements not in the target version’s DTD (e.g. adjust-colorConform, adjust-stereo-3D); per-version DTD validation via FCPXMLService.validateDocumentAgainstDTD(_:version:) and validateDocumentAgainstDeclaredVersion(_:); CLI convert runs DTD validation after conversion. Experimental CLI (pipeline-neo): --check-version, --convert-version; see Sources/PipelineNeoCLI/README.md.
 
 ---
 
@@ -58,7 +58,7 @@ Foundation XML types (XMLDocument, XMLElement) and SwiftTimecode types are not S
 - Extensions: Modular extensions for CMTime, XMLElement, and XMLDocument support dependency-injected operations and async/await. Extension APIs that cannot take parameters use FCPXMLUtility.defaultForExtensions (e.g. CMTime.fcpxmlString delegates to FCPXMLUtility.defaultForExtensions.fcpxmlTime(fromCMTime:)).
 - Service: FCPXMLService orchestrates modular components for high-level workflows (sync and async). FCPXMLUtility is the legacy/convenience facade; FCPXMLService is the modern DI facade. Both delegate timecode operations to TimecodeConverter.
 - Utilities: ModularUtilities provides pipeline creation (createPipeline, createCustomPipeline), validation (validateDocument delegates to FCPXMLValidator for semantic checks; the `parser:` parameter is deprecated), and helpers (processFCPXML, processMultipleFCPXML — the `errorHandler:` parameter is deprecated — and convertTimecodes using TimecodeConversion and FCPXMLTimeStringConversion protocols). For per-version DTD validation use FCPXMLService.validateDocumentAgainstDTD(_:version:) or validateDocumentAgainstDeclaredVersion(_:).
-- Logging: FCPXMLUtility routes debugLog through its injected PipelineLogger; extension types (XMLDocumentExtension, XMLElementExtension) use #if canImport(Logging) as a fallback for contexts that cannot use DI.
+- Logging: PipelineLogger protocol with levels trace, debug, info, notice, warning, error, critical (PipelineLogLevel); NoOpPipelineLogger, PrintPipelineLogger, FilePipelineLogger (file + optional console, quiet). FCPXMLUtility and FCPXMLService use injected logger for parse, conversion, validation, save, and media operations. CLI: --log, --log-level, --quiet. Extension types use #if canImport(Logging) as fallback where DI is not available.
 - Versioning: FCPXMLVersion (DTD validation, 1.5-1.14) and FinalCutPro.FCPXML.Version (parsing, 1.0-1.14) are bridged via .fcpxmlVersion, .dtdVersion, and init(from:) converters. init(from:) uses safe fallback to `.latest` instead of force unwrap.
 - Errors: Module-scoped error types (FCPXMLError for parsing, FCPXMLLoadError for file I/O, FCPXMLExportError/FCPXMLBundleExportError for export, FinalCutPro.FCPXML.ParseError with LocalizedError). Parse failures from FCPXMLFileLoader surface as FCPXMLError.parsingFailed so consumers handle a single parse-error type. FCPXMLElementError uses String element names for Sendable compliance.
 
@@ -127,7 +127,7 @@ Source layout under Sources/PipelineNeo/:
 - Timeline: Timeline, TimelineClip.
 - Validation: FCPXMLValidator, FCPXMLDTDValidator, ValidationResult, ValidationError/Warning.
 - FileIO: FCPXMLFileLoader.
-- Logging: PipelineLogger, NoOpPipelineLogger, PrintPipelineLogger.
+- Logging: PipelineLogger, PipelineLogLevel (trace–critical), NoOpPipelineLogger, PrintPipelineLogger, FilePipelineLogger.
 - Format: ColorSpace.
 - Model: FCPXML element models for the parsing layer (previously nested under FinalCutPro/FCPXML/). Subfolders: Attributes (AudioLayout, AudioRate, ClipSourceEnable, FrameSampling, TimecodeFormat), Clips (AssetClip, Audio, Audition, Clip, Gap, MCClip, MulticamSource, RefClip, SyncClip, SyncSource, Title, Transition, Video), CommonElements (AudioChannelSource, AudioRoleSource, ConformRate, MediaRep, Metadata, Text, TimeMap), ElementTypes (AnyElementModelType, ElementModelType, ElementType, protocols), Occlusion (ElementOcclusion, Element Occlusion), Protocols (FCPXMLElement, FCPXMLAttribute, element attribute/children/story protocols), Resources (Asset, Effect, Format, Locator, Media, MediaMulticam, ObjectTracker), Roles (AudioRole, CaptionRole, VideoRole, AncestorRoles, AnyRole, RoleType, FCPXMLRole), Structure (Event, Library, Project). Root files: AnyTimeline, Caption, Keyword, Marker, Sequence, Spine.
 - Parsing: XML parsing extensions (Attributes, Clip Parsing, Elements Parsing, Metadata Parsing, Resources Parsing, Roles Parsing, Root Parsing, Time and Frame Rate Parsing).
@@ -158,7 +158,7 @@ Tests live under Tests/. The suite is organised as follows.
   - APIAndEdgeCaseTests: FCPXMLFileLoader async load(from:), PipelineLogger injection (NoOp, Print), edge cases (empty/invalid/malformed XML, invalid paths), validation types.
   - FCPXMLPerformanceTests: Parameterised and basic performance tests (timecode conversion, document creation, element filtering).
 
-Test organisation: use descriptive test method names; group related tests logically; include setup and teardown; use meaningful assertions. Test all supported frame rates (Final Cut Pro compatible). Use realistic FCPXML samples and edge cases; validate against actual FCP behaviour where applicable. Current total: 177 comprehensive tests covering all functionality including async/await, cut detection, version conversion stripping, per-version DTD validation, and extract-then-copy (CLI --extract-media flow).
+Test organisation: use descriptive test method names; group related tests logically; include setup and teardown; use meaningful assertions. Test all supported frame rates (Final Cut Pro compatible). Use realistic FCPXML samples and edge cases; validate against actual FCP behaviour where applicable. Current total: 177 comprehensive tests covering all functionality including async/await, cut detection, version conversion stripping, per-version DTD validation, and extract-then-copy (CLI --media-copy flow).
 
 ---
 
@@ -219,7 +219,7 @@ Keep AGENT.md and .cursorrules in sync. Both must reflect:
 - Project overview and codebase rewrite/refactor.
 - Architecture (protocols, implementations, extensions, service, utilities) and single injection point (FCPXMLUtility.defaultForExtensions).
 - Source layout (Classes, Delegates, Errors, Extensions including +Modular, Implementations, Protocols, Services, Utilities, Annotations, Export, Timeline, Validation, FileIO, Logging, Format, Model, Parsing, Extraction, FCPXML DTDs).
-- Test structure (Tests/ layout, TestResources, FCPXMLTestUtilities, FileTests/, LogicAndParsing/, CutDetectionTests, VersionConversionTests, PipelineNeoTests.swift, TimelineExportValidationTests, APIAndEdgeCaseTests, FCPXMLPerformanceTests; 177 tests).
+- Test structure (Tests/ layout, TestResources, FCPXMLTestUtilities, FileTests/, LogicAndParsing/, CutDetectionTests, VersionConversionTests, PipelineNeoTests.swift, TimelineExportValidationTests, APIAndEdgeCaseTests, FCPXMLPerformanceTests; 178 tests).
 - FCPXML 1.5–1.14 and FCPXMLElementType; version conversion with element stripping and per-version DTD validation; experimental CLI (pipeline-neo, --check-version, --convert-version); Final Cut Pro frame rates; Swift 6 concurrency (Sendable, async/await, CI strict-concurrency job).
 
 When updating either file, apply the same information to both and keep terminology and examples consistent.

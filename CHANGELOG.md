@@ -6,7 +6,12 @@
 - TBA
 
 **🔧 Improvements:**
--- Here
+- Logging: seven levels (trace through critical), optional log file and console, quiet mode to disable output
+- CLI log options: `--log` (log file path), `--log-level` (trace, debug, info, notice, warning, error, critical; default info), `--quiet` (no log output); all commands use the configured logger
+- CLI: `--extract-media` renamed to `--media-copy`; media copy option moved under its own **EXTRACTION** help category
+- Service now logs parsing, version conversion, save, DTD validation, media extraction counts, and copy results
+- Test suite expanded to 178 tests
+- Documentation updated (README, CLI README, Manual)
 
 ---
 

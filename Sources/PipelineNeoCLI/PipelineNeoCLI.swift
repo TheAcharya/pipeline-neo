@@ -26,6 +26,12 @@ struct PipelineNeoCLI: ParsableCommand {
     @OptionGroup(title: "GENERAL")
     var general: GeneralOptions
 
+    @OptionGroup(title: "EXTRACTION")
+    var extraction: ExtractionOptions
+
+    @OptionGroup(title: "LOG")
+    var logOptions: LogOptions
+
     @Argument(help: "Input FCPXML file / FCPXMLD bundle.", transform: URL.init(fileURLWithPath:))
     var fcpxmlPath: URL
 
@@ -33,38 +39,49 @@ struct PipelineNeoCLI: ParsableCommand {
     var outputDir: URL?
 
     mutating func validate() throws {
-        let modeCount = [general.checkVersion, general.convertVersion != nil, general.extractMedia].filter { $0 }.count
+        if let logURL = logOptions.log, !logOptions.quiet {
+            if FileManager.default.fileExists(atPath: logURL.path) {
+                guard FileManager.default.isWritableFile(atPath: logURL.path) else {
+                    throw ValidationError("Cannot write to log file: \(logURL.path)")
+                }
+            }
+        }
+        if PipelineLogLevel.from(string: logOptions.logLevel) == nil {
+            throw ValidationError("Invalid log level: '\(logOptions.logLevel)'. Use one of: trace, debug, info, notice, warning, error, critical.")
+        }
+        let modeCount = [general.checkVersion, general.convertVersion != nil, extraction.mediaCopy].filter { $0 }.count
         if modeCount > 1 {
-            throw ValidationError("Use only one of --check-version, --convert-version, or --extract-media.")
+            throw ValidationError("Use only one of --check-version, --convert-version, or --media-copy.")
         }
         if general.checkVersion {
             return
         }
-        if general.convertVersion != nil || general.extractMedia {
+        if general.convertVersion != nil || extraction.mediaCopy {
             if outputDir == nil {
-                throw ValidationError("output-dir is required when using --convert-version or --extract-media.")
+                throw ValidationError("output-dir is required when using --convert-version or --media-copy.")
             }
             return
         }
         if outputDir == nil {
-            throw ValidationError("output-dir is required when not using --check-version, --convert-version, or --extract-media.")
+            throw ValidationError("output-dir is required when not using --check-version, --convert-version, or --media-copy.")
         }
     }
 
     func run() throws {
+        let logger = logOptions.makeLogger()
         if general.checkVersion {
-            try CheckVersion.run(fcpxmlPath: fcpxmlPath)
+            try CheckVersion.run(fcpxmlPath: fcpxmlPath, logger: logger)
             return
         }
         guard let outDir = outputDir else {
             throw ValidationError("output-dir is required.")
         }
         if let targetVersion = general.convertVersion {
-            try ConvertVersion.run(fcpxmlPath: fcpxmlPath, targetVersionString: targetVersion, outputDir: outDir)
+            try ConvertVersion.run(fcpxmlPath: fcpxmlPath, targetVersionString: targetVersion, outputDir: outDir, logger: logger)
             return
         }
-        if general.extractMedia {
-            try ExtractMedia.run(fcpxmlPath: fcpxmlPath, outputDir: outDir)
+        if extraction.mediaCopy {
+            try ExtractMedia.run(fcpxmlPath: fcpxmlPath, outputDir: outDir, logger: logger)
             return
         }
         print("Input: \(fcpxmlPath.path)")

@@ -162,7 +162,14 @@ public final class FCPXMLService: Sendable {
     ///   - version: The FCPXML version whose DTD to use (e.g. `.v1_10`, `.v1_14`).
     /// - Returns: `.success` if the document conforms to that version’s DTD; otherwise a result with `dtd_validation` error(s).
     public func validateDocumentAgainstDTD(_ document: XMLDocument, version: FCPXMLVersion) -> ValidationResult {
-        dtdValidator.validate(document, version: version)
+        logger.log(level: .debug, message: "Validating document against DTD", metadata: ["version": version.rawValue])
+        let result = dtdValidator.validate(document, version: version)
+        if result.isValid {
+            logger.log(level: .debug, message: "DTD validation passed", metadata: ["version": version.rawValue])
+        } else {
+            logger.log(level: .warning, message: "DTD validation failed", metadata: ["version": version.rawValue, "errors": result.detailedDescription])
+        }
+        return result
     }
 
     /// Validates the document against the DTD for its declared root version.
@@ -239,7 +246,10 @@ public final class FCPXMLService: Sendable {
     /// - Returns: New document with that version.
     /// - Throws: If conversion (copy/serialization) fails.
     public func convertToVersion(_ document: XMLDocument, targetVersion: FCPXMLVersion) throws -> XMLDocument {
-        try versionConverter.convert(document, to: targetVersion)
+        logger.log(level: .info, message: "Converting document to FCPXML version", metadata: ["target": targetVersion.rawValue])
+        let result = try versionConverter.convert(document, to: targetVersion)
+        logger.log(level: .debug, message: "Version conversion completed", metadata: ["version": targetVersion.rawValue])
+        return result
     }
 
     /// Saves the document as a single .fcpxml file.
@@ -247,7 +257,9 @@ public final class FCPXMLService: Sendable {
     ///   - document: FCPXML document (e.g. after convertToVersion).
     ///   - url: Destination URL (typically with .fcpxml extension).
     public func saveAsFCPXML(_ document: XMLDocument, to url: URL) throws {
+        logger.log(level: .info, message: "Saving FCPXML document", metadata: ["path": url.path])
         try documentManager.saveDocument(document, to: url)
+        logger.log(level: .debug, message: "Document saved successfully", metadata: ["path": url.path])
     }
 
     /// Saves the document as a .fcpxmld bundle. Only supported when document version is 1.10 or higher.
@@ -268,7 +280,10 @@ public final class FCPXMLService: Sendable {
     ///   - baseURL: Optional base URL to resolve relative src (e.g. URL of the .fcpxml or .fcpxmld).
     /// - Returns: Result with references; urls may be nil for relative src when baseURL is nil.
     public func extractMediaReferences(from document: XMLDocument, baseURL: URL? = nil) -> MediaExtractionResult {
-        mediaExtractor.extractMediaReferences(from: document, baseURL: baseURL)
+        logger.log(level: .debug, message: "Extracting media references", metadata: baseURL.map { ["baseURL": $0.path] } ?? nil)
+        let result = mediaExtractor.extractMediaReferences(from: document, baseURL: baseURL)
+        logger.log(level: .info, message: "Media references extracted", metadata: ["count": "\(result.references.count)", "fileReferences": "\(result.fileReferences.count)"])
+        return result
     }
 
     /// Copies referenced media files (file URLs only) to the destination directory; deduplicates by source URL.
@@ -278,7 +293,14 @@ public final class FCPXMLService: Sendable {
     ///   - baseURL: Optional base URL to resolve relative src.
     /// - Returns: Result with copied, skipped, and failed entries.
     public func copyReferencedMedia(from document: XMLDocument, to destinationURL: URL, baseURL: URL? = nil) -> MediaCopyResult {
-        mediaExtractor.copyReferencedMedia(from: document, to: destinationURL, baseURL: baseURL)
+        logger.log(level: .info, message: "Copying referenced media to destination", metadata: ["destination": destinationURL.path])
+        let result = mediaExtractor.copyReferencedMedia(from: document, to: destinationURL, baseURL: baseURL)
+        logger.log(level: .info, message: "Media copy completed", metadata: [
+            "copied": "\(result.copied.count)",
+            "skipped": "\(result.skipped.count)",
+            "failed": "\(result.failed.count)"
+        ])
+        return result
     }
     
     // MARK: - Async Public API
