@@ -36,6 +36,7 @@ enum ConvertVersion {
 
         try service.saveAsFCPXML(converted, to: outputURL)
         print(outputURL.path)
+        logger.log(level: .info, message: "Wrote \(outputURL.path)", metadata: ["version": targetVersion.rawValue])
     }
 }
 

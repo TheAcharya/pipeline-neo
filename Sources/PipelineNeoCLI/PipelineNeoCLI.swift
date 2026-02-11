@@ -92,5 +92,7 @@ struct PipelineNeoCLI: ParsableCommand {
         }
         print("Input: \(fcpxmlPath.path)")
         print("Output: \(outDir.path)")
+        logger.log(level: .info, message: "Input: \(fcpxmlPath.path)", metadata: nil)
+        logger.log(level: .info, message: "Output: \(outDir.path)", metadata: nil)
     }
 }

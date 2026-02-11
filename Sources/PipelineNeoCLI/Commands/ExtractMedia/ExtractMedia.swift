@@ -48,7 +48,9 @@ enum ExtractMedia {
             imageCount += k.image
         }
         let totalDetected = fileRefs.count
-        fputs("Media detected: \(videoCount) video, \(audioCount) audio, \(imageCount) images (\(totalDetected) total).\n", stderr)
+        let detectedMessage = "Media detected: \(videoCount) video, \(audioCount) audio, \(imageCount) images (\(totalDetected) total)."
+        fputs("\(detectedMessage)\n", stderr)
+        logger.log(level: .info, message: detectedMessage, metadata: nil)
 
         let progress: (any ProgressReporter)? = (showProgress && totalDetected > 0)
             ? ProgressBar(total: totalDetected, desc: "Copying media")
@@ -61,19 +63,26 @@ enum ExtractMedia {
 
         for (_, destination) in result.copied {
             print(destination.path)
+            logger.log(level: .info, message: "Copied to \(destination.path)", metadata: nil)
         }
 
         if failedCount > 0 {
             for entry in result.failed {
                 if case .failed(_, let error) = entry {
-                    fputs("Error: \(entry.sourceURL.path): \(error)\n", stderr)
+                    let errMsg = "\(entry.sourceURL.path): \(error)"
+                    fputs("Error: \(errMsg)\n", stderr)
+                    logger.log(level: .error, message: errMsg, metadata: nil)
                 }
             }
-            fputs("Copied: \(copiedCount), skipped: \(skippedCount), failed: \(failedCount).\n", stderr)
+            let summaryMsg = "Copied: \(copiedCount), skipped: \(skippedCount), failed: \(failedCount)."
+            fputs("\(summaryMsg)\n", stderr)
+            logger.log(level: .error, message: summaryMsg, metadata: nil)
             throw ExtractMediaError.copyFailed(count: failedCount)
         }
 
-        fputs("Successfully copied \(copiedCount) media file\(copiedCount == 1 ? "" : "s") to \(outputDir.path).\n", stderr)
+        let successMessage = "Successfully copied \(copiedCount) media file\(copiedCount == 1 ? "" : "s") to \(outputDir.path)."
+        fputs("\(successMessage)\n", stderr)
+        logger.log(level: .info, message: successMessage, metadata: nil)
     }
 }
 

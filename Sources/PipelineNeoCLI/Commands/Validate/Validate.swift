@@ -22,8 +22,10 @@ enum Validate {
         bar?.update(1)
         bar?.close()
         print(report.summary)
+        logger.log(level: report.isValid ? .info : .warning, message: report.summary, metadata: ["path": fcpxmlPath.path])
         if !report.isValid {
             print(report.detailedDescription)
+            logger.log(level: .warning, message: report.detailedDescription, metadata: nil)
             throw ValidateError.validationFailed(report: report)
         }
     }

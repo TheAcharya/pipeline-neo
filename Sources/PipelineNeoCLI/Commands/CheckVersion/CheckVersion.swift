@@ -18,5 +18,6 @@ enum CheckVersion {
         let document = try service.parseFCPXML(from: fcpxmlPath)
         let version = document.fcpxmlVersion ?? "(none)"
         print(version)
+        logger.log(level: .info, message: "FCPXML version: \(version)", metadata: ["path": fcpxmlPath.path])
     }
 }
