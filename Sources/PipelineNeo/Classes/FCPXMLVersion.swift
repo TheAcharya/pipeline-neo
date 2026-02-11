@@ -78,6 +78,12 @@ public enum FCPXMLVersion: String, CaseIterable, Sendable {
         return selfIndex >= otherIndex
     }
 
+    /// Returns `true` if this version supports the .fcpxmld bundle format.
+    /// FCPXML versions 1.5–1.9 support only single-file .fcpxml; 1.10 and later support .fcpxmld.
+    public var supportsBundleFormat: Bool {
+        isAtLeast(.v1_10)
+    }
+
     // MARK: - Bridging to FinalCutPro.FCPXML.Version
 
     /// Converts this DTD version to the corresponding `FinalCutPro.FCPXML.Version` parsing type.

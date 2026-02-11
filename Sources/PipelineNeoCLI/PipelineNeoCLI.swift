@@ -83,7 +83,7 @@ struct PipelineNeoCLI: ParsableCommand {
             throw ValidationError("output-dir is required.")
         }
         if let targetVersion = general.convertVersion {
-            try ConvertVersion.run(fcpxmlPath: fcpxmlPath, targetVersionString: targetVersion, outputDir: outDir, logger: logger)
+            try ConvertVersion.run(fcpxmlPath: fcpxmlPath, targetVersionString: targetVersion, outputDir: outDir, extensionType: general.extensionType, logger: logger)
             return
         }
         if extraction.mediaCopy {

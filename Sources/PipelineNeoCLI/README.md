@@ -31,9 +31,11 @@ pipeline-neo --check-version /path/to/project.fcpxmld
 pipeline-neo --validate /path/to/project.fcpxml
 pipeline-neo --validate /path/to/project.fcpxmld
 
-# Convert FCPXML to a target version (writes to output-dir; e.g. project_1.10.fcpxml)
+# Convert FCPXML to a target version (writes to output-dir)
+# Default output: .fcpxmld bundle (1.10+); use --extension-type fcpxml for single file. Versions 1.5–1.9 always output .fcpxml.
 pipeline-neo --convert-version 1.10 /path/to/project.fcpxml /path/to/output-dir
-pipeline-neo --convert-version 1.14 /path/to/project.fcpxmld /path/to/output-dir
+pipeline-neo --convert-version 1.14 --extension-type fcpxmld /path/to/project.fcpxmld /path/to/output-dir
+pipeline-neo --convert-version 1.14 --extension-type fcpxml /path/to/project.fcpxml /path/to/output-dir
 
 # Extract all media referenced in FCPXML/FCPXMLD to output-dir (progress bar when not --quiet; copied paths to stdout; summary to stderr)
 pipeline-neo --media-copy /path/to/project.fcpxml /path/to/output-dir
@@ -54,6 +56,14 @@ pipeline-neo --quiet --media-copy /path/to/project.fcpxml /path/to/media
 
 ---
 
+## GENERAL options (convert-version)
+
+| Option | Description |
+|--------|-------------|
+| `--extension-type <fcpxml\|fcpxmld>` | Output format for `--convert-version`: `fcpxmld` (bundle, default) or `fcpxml` (single file). For target versions 1.5–1.9, `.fcpxml` is always used (bundles not supported). |
+
+---
+
 ## LOG options
 
 | Option | Description |
@@ -71,10 +81,10 @@ Log messages include parsing, version conversion, validation, save, and media ex
 | Path | Purpose |
 |------|--------|
 | `PipelineNeoCLI.swift` | Root command: configuration, GENERAL and LOG option groups, arguments, validation, and `run()` dispatch. |
-| `Options/` | Option groups for help sections. `GeneralOptions` supplies **GENERAL** flags; `LogOptions` supplies **LOG** options (`--log`, `--log-level`, `--quiet`). |
+| `Options/` | Option groups for help sections. `GeneralOptions` supplies **GENERAL** flags and `--extension-type`; `LogOptions` supplies **LOG** options (`--log`, `--log-level`, `--quiet`). |
 | `Commands/` | Feature modules. Each feature has its own subfolder and a `run(...)` entry point called from the root command (e.g. **CheckVersion** for `--check-version`). |
 | `Commands/CheckVersion/` | Implements `--check-version`: loads FCPXML and prints the document version. |
-| `Commands/ConvertVersion/` | Implements `--convert-version`: loads FCPXML, converts to target version (1.5–1.14), saves to output-dir. |
+| `Commands/ConvertVersion/` | Implements `--convert-version`: loads FCPXML, converts to target version (1.5–1.14), saves to output-dir as .fcpxmld (default) or .fcpxml per `--extension-type`; 1.5–1.9 always .fcpxml. |
 | `Commands/Validate/` | Implements `--validate`: loads FCPXML/FCPXMLD and runs robust validation (semantic + DTD). |
 | `Commands/ExtractMedia/` | Implements `--media-copy`: loads FCPXML/FCPXMLD and copies all referenced media files to output-dir. |
 | `Generated/` | Generated source; `EmbeddedDTDs.swift` contains hardcoded DTD data (from `GenerateEmbeddedDTDs`). |
