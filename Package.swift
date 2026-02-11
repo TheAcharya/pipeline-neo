@@ -16,6 +16,9 @@ let package = Package(
         .executable(
             name: "pipeline-neo",
             targets: ["PipelineNeoCLI"]),
+        .executable(
+            name: "GenerateEmbeddedDTDs",
+            targets: ["GenerateEmbeddedDTDs"]),
     ],
     dependencies: [
         .package(url: "https://github.com/apple/swift-argument-parser", from: "1.6.0"),
@@ -35,12 +38,20 @@ let package = Package(
         .testTarget(
             name: "PipelineNeoTests",
             dependencies: ["PipelineNeo"],
-            resources: [.process("../FCPXML Samples/FCPXML")]),
+            path: "Tests",
+            exclude: ["README.md"],
+            sources: ["PipelineNeoTests"],
+            resources: [.process("FCPXML Samples/FCPXML")]),
         .executableTarget(
             name: "PipelineNeoCLI",
             dependencies: [
                 "PipelineNeo",
                 .product(name: "ArgumentParser", package: "swift-argument-parser"),
-            ]),
+            ],
+            exclude: ["README.md"]),
+        .executableTarget(
+            name: "GenerateEmbeddedDTDs",
+            path: "Sources/GenerateEmbeddedDTDs",
+            swiftSettings: [.unsafeFlags(["-parse-as-library"])]),
     ]
 )

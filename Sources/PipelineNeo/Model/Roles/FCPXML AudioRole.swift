@@ -2,7 +2,7 @@
 //  FCPXML AudioRole.swift
 //  Pipeline Neo • https://github.com/TheAcharya/pipeline-neo
 //  © 2026 • Licensed under MIT License
-
+//
 
 //
 //	Audio role model with main role and optional sub-role.

@@ -8,8 +8,8 @@ Command-line interface for the Pipeline Neo library. Use it to inspect and proce
 
 - **Executable name:** `pipeline-neo`
 - **Entry point:** `PipelineNeoCLI.swift` (root command; no subcommands)
-- **Arguments:** `<fcpxml-path>` (required), `<output-dir>` (optional for `--check-version`; required for `--convert-version`, `--extract-media`, and for default process)
-- **Options:** Grouped under **GENERAL** and standard **OPTIONS** (`--version`, `--help`)
+- **Arguments:** `<fcpxml-path>` (required), `<output-dir>` (optional for `--check-version` and `--validate`; required for `--convert-version`, `--media-copy`, and for default process)
+- **Options:** Grouped under **GENERAL**, **EXTRACTION**, **LOG**, and standard **OPTIONS** (`--version`, `--help`)
 
 ---
 
@@ -27,19 +27,52 @@ pipeline-neo --version
 pipeline-neo --check-version /path/to/project.fcpxml
 pipeline-neo --check-version /path/to/project.fcpxmld
 
-# Convert FCPXML to a target version (writes to output-dir; e.g. project_1.10.fcpxml)
-pipeline-neo --convert-version 1.10 /path/to/project.fcpxml /path/to/output-dir
-pipeline-neo --convert-version 1.14 /path/to/project.fcpxmld /path/to/output-dir
+# Perform robust validation: semantic + DTD (progress indicator when not --quiet; output-dir not required)
+pipeline-neo --validate /path/to/project.fcpxml
+pipeline-neo --validate /path/to/project.fcpxmld
 
-# Extract all media referenced in FCPXML/FCPXMLD to output-dir (copied file paths to stdout; summary to stderr)
-pipeline-neo --extract-media /path/to/project.fcpxml /path/to/output-dir
-pipeline-neo --extract-media /path/to/project.fcpxmld /path/to/output-dir
+# Convert FCPXML to a target version (writes to output-dir)
+# Default output: .fcpxmld bundle (1.10+); use --extension-type fcpxml for single file. Versions 1.5–1.9 always output .fcpxml.
+pipeline-neo --convert-version 1.10 /path/to/project.fcpxml /path/to/output-dir
+pipeline-neo --convert-version 1.14 --extension-type fcpxmld /path/to/project.fcpxmld /path/to/output-dir
+pipeline-neo --convert-version 1.14 --extension-type fcpxml /path/to/project.fcpxml /path/to/output-dir
+
+# Extract all media referenced in FCPXML/FCPXMLD to output-dir (progress bar when not --quiet; copied paths to stdout; summary to stderr)
+pipeline-neo --media-copy /path/to/project.fcpxml /path/to/output-dir
+pipeline-neo --media-copy /path/to/project.fcpxmld /path/to/output-dir
 
 # Process: input + output (output-dir required)
 pipeline-neo /path/to/project.fcpxml /path/to/output-dir
+
+# Logging: write to file and console (default level: info)
+pipeline-neo --log /tmp/pipeline.log --check-version /path/to/project.fcpxml
+pipeline-neo --log-level debug --convert-version 1.10 /path/to/project.fcpxml /path/to/out
+
+# Quiet: no log output
+pipeline-neo --quiet --media-copy /path/to/project.fcpxml /path/to/media
 ```
 
-**Validation:** Use only one of `--check-version`, `--convert-version`, or `--extract-media`. When using `--convert-version` or `--extract-media`, or when running the default process, you must provide `<output-dir>`.
+**Validation:** Use only one of `--check-version`, `--convert-version`, `--validate`, or `--media-copy`. When using `--convert-version` or `--media-copy`, or when running the default process, you must provide `<output-dir>`. If `--log` is set and the file exists, it must be writable. Invalid `--log-level` values produce an error.
+
+---
+
+## GENERAL options (convert-version)
+
+| Option | Description |
+|--------|-------------|
+| `--extension-type <fcpxml\|fcpxmld>` | Output format for `--convert-version`: `fcpxmld` (bundle, default) or `fcpxml` (single file). For target versions 1.5–1.9, `.fcpxml` is always used (bundles not supported). |
+
+---
+
+## LOG options
+
+| Option | Description |
+|--------|-------------|
+| `--log <path>` | Append log output to this file. Also prints to the console unless `--quiet` is set. |
+| `--log-level <level>` | Minimum log level: `trace`, `debug`, `info`, `notice`, `warning`, `error`, or `critical`. Default: `info`. |
+| `--quiet` | Disable all log output (no file, no console). |
+
+Log messages include parsing, version conversion, validation, save, and media extraction/copy. Use `--log-level debug` or `trace` for verbose output.
 
 ---
 
@@ -47,12 +80,14 @@ pipeline-neo /path/to/project.fcpxml /path/to/output-dir
 
 | Path | Purpose |
 |------|--------|
-| `PipelineNeoCLI.swift` | Root command: configuration, GENERAL option group, arguments, validation, and `run()` dispatch. |
-| `Options/` | Option groups for help sections. `GeneralOptions` supplies the **GENERAL** flags (e.g. `--check-version`). |
+| `PipelineNeoCLI.swift` | Root command: configuration, GENERAL and LOG option groups, arguments, validation, and `run()` dispatch. |
+| `Options/` | Option groups for help sections. `GeneralOptions` supplies **GENERAL** flags and `--extension-type`; `LogOptions` supplies **LOG** options (`--log`, `--log-level`, `--quiet`). |
 | `Commands/` | Feature modules. Each feature has its own subfolder and a `run(...)` entry point called from the root command (e.g. **CheckVersion** for `--check-version`). |
 | `Commands/CheckVersion/` | Implements `--check-version`: loads FCPXML and prints the document version. |
-| `Commands/ConvertVersion/` | Implements `--convert-version`: loads FCPXML, converts to target version (1.5–1.14), saves to output-dir. |
-| `Commands/ExtractMedia/` | Implements `--extract-media`: loads FCPXML/FCPXMLD and copies all referenced media files to output-dir. |
+| `Commands/ConvertVersion/` | Implements `--convert-version`: loads FCPXML, converts to target version (1.5–1.14), saves to output-dir as .fcpxmld (default) or .fcpxml per `--extension-type`; 1.5–1.9 always .fcpxml. |
+| `Commands/Validate/` | Implements `--validate`: loads FCPXML/FCPXMLD and runs robust validation (semantic + DTD). |
+| `Commands/ExtractMedia/` | Implements `--media-copy`: loads FCPXML/FCPXMLD and copies all referenced media files to output-dir. |
+| `Generated/` | Generated source; `EmbeddedDTDs.swift` contains hardcoded DTD data (from `GenerateEmbeddedDTDs`). |
 
 All Swift in `Sources/PipelineNeoCLI/` is a single module; no extra imports are needed between these files.
 
@@ -82,3 +117,9 @@ All Swift in `Sources/PipelineNeoCLI/` is a single module; no extra imports are 
 
 - **Swift PM:** From the package root, `swift build --target PipelineNeoCLI`; run with `swift run pipeline-neo --help` or use the built binary in `.build/debug/` or `.build/release/`.
 - **Xcode:** Open the package, choose the **PipelineNeoCLI** or **PipelineNeo-Package** scheme, then Run or use the Product executable.
+
+**Distributing the CLI:** The CLI is a **single binary**: the FCPXML DTDs (1.5–1.14) are hardcoded into the executable. Copy only **`pipeline-neo`** to any directory on the Mac or external storage; no resource bundle is required. The binary is produced in `.build/<arch>-apple-macosx/debug/` (or `release/`).
+
+**Scripts:** Invoke the CLI directly (e.g. `"$TOOL_PATH" "$FCPXML_PATH" --validate`). Use a path to the binary with no trailing slash.
+
+**Regenerating embedded DTDs:** If the FCPXML DTDs in `Sources/PipelineNeo/FCPXML DTDs/` change, run `./Scripts/generate_embedded_dtds.sh` or `swift run GenerateEmbeddedDTDs` from the package root to regenerate `Sources/PipelineNeoCLI/Generated/EmbeddedDTDs.swift`, then rebuild.

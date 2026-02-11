@@ -2,7 +2,7 @@
 //  TimecodeConversion.swift
 //  Pipeline Neo • https://github.com/TheAcharya/pipeline-neo
 //  © 2026 • Licensed under MIT License
-
+//
 
 //
 //	Protocols for timecode conversion, FCPXML time strings, and time conforming.

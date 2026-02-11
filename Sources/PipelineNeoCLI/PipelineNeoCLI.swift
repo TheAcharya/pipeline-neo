@@ -3,6 +3,7 @@
 //  Pipeline Neo • https://github.com/TheAcharya/pipeline-neo
 //  © 2026 • Licensed under MIT License
 //
+
 //
 //  CLI for Pipeline Neo.
 //
@@ -25,6 +26,12 @@ struct PipelineNeoCLI: ParsableCommand {
     @OptionGroup(title: "GENERAL")
     var general: GeneralOptions
 
+    @OptionGroup(title: "EXTRACTION")
+    var extraction: ExtractionOptions
+
+    @OptionGroup(title: "LOG")
+    var logOptions: LogOptions
+
     @Argument(help: "Input FCPXML file / FCPXMLD bundle.", transform: URL.init(fileURLWithPath:))
     var fcpxmlPath: URL
 
@@ -32,39 +39,60 @@ struct PipelineNeoCLI: ParsableCommand {
     var outputDir: URL?
 
     mutating func validate() throws {
-        let modeCount = [general.checkVersion, general.convertVersion != nil, general.extractMedia].filter { $0 }.count
-        if modeCount > 1 {
-            throw ValidationError("Use only one of --check-version, --convert-version, or --extract-media.")
+        if let logURL = logOptions.log, !logOptions.quiet {
+            if FileManager.default.fileExists(atPath: logURL.path) {
+                guard FileManager.default.isWritableFile(atPath: logURL.path) else {
+                    throw ValidationError("Cannot write to log file: \(logURL.path)")
+                }
+            }
         }
-        if general.checkVersion {
+        if PipelineLogLevel.from(string: logOptions.logLevel) == nil {
+            throw ValidationError("Invalid log level: '\(logOptions.logLevel)'. Use one of: trace, debug, info, notice, warning, error, critical.")
+        }
+        let modeCount = [general.checkVersion, general.convertVersion != nil, general.validate, extraction.mediaCopy].filter { $0 }.count
+        if modeCount > 1 {
+            throw ValidationError("Use only one of --check-version, --convert-version, --validate, or --media-copy.")
+        }
+        if general.checkVersion || general.validate {
             return
         }
-        if general.convertVersion != nil || general.extractMedia {
+        if general.convertVersion != nil || extraction.mediaCopy {
             if outputDir == nil {
-                throw ValidationError("output-dir is required when using --convert-version or --extract-media.")
+                throw ValidationError("output-dir is required when using --convert-version or --media-copy.")
             }
             return
         }
         if outputDir == nil {
-            throw ValidationError("output-dir is required when not using --check-version, --convert-version, or --extract-media.")
+            throw ValidationError("output-dir is required when not using --check-version, --convert-version, --validate, or --media-copy.")
         }
     }
 
     func run() throws {
+        // Use hardcoded DTDs when no bundle is present (single-binary deployment).
+        EmbeddedDTDProvider.provide = { EmbeddedDTDs.data(for: $0) }
+        let logger = logOptions.makeLogger()
         if general.checkVersion {
-            try CheckVersion.run(fcpxmlPath: fcpxmlPath)
+            try CheckVersion.run(fcpxmlPath: fcpxmlPath, logger: logger)
             return
+        }
+        if general.validate {
+            try Validate.run(fcpxmlPath: fcpxmlPath, logger: logger, showProgress: !logOptions.quiet)
+            return
+        }
+        guard let outDir = outputDir else {
+            throw ValidationError("output-dir is required.")
         }
         if let targetVersion = general.convertVersion {
-            try ConvertVersion.run(fcpxmlPath: fcpxmlPath, targetVersionString: targetVersion, outputDir: outputDir!)
+            try ConvertVersion.run(fcpxmlPath: fcpxmlPath, targetVersionString: targetVersion, outputDir: outDir, extensionType: general.extensionType, logger: logger)
             return
         }
-        if general.extractMedia {
-            try ExtractMedia.run(fcpxmlPath: fcpxmlPath, outputDir: outputDir!)
+        if extraction.mediaCopy {
+            try ExtractMedia.run(fcpxmlPath: fcpxmlPath, outputDir: outDir, logger: logger, showProgress: !logOptions.quiet)
             return
         }
-        let out = outputDir!
         print("Input: \(fcpxmlPath.path)")
-        print("Output: \(out.path)")
+        print("Output: \(outDir.path)")
+        logger.log(level: .info, message: "Input: \(fcpxmlPath.path)", metadata: nil)
+        logger.log(level: .info, message: "Output: \(outDir.path)", metadata: nil)
     }
 }

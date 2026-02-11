@@ -2,7 +2,7 @@
 //  FCPXML Time and Frame Rate Parsing.swift
 //  Pipeline Neo • https://github.com/TheAcharya/pipeline-neo
 //  © 2026 • Licensed under MIT License
-
+//
 
 //
 //	Timecode format and frame rate parsing utilities.

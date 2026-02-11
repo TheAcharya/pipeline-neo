@@ -2,7 +2,7 @@
 //  FCPXML ElementType.swift
 //  Pipeline Neo • https://github.com/TheAcharya/pipeline-neo
 //  © 2026 • Licensed under MIT License
-
+//
 
 //
 //	Enumeration of all FCPXML element types.

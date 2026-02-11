@@ -2,7 +2,7 @@
 //  FCPXMLFileTest_BasicMarkers.swift
 //  Pipeline Neo • https://github.com/TheAcharya/pipeline-neo
 //  © 2026 • Licensed under MIT License
-
+//
 
 //
 //	File tests for BasicMarkers.fcpxml: marker parsing and event/project structure.

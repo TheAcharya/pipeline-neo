@@ -2,7 +2,7 @@
 //  FCPXML TimeMap.swift
 //  Pipeline Neo • https://github.com/TheAcharya/pipeline-neo
 //  © 2026 • Licensed under MIT License
-
+//
 
 //
 //	Time map element model for speed adjustments.

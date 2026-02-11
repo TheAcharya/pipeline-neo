@@ -2,7 +2,7 @@
 //  FCPXML MediaRep.swift
 //  Pipeline Neo • https://github.com/TheAcharya/pipeline-neo
 //  © 2026 • Licensed under MIT License
-
+//
 
 //
 //	Media representation element model (original or proxy).

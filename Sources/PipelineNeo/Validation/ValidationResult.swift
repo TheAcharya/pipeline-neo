@@ -2,7 +2,7 @@
 //  ValidationResult.swift
 //  Pipeline Neo • https://github.com/TheAcharya/pipeline-neo
 //  © 2026 • Licensed under MIT License
-
+//
 
 //
 //	Validation result container with errors and warnings.

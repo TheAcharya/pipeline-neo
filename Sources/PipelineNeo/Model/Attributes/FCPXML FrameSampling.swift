@@ -2,7 +2,7 @@
 //  FCPXML FrameSampling.swift
 //  Pipeline Neo • https://github.com/TheAcharya/pipeline-neo
 //  © 2026 • Licensed under MIT License
-
+//
 
 //
 //	Frame sampling attribute enum for frame rate conversion.

@@ -2,7 +2,7 @@
 //  FCPXML ElementModelType XML.swift
 //  Pipeline Neo • https://github.com/TheAcharya/pipeline-neo
 //  © 2026 • Licensed under MIT License
-
+//
 
 //
 //	XML sequence extensions for strongly-typed element model types.

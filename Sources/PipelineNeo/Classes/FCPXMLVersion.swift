@@ -2,7 +2,7 @@
 //  FCPXMLVersion.swift
 //  Pipeline Neo • https://github.com/TheAcharya/pipeline-neo
 //  © 2026 • Licensed under MIT License
-
+//
 
 //
 //	Type-safe FCPXML version handling for DTD validation and document creation.
@@ -76,6 +76,12 @@ public enum FCPXMLVersion: String, CaseIterable, Sendable {
             return false
         }
         return selfIndex >= otherIndex
+    }
+
+    /// Returns `true` if this version supports the .fcpxmld bundle format.
+    /// FCPXML versions 1.5–1.9 support only single-file .fcpxml; 1.10 and later support .fcpxmld.
+    public var supportsBundleFormat: Bool {
+        isAtLeast(.v1_10)
     }
 
     // MARK: - Bridging to FinalCutPro.FCPXML.Version

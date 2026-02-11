@@ -2,7 +2,7 @@
 //  FCPXML Root Version.swift
 //  Pipeline Neo • https://github.com/TheAcharya/pipeline-neo
 //  © 2026 • Licensed under MIT License
-
+//
 
 //
 //	FCPXML format version struct with semantic versioning and comparison.

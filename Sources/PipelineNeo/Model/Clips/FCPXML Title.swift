@@ -2,7 +2,7 @@
 //  FCPXML Title.swift
 //  Pipeline Neo • https://github.com/TheAcharya/pipeline-neo
 //  © 2026 • Licensed under MIT License
-
+//
 
 //
 //	Title clip element model for generated video.

@@ -2,9 +2,10 @@
 //  ExtractMedia.swift
 //  Pipeline Neo • https://github.com/TheAcharya/pipeline-neo
 //  © 2026 • Licensed under MIT License
+
 //
 //
-//  Scan FCPXML/FCPXMLD and copy all referenced media to output-dir (used by --extract-media).
+//  Scan FCPXML/FCPXMLD and copy all referenced media to output-dir (used by --media-copy).
 //
 
 import Foundation
@@ -26,15 +27,14 @@ enum ExtractMedia {
     }
 
     /// Loads the FCPXML at the given URL and copies all referenced media files to outputDir.
-    static func run(fcpxmlPath: URL, outputDir: URL) throws {
-        let loader = FCPXMLFileLoader()
-        let document = try loader.loadDocument(from: fcpxmlPath)
+    /// - Parameter showProgress: When true and there are files to copy, shows a progress bar (unless stdout is not a TTY).
+    static func run(fcpxmlPath: URL, outputDir: URL, logger: PipelineLogger = NoOpPipelineLogger(), showProgress: Bool = true) throws {
+        let service = FCPXMLService(logger: logger)
+        let document = try service.parseFCPXML(from: fcpxmlPath)
 
         let baseURL: URL? = fcpxmlPath.hasDirectoryPath
             ? fcpxmlPath
             : fcpxmlPath.deletingLastPathComponent()
-
-        let service = FCPXMLService()
 
         let extraction = service.extractMediaReferences(from: document, baseURL: baseURL)
         let fileRefs = extraction.fileReferences
@@ -48,9 +48,14 @@ enum ExtractMedia {
             imageCount += k.image
         }
         let totalDetected = fileRefs.count
-        fputs("Media detected: \(videoCount) video, \(audioCount) audio, \(imageCount) images (\(totalDetected) total).\n", stderr)
+        let detectedMessage = "Media detected: \(videoCount) video, \(audioCount) audio, \(imageCount) images (\(totalDetected) total)."
+        fputs("\(detectedMessage)\n", stderr)
+        logger.log(level: .info, message: detectedMessage, metadata: nil)
 
-        let result = service.copyReferencedMedia(from: document, to: outputDir, baseURL: baseURL)
+        let progress: (any ProgressReporter)? = (showProgress && totalDetected > 0)
+            ? ProgressBar(total: totalDetected, desc: "Copying media")
+            : nil
+        let result = service.copyReferencedMedia(from: document, to: outputDir, baseURL: baseURL, progress: progress)
 
         let copiedCount = result.copied.count
         let skippedCount = result.skipped.count
@@ -58,19 +63,26 @@ enum ExtractMedia {
 
         for (_, destination) in result.copied {
             print(destination.path)
+            logger.log(level: .info, message: "Copied to \(destination.path)", metadata: nil)
         }
 
         if failedCount > 0 {
             for entry in result.failed {
                 if case .failed(_, let error) = entry {
-                    fputs("Error: \(entry.sourceURL.path): \(error)\n", stderr)
+                    let errMsg = "\(entry.sourceURL.path): \(error)"
+                    fputs("Error: \(errMsg)\n", stderr)
+                    logger.log(level: .error, message: errMsg, metadata: nil)
                 }
             }
-            fputs("Copied: \(copiedCount), skipped: \(skippedCount), failed: \(failedCount).\n", stderr)
+            let summaryMsg = "Copied: \(copiedCount), skipped: \(skippedCount), failed: \(failedCount)."
+            fputs("\(summaryMsg)\n", stderr)
+            logger.log(level: .error, message: summaryMsg, metadata: nil)
             throw ExtractMediaError.copyFailed(count: failedCount)
         }
 
-        fputs("Successfully copied \(copiedCount) media file\(copiedCount == 1 ? "" : "s") to \(outputDir.path).\n", stderr)
+        let successMessage = "Successfully copied \(copiedCount) media file\(copiedCount == 1 ? "" : "s") to \(outputDir.path)."
+        fputs("\(successMessage)\n", stderr)
+        logger.log(level: .info, message: successMessage, metadata: nil)
     }
 }
 

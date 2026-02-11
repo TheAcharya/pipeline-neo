@@ -2,7 +2,7 @@
 //  FCPXML AnyElementModelType.swift
 //  Pipeline Neo • https://github.com/TheAcharya/pipeline-neo
 //  © 2026 • Licensed under MIT License
-
+//
 
 //
 //	Type-erased wrapper for FCPXML element model type protocol.

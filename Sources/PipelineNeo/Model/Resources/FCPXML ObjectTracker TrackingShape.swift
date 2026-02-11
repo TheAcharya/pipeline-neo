@@ -2,7 +2,7 @@
 //  FCPXML ObjectTracker TrackingShape.swift
 //  Pipeline Neo • https://github.com/TheAcharya/pipeline-neo
 //  © 2026 • Licensed under MIT License
-
+//
 
 //
 //	Object tracker tracking shape element model.

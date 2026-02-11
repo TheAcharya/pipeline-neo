@@ -2,7 +2,7 @@
 //  FCPXML Clip.swift
 //  Pipeline Neo • https://github.com/TheAcharya/pipeline-neo
 //  © 2026 • Licensed under MIT License
-
+//
 
 //
 //	Basic clip element model for timeline sequences from source media.

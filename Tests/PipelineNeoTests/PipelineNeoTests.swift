@@ -2,7 +2,7 @@
 //  PipelineNeoTests.swift
 //  Pipeline Neo • https://github.com/TheAcharya/pipeline-neo
 //  © 2026 • Licensed under MIT License
-
+//
 
 //
 //	Main test class for the Pipeline Neo framework.
@@ -1377,12 +1377,28 @@ final class PipelineNeoTests: XCTestCase, @unchecked Sendable {
     }
     
     func testPipelineLogLevelComparable() {
+        XCTAssertTrue(PipelineLogLevel.trace < .debug)
         XCTAssertTrue(PipelineLogLevel.debug < .info)
-        XCTAssertTrue(PipelineLogLevel.info < .warning)
+        XCTAssertTrue(PipelineLogLevel.info < .notice)
+        XCTAssertTrue(PipelineLogLevel.notice < .warning)
         XCTAssertTrue(PipelineLogLevel.warning < .error)
-        XCTAssertEqual(PipelineLogLevel.allCases.count, 4)
+        XCTAssertTrue(PipelineLogLevel.error < .critical)
+        XCTAssertEqual(PipelineLogLevel.allCases.count, 7)
     }
-    
+
+    func testPipelineLogLevelFromStringAndLabel() {
+        XCTAssertEqual(PipelineLogLevel.from(string: "trace"), .trace)
+        XCTAssertEqual(PipelineLogLevel.from(string: "DEBUG"), .debug)
+        XCTAssertEqual(PipelineLogLevel.from(string: "info"), .info)
+        XCTAssertEqual(PipelineLogLevel.from(string: "Notice"), .notice)
+        XCTAssertEqual(PipelineLogLevel.from(string: "warning"), .warning)
+        XCTAssertEqual(PipelineLogLevel.from(string: "error"), .error)
+        XCTAssertEqual(PipelineLogLevel.from(string: "critical"), .critical)
+        XCTAssertNil(PipelineLogLevel.from(string: "invalid"))
+        XCTAssertEqual(PipelineLogLevel.info.label, "INFO")
+        XCTAssertEqual(PipelineLogLevel.critical.label, "CRITICAL")
+    }
+
     func testAnnotationMarkerWithCompletedFlag() {
         let start = CMTime(value: 3600, timescale: 60000)
         let marker = Marker(start: start, value: "Review", completed: true)

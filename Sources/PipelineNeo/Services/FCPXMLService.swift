@@ -2,7 +2,7 @@
 //  FCPXMLService.swift
 //  Pipeline Neo • https://github.com/TheAcharya/pipeline-neo
 //  © 2026 • Licensed under MIT License
-
+//
 
 //
 //	Service orchestrating modular components for high-level FCPXML workflows.
@@ -26,6 +26,7 @@ public final class FCPXMLService: Sendable {
     private let cutDetector: CutDetection
     private let versionConverter: FCPXMLVersionConverting
     private let mediaExtractor: MediaExtraction
+    private let semanticValidator: FCPXMLValidator
     private let dtdValidator: FCPXMLDTDValidator
 
     // MARK: - Initialisation
@@ -34,7 +35,7 @@ public final class FCPXMLService: Sendable {
     ///
     /// All parameters have sensible defaults. Pass custom implementations
     /// to override parsing, timecode conversion, document management,
-    /// error handling, cut detection, version conversion, DTD validation, or logging behaviour.
+    /// error handling, cut detection, version conversion, semantic/DTD validation, or logging behaviour.
     ///
     /// - Parameters:
     ///   - parser: FCPXML parser and element filter (default: `FCPXMLParser()`).
@@ -44,6 +45,7 @@ public final class FCPXMLService: Sendable {
     ///   - cutDetector: Cut detection implementation (default: `CutDetector()`).
     ///   - versionConverter: FCPXML version conversion (default: `FCPXMLVersionConverter()`).
     ///   - mediaExtractor: Media reference extraction and copy (default: `MediaExtractor()`).
+    ///   - semanticValidator: Semantic validator for root, resources, ref resolution (default: `FCPXMLValidator()`).
     ///   - dtdValidator: DTD validator for per-version schema checks (default: `FCPXMLDTDValidator()`).
     ///   - logger: Pipeline logger (default: `NoOpPipelineLogger()`).
     public init(
@@ -54,6 +56,7 @@ public final class FCPXMLService: Sendable {
         cutDetector: CutDetection = CutDetector(),
         versionConverter: FCPXMLVersionConverting = FCPXMLVersionConverter(),
         mediaExtractor: MediaExtraction = MediaExtractor(),
+        semanticValidator: FCPXMLValidator = FCPXMLValidator(),
         dtdValidator: FCPXMLDTDValidator = FCPXMLDTDValidator(),
         logger: PipelineLogger = NoOpPipelineLogger()
     ) {
@@ -64,6 +67,7 @@ public final class FCPXMLService: Sendable {
         self.cutDetector = cutDetector
         self.versionConverter = versionConverter
         self.mediaExtractor = mediaExtractor
+        self.semanticValidator = semanticValidator
         self.dtdValidator = dtdValidator
         self.logger = logger
     }
@@ -162,7 +166,14 @@ public final class FCPXMLService: Sendable {
     ///   - version: The FCPXML version whose DTD to use (e.g. `.v1_10`, `.v1_14`).
     /// - Returns: `.success` if the document conforms to that version’s DTD; otherwise a result with `dtd_validation` error(s).
     public func validateDocumentAgainstDTD(_ document: XMLDocument, version: FCPXMLVersion) -> ValidationResult {
-        dtdValidator.validate(document, version: version)
+        logger.log(level: .debug, message: "Validating document against DTD", metadata: ["version": version.rawValue])
+        let result = dtdValidator.validate(document, version: version)
+        if result.isValid {
+            logger.log(level: .debug, message: "DTD validation passed", metadata: ["version": version.rawValue])
+        } else {
+            logger.log(level: .warning, message: "DTD validation failed", metadata: ["version": version.rawValue, "errors": result.detailedDescription])
+        }
+        return result
     }
 
     /// Validates the document against the DTD for its declared root version.
@@ -174,6 +185,28 @@ public final class FCPXMLService: Sendable {
     /// - Returns: `.success` if the document conforms to its declared version’s DTD; otherwise a result with errors (e.g. unknown version or DTD validation failure).
     public func validateDocumentAgainstDeclaredVersion(_ document: XMLDocument) -> ValidationResult {
         _validateDocumentAgainstDeclaredVersion(document)
+    }
+
+    /// Performs robust validation: semantic (root, resources, ref resolution) and DTD (against the document’s declared version).
+    ///
+    /// Use this for a full check before processing or to report validation status to the user.
+    /// - Parameter document: The FCPXML document to validate.
+    /// - Returns: A report combining semantic and DTD results; ``DocumentValidationReport/isValid`` is `true` only when both pass.
+    public func performValidation(_ document: XMLDocument) -> DocumentValidationReport {
+        _performValidation(document)
+    }
+
+    private func _performValidation(_ document: XMLDocument) -> DocumentValidationReport {
+        logger.log(level: .debug, message: "Performing full validation (semantic + DTD)", metadata: nil)
+        let semanticResult = semanticValidator.validate(document)
+        let dtdResult = _validateDocumentAgainstDeclaredVersion(document)
+        let report = DocumentValidationReport(semantic: semanticResult, dtd: dtdResult)
+        if report.isValid {
+            logger.log(level: .debug, message: report.summary, metadata: nil)
+        } else {
+            logger.log(level: .warning, message: report.summary, metadata: ["details": report.detailedDescription])
+        }
+        return report
     }
 
     private func _validateDocumentAgainstDeclaredVersion(_ document: XMLDocument) -> ValidationResult {
@@ -239,7 +272,10 @@ public final class FCPXMLService: Sendable {
     /// - Returns: New document with that version.
     /// - Throws: If conversion (copy/serialization) fails.
     public func convertToVersion(_ document: XMLDocument, targetVersion: FCPXMLVersion) throws -> XMLDocument {
-        try versionConverter.convert(document, to: targetVersion)
+        logger.log(level: .info, message: "Converting document to FCPXML version", metadata: ["target": targetVersion.rawValue])
+        let result = try versionConverter.convert(document, to: targetVersion)
+        logger.log(level: .debug, message: "Version conversion completed", metadata: ["version": targetVersion.rawValue])
+        return result
     }
 
     /// Saves the document as a single .fcpxml file.
@@ -247,7 +283,9 @@ public final class FCPXMLService: Sendable {
     ///   - document: FCPXML document (e.g. after convertToVersion).
     ///   - url: Destination URL (typically with .fcpxml extension).
     public func saveAsFCPXML(_ document: XMLDocument, to url: URL) throws {
+        logger.log(level: .info, message: "Saving FCPXML document", metadata: ["path": url.path])
         try documentManager.saveDocument(document, to: url)
+        logger.log(level: .debug, message: "Document saved successfully", metadata: ["path": url.path])
     }
 
     /// Saves the document as a .fcpxmld bundle. Only supported when document version is 1.10 or higher.
@@ -268,7 +306,10 @@ public final class FCPXMLService: Sendable {
     ///   - baseURL: Optional base URL to resolve relative src (e.g. URL of the .fcpxml or .fcpxmld).
     /// - Returns: Result with references; urls may be nil for relative src when baseURL is nil.
     public func extractMediaReferences(from document: XMLDocument, baseURL: URL? = nil) -> MediaExtractionResult {
-        mediaExtractor.extractMediaReferences(from: document, baseURL: baseURL)
+        logger.log(level: .debug, message: "Extracting media references", metadata: baseURL.map { ["baseURL": $0.path] } ?? nil)
+        let result = mediaExtractor.extractMediaReferences(from: document, baseURL: baseURL)
+        logger.log(level: .info, message: "Media references extracted", metadata: ["count": "\(result.references.count)", "fileReferences": "\(result.fileReferences.count)"])
+        return result
     }
 
     /// Copies referenced media files (file URLs only) to the destination directory; deduplicates by source URL.
@@ -276,9 +317,17 @@ public final class FCPXMLService: Sendable {
     ///   - document: Parsed FCPXML document.
     ///   - destinationURL: Directory to copy files into.
     ///   - baseURL: Optional base URL to resolve relative src.
+    ///   - progress: Optional progress reporter (e.g. CLI progress bar).
     /// - Returns: Result with copied, skipped, and failed entries.
-    public func copyReferencedMedia(from document: XMLDocument, to destinationURL: URL, baseURL: URL? = nil) -> MediaCopyResult {
-        mediaExtractor.copyReferencedMedia(from: document, to: destinationURL, baseURL: baseURL)
+    public func copyReferencedMedia(from document: XMLDocument, to destinationURL: URL, baseURL: URL? = nil, progress: (any ProgressReporter)? = nil) -> MediaCopyResult {
+        logger.log(level: .info, message: "Copying referenced media to destination", metadata: ["destination": destinationURL.path])
+        let result = mediaExtractor.copyReferencedMedia(from: document, to: destinationURL, baseURL: baseURL, progress: progress)
+        logger.log(level: .info, message: "Media copy completed", metadata: [
+            "copied": "\(result.copied.count)",
+            "skipped": "\(result.skipped.count)",
+            "failed": "\(result.failed.count)"
+        ])
+        return result
     }
     
     // MARK: - Async Public API
@@ -370,6 +419,11 @@ public final class FCPXMLService: Sendable {
     public func validateDocumentAgainstDeclaredVersion(_ document: XMLDocument) async -> ValidationResult {
         _validateDocumentAgainstDeclaredVersion(document)
     }
+
+    /// Asynchronously performs robust validation: semantic and DTD (against the document’s declared version).
+    public func performValidation(_ document: XMLDocument) async -> DocumentValidationReport {
+        _performValidation(document)
+    }
     
     /// Asynchronously converts FCPXML time string to CMTime
     /// - Parameter timeString: FCPXML time string
@@ -426,7 +480,7 @@ public final class FCPXMLService: Sendable {
     }
 
     /// Asynchronously copies referenced media files to the destination directory.
-    public func copyReferencedMedia(from document: XMLDocument, to destinationURL: URL, baseURL: URL? = nil) async -> MediaCopyResult {
-        await mediaExtractor.copyReferencedMedia(from: document, to: destinationURL, baseURL: baseURL)
+    public func copyReferencedMedia(from document: XMLDocument, to destinationURL: URL, baseURL: URL? = nil, progress: (any ProgressReporter)? = nil) async -> MediaCopyResult {
+        await mediaExtractor.copyReferencedMedia(from: document, to: destinationURL, baseURL: baseURL, progress: progress)
     }
 }

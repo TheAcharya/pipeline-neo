@@ -3,6 +3,7 @@
 //  Pipeline Neo • https://github.com/TheAcharya/pipeline-neo
 //  © 2026 • Licensed under MIT License
 //
+
 //
 //	Protocol for extracting media references from FCPXML and copying them to a location.
 //
@@ -29,9 +30,10 @@ public protocol MediaExtraction: Sendable {
     ///   - document: Parsed FCPXML document.
     ///   - destinationURL: Directory to copy files into (e.g. /path/to/Media).
     ///   - baseURL: Optional base URL to resolve relative src.
+    ///   - progress: Optional reporter called once per processed file (e.g. CLI progress bar).
     /// - Returns: Result with copied, skipped, and failed entries.
-    func copyReferencedMedia(from document: XMLDocument, to destinationURL: URL, baseURL: URL?) -> MediaCopyResult
+    func copyReferencedMedia(from document: XMLDocument, to destinationURL: URL, baseURL: URL?, progress: (any ProgressReporter)?) -> MediaCopyResult
 
     /// Copies referenced media (async).
-    func copyReferencedMedia(from document: XMLDocument, to destinationURL: URL, baseURL: URL?) async -> MediaCopyResult
+    func copyReferencedMedia(from document: XMLDocument, to destinationURL: URL, baseURL: URL?, progress: (any ProgressReporter)?) async -> MediaCopyResult
 }

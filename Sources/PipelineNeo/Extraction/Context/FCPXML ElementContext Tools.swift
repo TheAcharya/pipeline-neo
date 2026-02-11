@@ -2,7 +2,7 @@
 //  FCPXML ElementContext Tools.swift
 //  Pipeline Neo • https://github.com/TheAcharya/pipeline-neo
 //  © 2026 • Licensed under MIT License
-
+//
 
 //
 //	Tools providing context for FCPXML elements during extraction.

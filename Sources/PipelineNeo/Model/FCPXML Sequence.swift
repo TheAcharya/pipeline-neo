@@ -2,7 +2,7 @@
 //  FCPXML Sequence.swift
 //  Pipeline Neo • https://github.com/TheAcharya/pipeline-neo
 //  © 2026 • Licensed under MIT License
-
+//
 
 //
 //	Sequence element model for project or compound clip.

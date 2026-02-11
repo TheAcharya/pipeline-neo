@@ -2,7 +2,7 @@
 //  FCPXML AssetClip.swift
 //  Pipeline Neo • https://github.com/TheAcharya/pipeline-neo
 //  © 2026 • Licensed under MIT License
-
+//
 
 //
 //	Asset clip element model referencing a single media asset.

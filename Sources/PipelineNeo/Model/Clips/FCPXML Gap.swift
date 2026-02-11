@@ -2,7 +2,7 @@
 //  FCPXML Gap.swift
 //  Pipeline Neo • https://github.com/TheAcharya/pipeline-neo
 //  © 2026 • Licensed under MIT License
-
+//
 
 //
 //	Gap element model as a placeholder with no audio or video.

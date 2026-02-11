@@ -2,7 +2,7 @@
 //  FCPXML FrameDataPreset.swift
 //  Pipeline Neo • https://github.com/TheAcharya/pipeline-neo
 //  © 2026 • Licensed under MIT License
-
+//
 
 //
 //	Extraction preset for frame data.

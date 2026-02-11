@@ -2,7 +2,7 @@
 //  FCPXML Media Multicam.swift
 //  Pipeline Neo • https://github.com/TheAcharya/pipeline-neo
 //  © 2026 • Licensed under MIT License
-
+//
 
 //
 //	Multicam media element model (multi-camera container).

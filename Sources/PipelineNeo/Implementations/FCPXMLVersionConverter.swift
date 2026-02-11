@@ -3,10 +3,10 @@
 //  Pipeline Neo • https://github.com/TheAcharya/pipeline-neo
 //  © 2026 • Licensed under MIT License
 //
+
 //
-//	Default implementation of FCPXMLVersionConverting: sets root version, strips
-//	elements not in the target version's DTD (like Capacitor), and returns a copy.
-//
+//	Default implementation of FCPXMLVersionConverting: sets root version, strips elements not in the target version's DTD (like Capacitor), and returns a copy.
+//	
 
 import Foundation
 

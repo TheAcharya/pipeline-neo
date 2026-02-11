@@ -2,7 +2,7 @@
 //  FCPXML Elements Parsing.swift
 //  Pipeline Neo • https://github.com/TheAcharya/pipeline-neo
 //  © 2026 • Licensed under MIT License
-
+//
 
 //
 //	Element parsing extensions for structure, story, and resource elements.
@@ -350,7 +350,7 @@ extension XMLElement {
             .compactMap { ancestor -> (type: FinalCutPro.FCPXML.ElementType, lane: Int?)? in
                 guard let type = ancestor.fcpElementType else { return nil }
                 let laneStr = ancestor.fcpLane
-                let lane: Int? = laneStr != nil ? Int(laneStr!) : nil
+                let lane: Int? = laneStr.flatMap { Int($0) }
                 return (type: type, lane: lane)
             }
     }

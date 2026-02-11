@@ -2,7 +2,7 @@
 //  FCPXML ConformRate.swift
 //  Pipeline Neo • https://github.com/TheAcharya/pipeline-neo
 //  © 2026 • Licensed under MIT License
-
+//
 
 //
 //	Conform rate element model for frame rate conversion.

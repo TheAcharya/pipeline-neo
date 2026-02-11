@@ -2,7 +2,7 @@
 //  FCPXMLElementTextStyleDefinitionChildren.swift
 //  Pipeline Neo • https://github.com/TheAcharya/pipeline-neo
 //  © 2026 • Licensed under MIT License
-
+//
 
 //
 //	Protocol for elements with text-style-def children.

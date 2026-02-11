@@ -2,7 +2,7 @@
 //  FCPXML AudioRate.swift
 //  Pipeline Neo • https://github.com/TheAcharya/pipeline-neo
 //  © 2026 • Licensed under MIT License
-
+//
 
 //
 //	Audio sample rate attribute enum.

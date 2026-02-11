@@ -2,7 +2,7 @@
 //  FCPXML MarkersExtractionPreset.swift
 //  Pipeline Neo • https://github.com/TheAcharya/pipeline-neo
 //  © 2026 • Licensed under MIT License
-
+//
 
 //
 //	Extraction preset for markers and chapter markers.

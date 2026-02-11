@@ -2,7 +2,7 @@
 //  FCPXML VideoRole.swift
 //  Pipeline Neo • https://github.com/TheAcharya/pipeline-neo
 //  © 2026 • Licensed under MIT License
-
+//
 
 //
 //	Video role model with main role and optional sub-role.

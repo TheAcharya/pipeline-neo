@@ -2,6 +2,7 @@
 //  ConvertVersion.swift
 //  Pipeline Neo • https://github.com/TheAcharya/pipeline-neo
 //  © 2026 • Licensed under MIT License
+
 //
 //
 //  Convert FCPXML document to a target version and save (used by --convert-version).
@@ -12,15 +13,14 @@ import PipelineNeo
 
 enum ConvertVersion {
     /// Loads the FCPXML at the given URL, converts it to the target version, and writes to output-dir.
-    static func run(fcpxmlPath: URL, targetVersionString: String, outputDir: URL) throws {
+    /// Uses `extensionType` (default .fcpxmld); for target versions 1.5–1.9, .fcpxml is always used.
+    static func run(fcpxmlPath: URL, targetVersionString: String, outputDir: URL, extensionType: OutputExtensionType = .fcpxmld, logger: PipelineLogger = NoOpPipelineLogger()) throws {
         guard let targetVersion = FCPXMLVersion(string: targetVersionString) else {
             throw ConvertVersionError.unsupportedVersion(targetVersionString)
         }
 
-        let loader = FCPXMLFileLoader()
-        let document = try loader.loadDocument(from: fcpxmlPath)
-
-        let service = FCPXMLService()
+        let service = FCPXMLService(logger: logger)
+        let document = try service.parseFCPXML(from: fcpxmlPath)
         let converted = try service.convertToVersion(document, targetVersion: targetVersion)
 
         let validationResult = service.validateDocumentAgainstDTD(converted, version: targetVersion)
@@ -32,11 +32,20 @@ enum ConvertVersion {
         }
 
         let baseName = fcpxmlPath.deletingPathExtension().lastPathComponent
-        let outputFileName = "\(baseName)_\(targetVersion.rawValue).fcpxml"
-        let outputURL = outputDir.appendingPathComponent(outputFileName)
+        let nameSuffix = "\(baseName)_\(targetVersion.rawValue)"
 
-        try service.saveAsFCPXML(converted, to: outputURL)
-        print(outputURL.path)
+        let useBundle = (extensionType == .fcpxmld) && targetVersion.supportsBundleFormat
+        if useBundle {
+            let bundleURL = try service.saveAsBundle(converted, to: outputDir, bundleName: nameSuffix)
+            print(bundleURL.path)
+            logger.log(level: .info, message: "Wrote \(bundleURL.path)", metadata: ["version": targetVersion.rawValue])
+        } else {
+            let outputFileName = "\(nameSuffix).fcpxml"
+            let outputURL = outputDir.appendingPathComponent(outputFileName)
+            try service.saveAsFCPXML(converted, to: outputURL)
+            print(outputURL.path)
+            logger.log(level: .info, message: "Wrote \(outputURL.path)", metadata: ["version": targetVersion.rawValue])
+        }
     }
 }
 

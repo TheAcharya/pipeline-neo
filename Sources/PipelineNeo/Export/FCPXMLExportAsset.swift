@@ -2,7 +2,7 @@
 //  FCPXMLExportAsset.swift
 //  Pipeline Neo • https://github.com/TheAcharya/pipeline-neo
 //  © 2026 • Licensed under MIT License
-
+//
 
 //
 //	Asset descriptor for FCPXML export pipeline.

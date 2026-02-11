@@ -2,7 +2,7 @@
 //  FCPXMLElement.swift
 //  Pipeline Neo • https://github.com/TheAcharya/pipeline-neo
 //  © 2026 • Licensed under MIT License
-
+//
 
 //
 //	Core protocol for all FCPXML wrapper model objects.

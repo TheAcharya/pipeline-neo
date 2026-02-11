@@ -2,7 +2,7 @@
 //  FCPXML Time Utilities.swift
 //  Pipeline Neo • https://github.com/TheAcharya/pipeline-neo
 //  © 2026 • Licensed under MIT License
-
+//
 
 //
 //	Time conversion utilities for FCPXML elements and resources.

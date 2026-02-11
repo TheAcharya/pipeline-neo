@@ -2,7 +2,7 @@
 //  CMTime+Modular.swift
 //  Pipeline Neo • https://github.com/TheAcharya/pipeline-neo
 //  © 2026 • Licensed under MIT License
-
+//
 
 //
 //	Modular CMTime extensions with dependency-injected timecode conversion.

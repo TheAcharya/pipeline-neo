@@ -2,7 +2,7 @@
 //  XMLDocumentExtension.swift
 //  Pipeline Neo • https://github.com/TheAcharya/pipeline-neo
 //  © 2026 • Licensed under MIT License
-
+//
 
 //
 //	XMLDocument extensions for FCPXML document-level operations.
@@ -473,15 +473,89 @@ extension XMLDocument {
 		try self.setDTDToBundleResource(named: resourceName)
 	}
 	
+	/// Returns the PipelineNeo resource bundle when it lives next to the running executable (e.g. a copied CLI) or next to the test bundle (e.g. swift test).
+	private static func _pipelineNeoBundleNextToExecutable() -> Bundle? {
+		guard let arg0 = ProcessInfo.processInfo.arguments.first, !arg0.isEmpty else { return nil }
+		let resolvedPath = (arg0 as NSString).resolvingSymlinksInPath
+		let execDir: URL
+		if resolvedPath.hasPrefix("/") {
+			execDir = URL(fileURLWithPath: resolvedPath).deletingLastPathComponent()
+		} else {
+			let cwd = FileManager.default.currentDirectoryPath
+			let fullPath = (cwd as NSString).appendingPathComponent(resolvedPath)
+			execDir = URL(fileURLWithPath: (fullPath as NSString).resolvingSymlinksInPath).deletingLastPathComponent()
+		}
+		// 1) Next to the executable: try CLI bundle first (DTDs embedded in CLI), then library bundle.
+		let bundleNames = ["PipelineNeo_PipelineNeoCLI.bundle", "PipelineNeo_PipelineNeo.bundle"]
+		for name in bundleNames {
+			let u = execDir.appendingPathComponent(name)
+			if let b = Bundle(url: u) { return b }
+		}
+		// 2) When running inside an .xctest (swift test), bundle is a sibling of the .xctest in the build directory.
+		if resolvedPath.contains(".xctest") {
+			var cursor = execDir
+			while cursor.path != "/" {
+				if cursor.lastPathComponent.hasSuffix(".xctest") {
+					let buildDir = cursor.deletingLastPathComponent()
+					for name in bundleNames {
+						let u = buildDir.appendingPathComponent(name)
+						if let b = Bundle(url: u) { return b }
+					}
+					break
+				}
+				cursor = cursor.deletingLastPathComponent()
+			}
+		}
+		// 3) When the main bundle is an app or xctest, its container directory often contains the resource bundle (e.g. swift test).
+		let mainContainer = Bundle.main.bundleURL.deletingLastPathComponent()
+		for name in bundleNames {
+			let u = mainContainer.appendingPathComponent(name)
+			if let b = Bundle(url: u) { return b }
+		}
+		return nil
+	}
+	
+	/// True when we must not call Bundle.module (would fatalError: copied CLI run without the resource bundle).
+	/// Skip only when the running executable is the pipeline-neo CLI (by name) and the resource bundle is not next to it.
+	/// Invoke the CLI directly from scripts (e.g. "$TOOL_PATH" "$INPUT" ...) so argv[0] is the tool path; do not use `bash -c "..."` or the process will be the shell and we may crash.
+	private static func _mustSkipBundleModule() -> Bool {
+		guard let arg0 = ProcessInfo.processInfo.arguments.first, !arg0.isEmpty else { return false }
+		var resolvedPath = (arg0 as NSString).resolvingSymlinksInPath
+		if resolvedPath.hasSuffix("/") { resolvedPath = String(resolvedPath.dropLast()) }
+		let execName = URL(fileURLWithPath: resolvedPath).lastPathComponent
+		guard execName == "pipeline-neo" else { return false }
+		let execDir: URL
+		if resolvedPath.hasPrefix("/") {
+			execDir = URL(fileURLWithPath: resolvedPath).deletingLastPathComponent()
+		} else {
+			let cwd = FileManager.default.currentDirectoryPath
+			let fullPath = (cwd as NSString).appendingPathComponent(resolvedPath)
+			execDir = URL(fileURLWithPath: (fullPath as NSString).resolvingSymlinksInPath).deletingLastPathComponent()
+		}
+		let cliBundle = execDir.appendingPathComponent("PipelineNeo_PipelineNeoCLI.bundle")
+		let libBundle = execDir.appendingPathComponent("PipelineNeo_PipelineNeo.bundle")
+		let hasBundle = FileManager.default.fileExists(atPath: cliBundle.path)
+			|| FileManager.default.fileExists(atPath: libBundle.path)
+		return !hasBundle
+	}
+	
 	/// Sets the DTD to a specified bundle resource in this framework.
 	///
 	/// - Parameter name: The name of the resource as a String. Do not include the extension of the filename. It is assumed to be "dtd".
 	/// - Throws: An FCPXMLDocumentError or an error describing why the file cannot be read.
 	private func setDTDToBundleResource(named name: String) throws {
 		var dtdURL: URL? = nil
-		// Swift Package: try module bundle (root then "FCPXML DTDs"); .process("FCPXML DTDs") may preserve or flatten.
-		dtdURL = Bundle.module.url(forResource: name, withExtension: "dtd", subdirectory: nil)
-			?? Bundle.module.url(forResource: name, withExtension: "dtd", subdirectory: "FCPXML DTDs")
+		let bundleNextToExecutable = Self._pipelineNeoBundleNextToExecutable()
+		// Prefer bundle next to executable so a copied CLI (with the .bundle copied alongside) finds DTDs.
+		if let bundle = bundleNextToExecutable {
+			dtdURL = bundle.url(forResource: name, withExtension: "dtd", subdirectory: nil)
+				?? bundle.url(forResource: name, withExtension: "dtd", subdirectory: "FCPXML DTDs")
+		}
+		// Use Bundle.module only when safe (not a copied CLI without the bundle; avoids fatalError from resource_bundle_accessor).
+		if dtdURL == nil, !Self._mustSkipBundleModule() {
+			dtdURL = Bundle.module.url(forResource: name, withExtension: "dtd", subdirectory: nil)
+				?? Bundle.module.url(forResource: name, withExtension: "dtd", subdirectory: "FCPXML DTDs")
+		}
 		if dtdURL == nil {
 			for bundle in Bundle.allBundles {
 				if let u = bundle.url(forResource: name, withExtension: "dtd", subdirectory: nil)
@@ -497,6 +571,26 @@ extension XMLDocument {
 					dtdURL = fileURL
 					break
 				}
+			}
+		}
+		// Fallback: embedded DTD data (e.g. hardcoded in CLI).
+		if dtdURL == nil, let data = EmbeddedDTDProvider.provide?(name) {
+			let options: XMLNode.Options = [.nodePreserveWhitespace, .nodePrettyPrint, .nodeCompactEmptyElement]
+			do {
+				let tempDir = FileManager.default.temporaryDirectory
+				let tempURL = tempDir.appendingPathComponent("\(name).dtd")
+				try data.write(to: tempURL)
+				defer { try? FileManager.default.removeItem(at: tempURL) }
+				self.dtd = try XMLDTD(contentsOf: tempURL, options: options)
+			} catch {
+				debugLog("Error loading embedded DTD: \(error)")
+				throw error
+			}
+			if self.dtd != nil {
+				self.dtd!.name = "fcpxml"
+				self.isStandalone = false
+				debugLog("DTD set from embedded data.")
+				return
 			}
 		}
 		guard let unwrappedURL = dtdURL else {

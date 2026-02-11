@@ -2,7 +2,7 @@
 //  FCPXML ElementContext.swift
 //  Pipeline Neo • https://github.com/TheAcharya/pipeline-neo
 //  © 2026 • Licensed under MIT License
-
+//
 
 //
 //	Element context identity and value builder.

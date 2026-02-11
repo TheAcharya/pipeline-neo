@@ -2,7 +2,7 @@
 //  FCPXML TimeMap TimePoint.swift
 //  Pipeline Neo • https://github.com/TheAcharya/pipeline-neo
 //  © 2026 • Licensed under MIT License
-
+//
 
 //
 //	Time map time point element model.

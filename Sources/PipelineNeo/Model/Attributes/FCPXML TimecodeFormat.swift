@@ -2,7 +2,7 @@
 //  FCPXML TimecodeFormat.swift
 //  Pipeline Neo • https://github.com/TheAcharya/pipeline-neo
 //  © 2026 • Licensed under MIT License
-
+//
 
 //
 //	Timecode format attribute enum (DF, NDF).

@@ -2,7 +2,7 @@
 //  FCPXML Media.swift
 //  Pipeline Neo • https://github.com/TheAcharya/pipeline-neo
 //  © 2026 • Licensed under MIT License
-
+//
 
 //
 //	Media shared resource model (compound clip or multicam media).

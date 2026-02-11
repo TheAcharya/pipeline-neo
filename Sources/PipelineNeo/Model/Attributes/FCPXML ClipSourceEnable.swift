@@ -2,7 +2,7 @@
 //  FCPXML ClipSourceEnable.swift
 //  Pipeline Neo • https://github.com/TheAcharya/pipeline-neo
 //  © 2026 • Licensed under MIT License
-
+//
 
 //
 //	Clip source enable attribute enum (all, audio, video).
