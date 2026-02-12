@@ -49,11 +49,11 @@ This codebase is developed using AI agents.
 - Version conversion: convert to a target version (e.g. 1.14 → 1.10), strip elements not in target DTD, validate; save as .fcpxml or .fcpxmld (bundle from 1.10+).
 - Per-version DTD validation against a chosen version or the document’s declared version.
 - Media extraction and copy: extract asset/locator URLs, copy to a directory with deduplication; sync and async.
-- Timeline and export: build Timeline, export to FCPXML string or .fcpxmld bundle (optional media copy).
+- Timeline and export: build `Timeline`, export to FCPXML string or .fcpxmld bundle (optional media copy).
 - Timeline manipulation: ripple insert (shifts subsequent clips), auto lane assignment, clip queries (by lane, time range, asset ID), lane range computation.
-- Timeline metadata: markers, chapter markers, keywords, ratings, custom metadata on timeline and clips; timestamps (createdAt, modifiedAt).
-- TimelineFormat enhancements: presets (hd720p, dci4K, hd1080i, hd720i), computed properties (aspectRatio, isHD, isUHD, interlaced).
-- MIME type detection: detect MIME types from URLs using UTType and AVFoundation (video/audio/image formats).
+- Timeline metadata: markers, chapter markers, keywords, ratings, custom metadata on timeline and clips; timestamps (`createdAt`, `modifiedAt`).
+- TimelineFormat enhancements: presets (`hd720p`, `dci4K`, `hd1080i`, `hd720i`), computed properties (`aspectRatio`, `isHD`, `isUHD`, `interlaced`).
+- MIME type detection: detect MIME types from URLs using `UTType` and `AVFoundation` (video/audio/image formats).
 - Asset validation: validate asset existence and MIME type compatibility with lanes (negative = audio only, non-negative = video/image/audio).
 - Silence detection: detect silence at start/end of audio files (configurable threshold and minimum duration).
 - Asset duration measurement: measure actual duration from AVFoundation (audio/video/images).
