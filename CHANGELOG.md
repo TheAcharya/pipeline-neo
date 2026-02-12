@@ -18,6 +18,7 @@
 - TimelineFormat enhancements: presets (hd720p, dci4K, hd1080i, hd720i), computed properties (aspectRatio, isHD, isUHD, isDCI4K, isStandard4K, is1080p, is720p, interlaced)
 - TimelineError: expanded with `assetNotFound`, `invalidFormat`, `invalidAssetReference` cases
 - Test suite: 320 tests (added TimelineManipulationTests, FCPXMLTimecodeTests, MIMETypeDetectionTests, AssetValidationTests, SilenceDetectionTests, AssetDurationMeasurementTests, ParallelFileIOTests)
+- Added CodeQL workflow
 - Documentation: comprehensive Manual.md update with all APIs and examples, Tests README updated
 
 ---
