@@ -51,9 +51,77 @@ final class TimelineExportValidationTests: XCTestCase {
         let hd = TimelineFormat.hd1080p(frameDuration: fd, colorSpace: .rec709)
         XCTAssertEqual(hd.width, 1920)
         XCTAssertEqual(hd.height, 1080)
+        XCTAssertFalse(hd.interlaced)
+        XCTAssertTrue(hd.isHD)
+        XCTAssertTrue(hd.is1080p)
+        XCTAssertFalse(hd.isUHD)
+        
         let uhd = TimelineFormat.uhd4K(frameDuration: fd, colorSpace: .rec2020)
         XCTAssertEqual(uhd.width, 3840)
         XCTAssertEqual(uhd.height, 2160)
+        XCTAssertTrue(uhd.isUHD)
+        XCTAssertTrue(uhd.isStandard4K)
+        XCTAssertFalse(uhd.isDCI4K)
+        
+        let dci = TimelineFormat.dci4K(frameDuration: fd, colorSpace: .rec2020)
+        XCTAssertEqual(dci.width, 4096)
+        XCTAssertEqual(dci.height, 2160)
+        XCTAssertTrue(dci.isUHD)
+        XCTAssertTrue(dci.isDCI4K)
+        XCTAssertFalse(dci.isStandard4K)
+        
+        let hd720 = TimelineFormat.hd720p(frameDuration: fd, colorSpace: .rec709)
+        XCTAssertEqual(hd720.width, 1280)
+        XCTAssertEqual(hd720.height, 720)
+        XCTAssertTrue(hd720.isHD)
+        XCTAssertTrue(hd720.is720p)
+        
+        let hd1080i = TimelineFormat.hd1080i(frameDuration: fd, colorSpace: .rec709)
+        XCTAssertTrue(hd1080i.interlaced)
+        XCTAssertEqual(hd1080i.width, 1920)
+        XCTAssertEqual(hd1080i.height, 1080)
+    }
+    
+    func testTimelineFormatComputedProperties() {
+        let fd = CMTime(value: 1001, timescale: 24000)
+        let format = TimelineFormat.hd1080p(frameDuration: fd)
+        
+        // Aspect ratio
+        XCTAssertEqual(format.aspectRatio, 1920.0 / 1080.0, accuracy: 0.001)
+        
+        // Resolution checks
+        XCTAssertTrue(format.isHD)
+        XCTAssertTrue(format.is1080p)
+        XCTAssertFalse(format.is720p)
+        XCTAssertFalse(format.isUHD)
+        XCTAssertFalse(format.interlaced)
+    }
+    
+    func testTimelineFormatEquality() {
+        let fd = CMTime(value: 1001, timescale: 24000)
+        let format1 = TimelineFormat.hd1080p(frameDuration: fd)
+        let format2 = TimelineFormat.hd1080p(frameDuration: fd)
+        let format3 = TimelineFormat.hd1080p(frameDuration: fd, colorSpace: .rec2020)
+        let format4 = TimelineFormat.hd1080i(frameDuration: fd)
+        
+        XCTAssertEqual(format1, format2)
+        XCTAssertNotEqual(format1, format3) // Different color space
+        XCTAssertNotEqual(format1, format4) // Different interlaced
+    }
+    
+    func testTimelineFormatHelpersOnTimeline() {
+        let timeline = Timeline(name: "Test")
+        XCTAssertFalse(timeline.isHD)
+        XCTAssertFalse(timeline.isUHD)
+        XCTAssertEqual(timeline.aspectRatio, 0)
+        
+        let fd = CMTime(value: 1001, timescale: 24000)
+        let format = TimelineFormat.hd1080p(frameDuration: fd)
+        let timelineWithFormat = Timeline(name: "Test", format: format)
+        
+        XCTAssertTrue(timelineWithFormat.isHD)
+        XCTAssertFalse(timelineWithFormat.isUHD)
+        XCTAssertEqual(timelineWithFormat.aspectRatio, 1920.0 / 1080.0, accuracy: 0.001)
     }
 
     // MARK: - FCPXMLExporter

@@ -12,6 +12,7 @@ Complete manual and usage guide for Pipeline Neo, a Swift 6 framework for Final 
    - [Loading from file or bundle](#31-loading-from-file-or-bundle)
    - [Basic FCPXML operations with modular architecture](#32-basic-fcpxml-operations-with-modular-architecture)
    - [Time conversions with SwiftTimecode](#33-time-conversions-with-swifttimecode)
+   - [FCPXMLTimecode: Custom timecode type](#33b-fcpxmltimecode-custom-timecode-type)
    - [Optional logging](#34-optional-logging)
    - [Working with modular XML operations](#35-working-with-modular-xml-operations)
    - [Error handling with modular components](#36-error-handling-with-modular-components)
@@ -29,6 +30,13 @@ Complete manual and usage guide for Pipeline Neo, a Swift 6 framework for Final 
    - [Element extraction (presets and scope)](#317-element-extraction-presets-and-scope)
    - [Media extraction and copy](#318-media-extraction-and-copy)
    - [Timeline and export API](#319-timeline-and-export-api)
+   - [Timeline manipulation: Ripple insert and auto lane](#319b-timeline-manipulation-ripple-insert-and-auto-lane)
+   - [Timeline metadata and timestamps](#319c-timeline-metadata-and-timestamps)
+   - [MIME type detection](#319d-mime-type-detection)
+   - [Asset validation](#319e-asset-validation)
+   - [Silence detection](#319f-silence-detection)
+   - [Asset duration measurement](#319g-asset-duration-measurement)
+   - [Parallel file I/O](#319h-parallel-file-io)
    - [XMLDocument extension API](#320-xmldocument-extension-api)
    - [XMLElement extension API](#321-xmlelement-extension-api)
    - [FinalCutPro.FCPXML model](#322-finalcutprofcpxml-model)
@@ -41,6 +49,8 @@ Complete manual and usage guide for Pipeline Neo, a Swift 6 framework for Final 
    - [Work with clips](#44-work-with-clips)
    - [Display clip duration](#45-display-clip-duration)
    - [Save FCPXML file](#46-save-fcpxml-file)
+   - [Complete timeline workflow](#47-complete-timeline-workflow)
+   - [Validate assets before export](#48-validate-assets-before-export)
 
 ---
 
@@ -48,7 +58,22 @@ Complete manual and usage guide for Pipeline Neo, a Swift 6 framework for Final 
 
 Pipeline Neo provides a comprehensive API for parsing, creating, and manipulating FCPXML files with advanced timecode operations, async/await patterns, and robust error handling. The framework is protocol-oriented: you inject parsers, timecode converters, document managers, and error handlers to build a pipeline that fits your app. All major operations are available both synchronously and asynchronously.
 
-Main entry points: FCPXMLService (orchestrates parse, validate, create document, time conversion, filter, save); ModularUtilities (createPipeline, createCustomPipeline, processFCPXML, processMultipleFCPXML, validateDocument, convertTimecodes); FCPXMLFileLoader (resolveFCPXMLFileURL, loadData, loadDocument, loadFCPXMLDocument, load async); FCPXMLValidator and FCPXMLDTDValidator (structural and DTD validation); FCPXMLExporter and FCPXMLBundleExporter (Timeline and FCPXMLExportAsset to FCPXML string or .fcpxmld bundle). Element extraction: FCPXMLExtractionPreset, FinalCutPro.FCPXML.ExtractionScope, extract(types:scope:) and extract(preset:scope:) on FCPXMLElement (async); built-in presets include Captions, Markers, Roles, FrameData. Protocols: FCPXMLParsing, TimecodeConversion, XMLDocumentOperations, ErrorHandling, PipelineLogger. Default implementations: FCPXMLParser, TimecodeConverter, XMLDocumentManager, ErrorHandler, NoOpPipelineLogger, PrintPipelineLogger, FilePipelineLogger. Log levels: PipelineLogLevel (trace, debug, info, notice, warning, error, critical). Extensions on XMLDocument and XMLElement provide fcpx* properties and methods; use the modular overloads (e.g. addResource(_:using: documentManager)) when injecting dependencies. FinalCutPro.FCPXML wraps a document for high-level access (root, version, allEvents, allProjects).
+**Main entry points:**
+- **FCPXMLService** — Orchestrates parse, validate, create document, time conversion, filter, save
+- **ModularUtilities** — Helper functions: `createPipeline`, `createCustomPipeline`, `processFCPXML`, `processMultipleFCPXML`, `validateDocument`, `convertTimecodes`
+- **FCPXMLFileLoader** — Loads `.fcpxml` files and `.fcpxmld` bundles
+- **FCPXMLValidator** and **FCPXMLDTDValidator** — Structural and DTD validation
+- **FCPXMLExporter** and **FCPXMLBundleExporter** — Export Timeline to FCPXML string or `.fcpxmld` bundle
+
+**Protocols:** `FCPXMLParsing`, `TimecodeConversion`, `XMLDocumentOperations`, `ErrorHandling`, `PipelineLogger`, `MIMETypeDetection`, `AssetValidation`, `SilenceDetection`, `AssetDurationMeasurement`, `ParallelFileIO`, `CutDetection`, `MediaExtraction`
+
+**Default implementations:** `FCPXMLParser`, `TimecodeConverter`, `XMLDocumentManager`, `ErrorHandler`, `MIMETypeDetector`, `AssetValidator`, `SilenceDetector`, `AssetDurationMeasurer`, `ParallelFileIOExecutor`, `CutDetector`, `MediaExtractor`, `NoOpPipelineLogger`, `PrintPipelineLogger`, `FilePipelineLogger`
+
+**Log levels:** `PipelineLogLevel` (trace, debug, info, notice, warning, error, critical)
+
+**Extensions:** `XMLDocument` and `XMLElement` provide `fcpx*` properties and methods; use modular overloads (e.g. `addResource(_:using: documentManager)`) when injecting dependencies.
+
+**High-level model:** `FinalCutPro.FCPXML` wraps a document for high-level access (root, version, allEvents, allProjects).
 
 This manual covers usage patterns, code examples, and practical workflows. For project overview, installation, and architecture, see the main [README](../README.md).
 
@@ -56,7 +81,7 @@ This manual covers usage patterns, code examples, and practical workflows. For p
 
 ## 2. API and documentation
 
-API design and preferred naming (e.g. verb-based: load(from:), parse(_:), export(timeline:...), validate(_:)) are documented in the main README.
+API design and preferred naming (e.g. verb-based: `load(from:)`, `parse(_:)`, `export(timeline:...)`, `validate(_:)`) are documented in the main README.
 
 ---
 
@@ -68,9 +93,25 @@ Use `FCPXMLFileLoader` for any load from disk (single `.fcpxml` or `.fcpxmld` bu
 
 ```swift
 let loader = FCPXMLFileLoader()
-let document = try await loader.load(from: url)  // async
-// or sync:
+
+// Async load (preferred for I/O)
+let document = try await loader.load(from: url)
+
+// Or sync:
 let document = try loader.loadDocument(from: url)
+```
+
+**Example: Loading a bundle**
+
+```swift
+let bundleURL = URL(fileURLWithPath: "/path/to/Project.fcpxmld")
+let loader = FCPXMLFileLoader()
+
+// Resolve URL (for .fcpxmld returns bundle/Info.fcpxml)
+let fileURL = try loader.resolveFCPXMLFileURL(from: bundleURL)
+
+// Load with FCPXML options (preserve whitespace, pretty print)
+let document = try await loader.load(from: bundleURL)
 ```
 
 ### 3.2 Basic FCPXML operations with modular architecture
@@ -87,13 +128,13 @@ let customService = ModularUtilities.createCustomPipeline(
     timecodeConverter: TimecodeConverter(),
     documentManager: XMLDocumentManager(),
     errorHandler: ErrorHandler(),
-    logger: NoOpPipelineLogger()  // or PrintPipelineLogger(minimumLevel: .info)
+    logger: PrintPipelineLogger(minimumLevel: .info)
 )
 
 // Create a new FCPXML document
 let document = service.createFCPXMLDocument(version: "1.10")
 
-// Add resources and sequences using modular operations (documentManager from XMLDocumentManager())
+// Add resources and sequences using modular operations
 let documentManager = XMLDocumentManager()
 let resource = XMLElement(name: "asset")
 resource.setAttribute(name: "id", value: "asset1", using: documentManager)
@@ -131,6 +172,65 @@ let frameDuration = CMTime(value: 1, timescale: 24)
 let conformed = cmTime.conformed(toFrameDuration: frameDuration, using: timecodeConverter)
 let fcpxmlTime = cmTime.fcpxmlTime(using: timecodeConverter)
 ```
+
+### 3.3b FCPXMLTimecode: Custom timecode type
+
+Pipeline Neo provides `FCPXMLTimecode`, a custom timecode type optimized for FCPXML operations. It wraps SwiftTimecode's `Fraction` type and provides convenient FCPXML-specific operations.
+
+```swift
+import PipelineNeo
+
+// Create from seconds
+let fiveSeconds = FCPXMLTimecode(seconds: 5.0)
+print(fiveSeconds.fcpxmlString) // "5s"
+
+// Create from rational value (value/timescale)
+let oneFrame = FCPXMLTimecode(value: 1001, timescale: 30000)
+print(oneFrame.fcpxmlString) // "1001/30000s"
+
+// Create from CMTime
+let cmTime = CMTime(value: 1001, timescale: 30000)
+let timecode = FCPXMLTimecode(cmTime: cmTime)
+
+// Create from frames and frame rate
+let tenFrames = FCPXMLTimecode(frames: 10, frameRate: .fps24)
+print(tenFrames.seconds) // Approximately 0.4167 seconds
+
+// Parse from FCPXML string
+let parsed = FCPXMLTimecode(fcpxmlString: "1001/30000s")
+print(parsed?.value) // 1001
+print(parsed?.timescale) // 30000
+
+// Arithmetic operations
+let clip1Duration = FCPXMLTimecode(seconds: 5.0)
+let clip2Duration = FCPXMLTimecode(seconds: 3.0)
+let totalDuration = clip1Duration + clip2Duration
+print(totalDuration.seconds) // 8.0
+
+let doubled = clip1Duration * 2
+print(doubled.seconds) // 10.0
+
+// Comparison
+let time1 = FCPXMLTimecode(seconds: 5.0)
+let time2 = FCPXMLTimecode(seconds: 3.0)
+print(time1 > time2) // true
+
+// Convert to CMTime
+let cmTime = timecode.toCMTime()
+
+// Frame alignment
+let aligned = FCPXMLTimecode.frameAligned(seconds: 0.6, frameRate: .fps24)
+// Rounds to nearest frame boundary
+
+let alignedTimecode = timecode.aligned(to: .fps24)
+// Aligns existing timecode to frame boundaries
+```
+
+**Use cases:**
+- Working with FCPXML time strings directly
+- Frame-accurate time calculations
+- Converting between different time representations
+- Frame alignment for FCPXML export
 
 ### 3.4 Optional logging
 
@@ -262,7 +362,7 @@ let timecode = await service.timecode(from: time, frameRate: frameRate)
 // Asynchronously create and manipulate documents
 let newDocument = await service.createFCPXMLDocument(version: "1.10")
 let documentManager = XMLDocumentManager()
-newDocument.addResource(resource, using: documentManager)  // addResource is on XMLDocument extension
+newDocument.addResource(resource, using: documentManager)
 try await service.saveDocument(newDocument, to: outputURL)
 
 // Asynchronously filter elements
@@ -359,7 +459,7 @@ let isValid = document.isValid(using: parser)
 
 ### 3.12 File loader API
 
-FCPXMLFileLoader supports .fcpxml (single file) and .fcpxmld (bundle). Resolve the URL first for bundles (returns Info.fcpxml inside the bundle). Then load data, document, or FCPXML-optioned document. Prefer async load(from:) for I/O.
+FCPXMLFileLoader supports `.fcpxml` (single file) and `.fcpxmld` (bundle). Resolve the URL first for bundles (returns Info.fcpxml inside the bundle). Then load data, document, or FCPXML-optioned document. Prefer async `load(from:)` for I/O.
 
 ```swift
 let loader = FCPXMLFileLoader()
@@ -382,7 +482,7 @@ let document = try await loader.load(from: url)
 
 ### 3.13 FCPXML version and element types
 
-Use FCPXMLVersion for document version (1.5–1.14). Use FCPXMLElementType for typed filtering of elements (every DTD element is represented). `FCPXMLVersion.supportsBundleFormat` is `true` for 1.10 and later (`.fcpxmld` bundle); 1.5–1.9 support only single-file `.fcpxml`.
+Use `FCPXMLVersion` for document version (1.5–1.14). Use `FCPXMLElementType` for typed filtering of elements (every DTD element is represented). `FCPXMLVersion.supportsBundleFormat` is `true` for 1.10 and later (`.fcpxmld` bundle); 1.5–1.9 support only single-file `.fcpxml`.
 
 ```swift
 // Version: create documents or validate
@@ -399,7 +499,7 @@ let elementType = someElement.fcpxType  // FCPXMLElementType from XMLElement ext
 
 ### 3.14 Validation API
 
-FCPXMLValidator performs semantic validation (root, resources, ref resolution). Refs are resolved against all element IDs in the document (including e.g. `text-style-def` inside titles/captions), not only top-level resources. FCPXMLDTDValidator validates against the DTD for a given version. FCPXMLService provides per-version DTD validation: validateDocumentAgainstDTD(_:version:) validates against a specific FCPXML version (1.5–1.14); validateDocumentAgainstDeclaredVersion(_:) reads the document’s root version attribute and validates against that DTD (returns errors if version is missing or unsupported). For a single robust check combining both, use performValidation(_:) which returns a DocumentValidationReport (semantic + DTD; report.isValid is true only when both pass). All return or use ValidationResult (errors, warnings, isValid).
+FCPXMLValidator performs semantic validation (root, resources, ref resolution). Refs are resolved against all element IDs in the document (including e.g. `text-style-def` inside titles/captions), not only top-level resources. FCPXMLDTDValidator validates against the DTD for a given version. FCPXMLService provides per-version DTD validation: `validateDocumentAgainstDTD(_:version:)` validates against a specific FCPXML version (1.5–1.14); `validateDocumentAgainstDeclaredVersion(_:)` reads the document's root version attribute and validates against that DTD (returns errors if version is missing or unsupported). For a single robust check combining both, use `performValidation(_:)` which returns a `DocumentValidationReport` (semantic + DTD; `report.isValid` is true only when both pass). All return or use `ValidationResult` (errors, warnings, isValid).
 
 ```swift
 // Structural and reference validation
@@ -444,7 +544,7 @@ for point in result.editPoints {
 
 ### 3.16 Version conversion and save
 
-Convert an FCPXML document to a target format version (e.g. 1.14 → 1.10), then save as a single **.fcpxml** file or as a **.fcpxmld** bundle. Conversion (FCPXMLVersionConverter) sets the root `version` attribute and **automatically removes elements not in the target version’s DTD** (e.g. adjust-colorConform, adjust-stereo-3D), similar to Capacitor, so the output validates and imports in Final Cut Pro. Saving as a bundle is only supported when the document version is **1.10 or higher**; otherwise `FCPXMLBundleExportError.bundleRequiresVersion1_10OrHigher` is thrown.
+Convert an FCPXML document to a target format version (e.g. 1.14 → 1.10), then save as a single **.fcpxml** file or as a **.fcpxmld** bundle. Conversion (FCPXMLVersionConverter) sets the root `version` attribute and **automatically removes elements not in the target version's DTD** (e.g. adjust-colorConform, adjust-stereo-3D), similar to Capacitor, so the output validates and imports in Final Cut Pro. Saving as a bundle is only supported when the document version is **1.10 or higher**; otherwise `FCPXMLBundleExportError.bundleRequiresVersion1_10OrHigher` is thrown.
 
 ```swift
 let service = ModularUtilities.createPipeline()
@@ -475,7 +575,7 @@ The package includes an experimental command-line tool, `pipeline-neo`, for insp
 - **--check-version** — Load the FCPXML at the given path and print its document version. Does not require an output directory.
 - **--convert-version &lt;VERSION&gt;** — Load the FCPXML, convert to the target version (1.5–1.14) with automatic element stripping and DTD validation, and save to the output directory. Output format is controlled by **--extension-type**: default is **.fcpxmld** (bundle) for target versions 1.10 and higher; for target versions 1.5–1.9 the output is always **.fcpxml** (single file), since the bundle format is not supported for those versions. Fails if the converted document does not pass DTD validation.
 - **--extension-type &lt;fcpxml|fcpxmld&gt;** — Output format for `--convert-version`: `fcpxmld` (bundle, default) or `fcpxml` (single file). For target versions 1.5–1.9, `.fcpxml` is always used regardless of this option.
-- **--validate** — Load the FCPXML or FCPXMLD at the given path and perform robust validation: semantic (root, resources, ref resolution) and DTD (against the document’s declared version). Shows a progress indicator when not using `--quiet`. Prints a summary and, if invalid, full error/warning details. Does not require an output directory. Exits with a non-zero code when validation fails.
+- **--validate** — Load the FCPXML or FCPXMLD at the given path and perform robust validation: semantic (root, resources, ref resolution) and DTD (against the document's declared version). Shows a progress indicator when not using `--quiet`. Prints a summary and, if invalid, full error/warning details. Does not require an output directory. Exits with a non-zero code when validation fails.
 - **--media-copy** — Load the FCPXML or FCPXMLD at the given path, scan for all referenced media (asset media-rep and locator file URLs), and copy those files to the output directory. Shows a progress bar when not using `--quiet`. Reports how many media files were detected by type (video, audio, images) and prints a success message when copying completes. Prints each destination path to stdout; prints "Media detected: X video, Y audio, Z images (N total)" and "Successfully copied N media file(s) to &lt;path&gt;" (or errors) to stderr. Exits with an error if any copy failed.
 
 **Log options:**
@@ -495,7 +595,7 @@ For full CLI usage, options, and how to extend it, see [PipelineNeoCLI/README.md
 
 ### 3.17 Element extraction (presets and scope)
 
-Extract elements from an FCPXML tree by type or using presets. Use `FinalCutPro.FCPXML.ExtractionScope` to control scope (e.g. `.mainTimeline`); you can constrain to a local timeline, set max container depth, filter auditions/multicam angles, and include or exclude element types. **FCPXMLExtractionPreset** defines a preset that returns typed results; built-in presets include **CaptionsExtractionPreset**, **MarkersExtractionPreset**, **RolesExtractionPreset**, and **FrameDataPreset**. Call `extract(types:scope:)` on an `FCPXMLElement` (or `fcpExtract(types:scope:)` on `XMLElement`) to get `[FinalCutPro.FCPXML.ExtractedElement]`; call `extract(preset:scope:)` to get a preset’s result type. These APIs are async.
+Extract elements from an FCPXML tree by type or using presets. Use `FinalCutPro.FCPXML.ExtractionScope` to control scope (e.g. `.mainTimeline`); you can constrain to a local timeline, set max container depth, filter auditions/multicam angles, and include or exclude element types. **FCPXMLExtractionPreset** defines a preset that returns typed results; built-in presets include **CaptionsExtractionPreset**, **MarkersExtractionPreset**, **RolesExtractionPreset**, and **FrameDataPreset**. Call `extract(types:scope:)` on an `FCPXMLElement` (or `fcpExtract(types:scope:)` on `XMLElement`) to get `[FinalCutPro.FCPXML.ExtractedElement]`; call `extract(preset:scope:)` to get a preset's result type. These APIs are async.
 
 ```swift
 let element: FCPXMLElement = // ... e.g. from document
@@ -516,7 +616,7 @@ let markersResult = await element.extract(
 
 ### 3.18 Media extraction and copy
 
-Extract media references (asset `<media-rep>` `src` and `<locator>` `url`) from an FCPXML document, and optionally copy referenced file URLs to a destination directory. Use `extractMediaReferences(from:baseURL:)` to get a list of references; pass `baseURL` (e.g. the document or bundle URL) to resolve relative paths. Use `copyReferencedMedia(from:to:baseURL:progress:)` to copy only file URLs into a folder; pass an optional ``ProgressReporter`` (e.g. ``ProgressBar``) for CLI-style progress. Sources are deduplicated and destination filenames are uniquified on conflict. Results: `MediaExtractionResult` (references, baseURL, fileReferences) and `MediaCopyResult` (entries: copied, skipped, failed). Both sync and async APIs are available on `FCPXMLService` and `FCPXMLUtility`.
+Extract media references (asset `<media-rep>` `src` and `<locator>` `url`) from an FCPXML document, and optionally copy referenced file URLs to a destination directory. Use `extractMediaReferences(from:baseURL:)` to get a list of references; pass `baseURL` (e.g. the document or bundle URL) to resolve relative paths. Use `copyReferencedMedia(from:to:baseURL:progress:)` to copy only file URLs into a folder; pass an optional `ProgressReporter` (e.g. `ProgressBar`) for CLI-style progress. Sources are deduplicated and destination filenames are uniquified on conflict. Results: `MediaExtractionResult` (references, baseURL, fileReferences) and `MediaCopyResult` (entries: copied, skipped, failed). Both sync and async APIs are available on `FCPXMLService` and `FCPXMLUtility`.
 
 ```swift
 let service = ModularUtilities.createPipeline()
@@ -580,28 +680,580 @@ let bundleURL = try bundleExporter.exportBundle(
 )
 ```
 
+### 3.19b Timeline manipulation: Ripple insert and auto lane
+
+Pipeline Neo provides advanced timeline manipulation features for inserting clips with automatic shifting (ripple insert) and automatic lane assignment.
+
+**Ripple Insert**
+
+When inserting a clip, subsequent clips can be automatically shifted forward:
+
+```swift
+var timeline = Timeline(name: "My Timeline")
+
+// Add initial clips
+let clip1 = TimelineClip(
+    assetRef: "r1",
+    offset: CMTime(value: 0, timescale: 1),
+    duration: CMTime(value: 10, timescale: 1),
+    lane: 0
+)
+let clip2 = TimelineClip(
+    assetRef: "r2",
+    offset: CMTime(value: 10, timescale: 1),
+    duration: CMTime(value: 10, timescale: 1),
+    lane: 0
+)
+timeline.clips = [clip1, clip2]
+
+// Insert a new clip at 5 seconds with ripple (shifts clip2 forward)
+let newClip = TimelineClip(
+    assetRef: "r3",
+    offset: .zero,
+    duration: CMTime(value: 5, timescale: 1),
+    lane: 0
+)
+
+// Immutable version (returns new timeline)
+let (updatedTimeline, result) = timeline.insertingClipWithRipple(
+    newClip,
+    at: CMTime(value: 5, timescale: 1),
+    lane: 0,
+    rippleLanes: .primaryOnly  // Only shift clips on lane 0
+)
+
+// Or mutating version
+timeline.insertClipWithRipple(
+    newClip,
+    at: CMTime(value: 5, timescale: 1),
+    lane: 0,
+    rippleLanes: .primaryOnly
+)
+
+// Result contains information about shifted clips
+print("Inserted clip at: \(result.insertedClip.offset)")
+print("Shifted \(result.shiftedClips.count) clips")
+for shift in result.shiftedClips {
+    print("Clip at index \(shift.clipIndex) moved from \(shift.originalOffset) to \(shift.newOffset)")
+}
+```
+
+**Ripple Lane Options:**
+
+- `.all` — Ripple all lanes
+- `.single(Int)` — Ripple only a specific lane
+- `.range(ClosedRange<Int>)` — Ripple a range of lanes
+- `.primaryOnly` — Ripple only lane 0 (default)
+
+**Auto Lane Assignment**
+
+Automatically find an available lane when inserting a clip:
+
+```swift
+var timeline = Timeline(name: "My Timeline")
+
+// Add a clip on lane 0
+let clip1 = TimelineClip(
+    assetRef: "r1",
+    offset: CMTime(value: 0, timescale: 1),
+    duration: CMTime(value: 10, timescale: 1),
+    lane: 0
+)
+timeline.clips = [clip1]
+
+// Try to insert at the same time on lane 0
+let newClip = TimelineClip(
+    assetRef: "r2",
+    offset: .zero,
+    duration: CMTime(value: 5, timescale: 1),
+    lane: 0
+)
+
+// Immutable version (returns new timeline and placement)
+let (updatedTimeline, placement) = try timeline.insertingClipAutoLane(
+    newClip,
+    at: CMTime(value: 0, timescale: 1),
+    preferredLane: 0,
+    autoAssignLane: true  // Automatically assign lane 1 if lane 0 is occupied
+)
+
+// Or mutating version
+try timeline.insertClipAutoLane(
+    newClip,
+    at: CMTime(value: 0, timescale: 1),
+    preferredLane: 0,
+    autoAssignLane: true
+)
+
+print("Clip placed on lane: \(placement.lane)")
+
+// Find available lane manually
+let availableLane = timeline.findAvailableLane(
+    at: CMTime(value: 0, timescale: 1),
+    duration: CMTime(value: 5, timescale: 1),
+    startingFrom: 0
+)
+```
+
+**Clip Queries**
+
+Query clips by various criteria:
+
+```swift
+let timeline = Timeline(name: "My Timeline", clips: clips)
+
+// Get all clips on a specific lane
+let lane0Clips = timeline.clips(onLane: 0)
+
+// Get clips in a time range
+let clipsInRange = timeline.clips(
+    inRange: start: CMTime(value: 10, timescale: 1),
+    end: CMTime(value: 20, timescale: 1)
+)
+
+// Get clips referencing a specific asset
+let assetClips = timeline.clips(withAssetRef: "r1")
+
+// Get lane range (min and max lanes used)
+if let laneRange = timeline.laneRange {
+    print("Lanes used: \(laneRange.lowerBound) to \(laneRange.upperBound)")
+}
+```
+
+### 3.19c Timeline metadata and timestamps
+
+Timelines support rich metadata and track creation/modification times.
+
+**Timestamps**
+
+```swift
+// Create timeline with automatic timestamps
+var timeline = Timeline(name: "My Timeline")
+print("Created: \(timeline.createdAt)")
+print("Modified: \(timeline.modifiedAt)")
+
+// Create with custom timestamps
+let createdAt = Date(timeIntervalSince1970: 1000)
+let timeline2 = Timeline(
+    name: "My Timeline",
+    createdAt: createdAt,
+    modifiedAt: createdAt
+)
+
+// Timestamps are automatically updated on mutations
+timeline.addMarker(Marker(start: CMTime(value: 5, timescale: 1), value: "Marker"))
+// modifiedAt is now updated to current time
+```
+
+**Metadata**
+
+```swift
+var timeline = Timeline(name: "My Timeline")
+
+// Add markers
+let marker = Marker(start: CMTime(value: 5, timescale: 1), value: "Important moment")
+timeline.addMarker(marker)
+
+// Add chapter markers
+let chapter = ChapterMarker(start: CMTime(value: 0, timescale: 1), value: "Chapter 1")
+timeline.addChapterMarker(chapter)
+
+// Add keywords
+let keyword = Keyword(
+    start: CMTime(value: 0, timescale: 1),
+    duration: CMTime(value: 10, timescale: 1),
+    value: "Action"
+)
+timeline.addKeyword(keyword)
+
+// Add ratings
+let rating = Rating(
+    start: CMTime(value: 0, timescale: 1),
+    duration: CMTime(value: 10, timescale: 1),
+    value: .favorite
+)
+timeline.addRating(rating)
+
+// Add custom metadata
+var metadata = Metadata()
+metadata.setCameraName("Camera A")
+metadata.setScene("Scene 1")
+timeline.metadata = metadata
+
+// Get sorted metadata
+let sortedMarkers = timeline.sortedMarkers
+let sortedChapters = timeline.sortedChapterMarkers
+```
+
+**Clip Metadata**
+
+Clips also support metadata:
+
+```swift
+var clip = TimelineClip(
+    assetRef: "r1",
+    offset: .zero,
+    duration: CMTime(value: 10, timescale: 1),
+    lane: 0
+)
+
+// Add markers to clip
+clip.addMarker(Marker(start: CMTime(value: 2, timescale: 1), value: "Clip marker"))
+
+// Add keywords, ratings, etc.
+clip.addKeyword(keyword)
+clip.addRating(rating)
+```
+
+### 3.19d MIME type detection
+
+Pipeline Neo provides comprehensive MIME type detection using UTType and AVFoundation.
+
+```swift
+import PipelineNeo
+
+let detector = MIMETypeDetector()
+
+// Detect MIME type synchronously
+let url = URL(fileURLWithPath: "/path/to/video.mp4")
+let mimeType = detector.detectMIMETypeSync(at: url)
+print(mimeType) // "video/mp4"
+
+// Detect MIME type asynchronously (uses AVFoundation for media files)
+let mimeTypeAsync = await detector.detectMIMEType(at: url)
+
+// Supported formats:
+// Video: mp4, mov, avi, mkv, mpg, mpeg, webm, flv
+// Audio: mp3, m4a, aac, wav, aiff, caf, flac, ogg, opus
+// Image: jpg, jpeg, png, gif, tiff, heic, heif, webp, bmp, svg
+```
+
+**Custom MIME Type Detector**
+
+```swift
+// Create custom detector implementing MIMETypeDetection protocol
+struct CustomMIMEDetector: MIMETypeDetection {
+    func detectMIMEType(at url: URL) async -> String? {
+        // Custom detection logic
+        return "custom/type"
+    }
+}
+
+let customDetector = CustomMIMEDetector()
+let mimeType = await customDetector.detectMIMEType(at: url)
+```
+
+### 3.19e Asset validation
+
+Validate assets for existence and MIME type compatibility with lanes.
+
+```swift
+import PipelineNeo
+
+let validator = AssetValidator()
+
+// Validate asset for a specific lane
+let url = URL(fileURLWithPath: "/path/to/audio.mp3")
+let result = await validator.validateAsset(
+    at: url,
+    forLane: -1,  // Negative lanes = audio only
+    mimeTypeDetector: nil  // Uses default MIMETypeDetector
+)
+
+if result.isValid {
+    print("Asset is valid: \(result.mimeType ?? "unknown")")
+} else {
+    print("Validation failed: \(result.reason ?? "unknown error")")
+}
+
+// Lane compatibility rules:
+// - Negative lanes (< 0): Must be audio/* MIME type
+// - Non-negative lanes (>= 0): Can be video/*, image/*, or audio/*
+```
+
+**TimelineClip Integration**
+
+```swift
+var clip = TimelineClip(
+    assetRef: "r1",
+    offset: .zero,
+    duration: CMTime(value: 10, timescale: 1),
+    lane: -1  // Audio lane
+)
+
+let audioURL = URL(fileURLWithPath: "/path/to/audio.mp3")
+
+// Validate asset for this clip's lane
+let result = await clip.validateAsset(at: audioURL)
+if result.isValid {
+    print("Audio asset is valid for lane \(clip.lane)")
+}
+
+// Check asset type
+let isAudio = await clip.isAudioAsset(at: audioURL)
+let isVideo = await clip.isVideoAsset(at: audioURL)
+let isImage = await clip.isImageAsset(at: audioURL)
+```
+
+**Synchronous Validation**
+
+```swift
+let result = validator.validateAssetSync(
+    at: url,
+    forLane: 0,
+    mimeTypeDetector: nil
+)
+```
+
+### 3.19f Silence detection
+
+Detect silence in audio files for trimming or analysis.
+
+```swift
+import PipelineNeo
+#if canImport(AVFoundation)
+import AVFoundation
+#endif
+
+let detector = SilenceDetector()
+
+// Detect silence asynchronously
+let audioURL = URL(fileURLWithPath: "/path/to/audio.wav")
+let result = await detector.detectSilence(
+    at: audioURL,
+    threshold: -60.0,  // dB threshold (default: -60)
+    minimumDuration: 0.1  // Minimum silence duration in seconds (default: 0.1)
+)
+
+print("Silence detected: \(result.hasSilence)")
+if result.hasSilence {
+    print("Silence at start: \(result.silenceAtStart) seconds")
+    print("Silence at end: \(result.silenceAtEnd) seconds")
+    print("Total silence: \(result.totalSilenceDuration) seconds")
+}
+
+// Synchronous detection
+let syncResult = detector.detectSilenceSync(
+    at: audioURL,
+    threshold: -60.0,
+    minimumDuration: 0.1
+)
+```
+
+**Custom Silence Detector**
+
+```swift
+struct CustomSilenceDetector: SilenceDetection {
+    func detectSilence(
+        at url: URL,
+        threshold: Float,
+        minimumDuration: TimeInterval
+    ) async throws -> SilenceDetectionResult {
+        // Custom silence detection logic
+        return SilenceDetectionResult(
+            hasSilence: false,
+            silenceAtStart: 0,
+            silenceAtEnd: 0,
+            totalSilenceDuration: 0
+        )
+    }
+}
+```
+
+### 3.19g Asset duration measurement
+
+Measure the actual duration of media assets (audio, video, images).
+
+```swift
+import PipelineNeo
+#if canImport(AVFoundation)
+import AVFoundation
+#endif
+
+let measurer = AssetDurationMeasurer()
+
+// Measure duration asynchronously
+let url = URL(fileURLWithPath: "/path/to/video.mov")
+let result = try await measurer.measureDuration(at: url)
+
+print("Media type: \(result.mediaType)")  // .audio, .video, .image, .unknown
+if let duration = result.duration {
+    print("Duration: \(duration) seconds")
+} else {
+    print("No duration (image or measurement failed)")
+}
+
+// Check if asset has duration
+if result.hasDuration {
+    print("Asset has measurable duration")
+}
+
+// Check if asset is an image
+if result.isImage {
+    print("Asset is a static image")
+}
+
+// Synchronous measurement
+let syncResult = try measurer.measureDurationSync(at: url)
+```
+
+**Media Types**
+
+- `.audio` — Audio media (has duration)
+- `.video` — Video media (has duration)
+- `.image` — Image media (no duration, static)
+- `.unknown` — Unknown or unsupported media type
+
+### 3.19h Parallel file I/O
+
+Perform parallel read and write operations for improved performance.
+
+```swift
+import PipelineNeo
+
+let executor = ParallelFileIOExecutor()
+
+// Write multiple files in parallel
+let filesToWrite: [(URL, Data)] = [
+    (URL(fileURLWithPath: "/path/to/file1.txt"), Data("content1".utf8)),
+    (URL(fileURLWithPath: "/path/to/file2.txt"), Data("content2".utf8)),
+    (URL(fileURLWithPath: "/path/to/file3.txt"), Data("content3".utf8))
+]
+
+let writeResult = await executor.writeFiles(filesToWrite)
+print("Written: \(writeResult.successCount)")
+print("Failed: \(writeResult.failureCount)")
+for (url, error) in writeResult.failures {
+    print("Failed to write \(url.path): \(error.localizedDescription)")
+}
+
+// Read multiple files in parallel
+let urlsToRead = [
+    URL(fileURLWithPath: "/path/to/file1.txt"),
+    URL(fileURLWithPath: "/path/to/file2.txt"),
+    URL(fileURLWithPath: "/path/to/file3.txt")
+]
+
+let readResult = await executor.readFiles(urlsToRead)
+print("Read: \(readResult.successCount)")
+print("Failed: \(readResult.failureCount)")
+for (url, data) in readResult.successes {
+    print("Read \(url.path): \(data.count) bytes")
+}
+```
+
+**Configuration**
+
+```swift
+// Configure executor
+let executor = ParallelFileIOExecutor(
+    maxConcurrentOperations: 4,  // Default: number of CPU cores
+    useFileHandleOptimization: true  // Default: true for better performance
+)
+```
+
 ### 3.20 XMLDocument extension API
 
-XMLDocument gains FCPXML-specific properties and methods: fcpxmlString, fcpxmlVersion, fcpxEventNames, fcpxEvents, fcpxResources, fcpxLibraryElement, fcpxAllProjects, fcpxAllClips; add(events:), add(resourceElements:), resource(matchingID:), remove(resourceAtIndex:); validateFCPXMLAgainst(version:); init(contentsOfFCPXML:). Use document.addResource(_:using: documentManager) and document.addSequence(_:using: documentManager) for modular add. document.isValid(using: parser) for parser validation.
+XMLDocument gains FCPXML-specific properties and methods: `fcpxmlString`, `fcpxmlVersion`, `fcpxEventNames`, `fcpxEvents`, `fcpxResources`, `fcpxLibraryElement`, `fcpxAllProjects`, `fcpxAllClips`; `add(events:)`, `add(resourceElements:)`, `resource(matchingID:)`, `remove(resourceAtIndex:)`; `validateFCPXMLAgainst(version:)`; `init(contentsOfFCPXML:)`. Use `document.addResource(_:using: documentManager)` and `document.addSequence(_:using: documentManager)` for modular add. `document.isValid(using: parser)` for parser validation.
+
+```swift
+let document = try XMLDocument(contentsOfFCPXML: url)
+
+// Access FCPXML properties
+let version = document.fcpxmlVersion
+let eventNames = document.fcpxEventNames
+let events = document.fcpxEvents
+let resources = document.fcpxResources
+
+// Add elements
+document.add(events: [newEvent])
+document.add(resourceElements: [newResource])
+
+// Find resources
+if let resource = document.resource(matchingID: "r1") {
+    // Work with resource
+}
+
+// Remove resources
+document.remove(resourceAtIndex: 0)
+
+// Validate
+try document.validateFCPXMLAgainst(version: .v1_14)
+```
 
 ### 3.21 XMLElement extension API
 
-XMLElement gains fcpxType, fcpxName, fcpxDuration, fcpxOffset, fcpxStart, fcpxRef, fcpxID, fcpxLane, fcpxRole, fcpxFormatRef, and many other typed attribute accessors; fcpxEvent(name:), fcpxProject(...), eventClips, eventClips(forResourceID:), addToEvent(items:), removeFromEvent(items:); fcpxResource, fcpxParentEvent, fcpxSequenceClips, fcpxAnnotations. Use element.setAttribute(name:value:using: documentManager) and element.getAttribute(name:using: documentManager) for modular attribute access. element.createChild(name:attributes:using: documentManager) for creating children.
+XMLElement gains `fcpxType`, `fcpxName`, `fcpxDuration`, `fcpxOffset`, `fcpxStart`, `fcpxRef`, `fcpxID`, `fcpxLane`, `fcpxRole`, `fcpxFormatRef`, and many other typed attribute accessors; `fcpxEvent(name:)`, `fcpxProject(...)`, `eventClips`, `eventClips(forResourceID:)`, `addToEvent(items:)`, `removeFromEvent(items:)`; `fcpxResource`, `fcpxParentEvent`, `fcpxSequenceClips`, `fcpxAnnotations`. Use `element.setAttribute(name:value:using: documentManager)` and `element.getAttribute(name:using: documentManager)` for modular attribute access. `element.createChild(name:attributes:using: documentManager)` for creating children.
+
+```swift
+let element: XMLElement = // ... from document
+
+// Access FCPXML attributes
+let elementType = element.fcpxType
+let name = element.fcpxName
+let duration = element.fcpxDuration
+let offset = element.fcpxOffset
+let ref = element.fcpxRef
+let id = element.fcpxID
+let lane = element.fcpxLane
+
+// Work with events
+let event = element.fcpxEvent(name: "My Event")
+let clips = event.eventClips
+let clipsForResource = event.eventClips(forResourceID: "r1")
+
+// Add/remove from events
+event.addToEvent(items: [clip])
+event.removeFromEvent(items: [clip])
+
+// Access parent/children
+let resource = element.fcpxResource
+let parentEvent = element.fcpxParentEvent
+let sequenceClips = element.fcpxSequenceClips
+```
 
 ### 3.22 FinalCutPro.FCPXML model
 
-For a high-level wrapper around the XML document, use FinalCutPro.FCPXML: init(fileContent: Data) or init(fileContent: XMLDocument); .root (Root wrapper); .version (Version); .allEvents(), .allProjects() for event and project names. Useful for quick inspection and tests.
+For a high-level wrapper around the XML document, use `FinalCutPro.FCPXML`: `init(fileContent: Data)` or `init(fileContent: XMLDocument)`; `.root` (Root wrapper); `.version` (Version); `.allEvents()`, `.allProjects()` for event and project names. Useful for quick inspection and tests.
 
 ```swift
 let data = try loader.loadData(from: url)
 let fcpxml = try FinalCutPro.FCPXML(fileContent: data)
 let eventNames = fcpxml.allEvents()
 let projectNames = fcpxml.allProjects()
+let root = fcpxml.root
+let version = fcpxml.version
 ```
 
 ### 3.23 Error types
 
-Pipeline Neo uses explicit error types: FCPXMLError (e.g. parsingFailed); FCPXMLLoadError (notAFile, readFailed); FinalCutPro.FCPXML.ParseError (general, with LocalizedError); FCPXMLExportError (missingAsset, invalidTimeline, etc.); FCPXMLBundleExportError; ValidationError and ValidationWarning (type, message, context; warning types include negativeTimeAttribute). All conform to LocalizedError where applicable. Use the ErrorHandling protocol (sync-only) and ErrorHandler to turn errors into messages, or switch on the error type in your code.
+Pipeline Neo uses explicit error types: `FCPXMLError` (e.g. `parsingFailed`); `FCPXMLLoadError` (`notAFile`, `readFailed`); `FinalCutPro.FCPXML.ParseError` (general, with `LocalizedError`); `FCPXMLExportError` (`missingAsset`, `invalidTimeline`, etc.); `FCPXMLBundleExportError`; `TimelineError` (`noAvailableLane`, `assetNotFound`, `invalidFormat`, `invalidAssetReference`); `ValidationError` and `ValidationWarning` (type, message, context; warning types include `negativeTimeAttribute`). All conform to `LocalizedError` where applicable. Use the `ErrorHandling` protocol (sync-only) and `ErrorHandler` to turn errors into messages, or switch on the error type in your code.
+
+```swift
+do {
+    let document = try service.parseFCPXML(from: url)
+} catch let error as FCPXMLError {
+    switch error {
+    case .parsingFailed(let underlyingError):
+        print("Parse failed: \(underlyingError.localizedDescription)")
+    default:
+        print("FCPXML error: \(error.localizedDescription)")
+    }
+} catch let error as TimelineError {
+    switch error {
+    case .noAvailableLane(let offset, let duration):
+        print("No lane available at \(offset) for duration \(duration)")
+    case .assetNotFound(let url):
+        print("Asset not found: \(url.path)")
+    case .invalidFormat(let reason):
+        print("Invalid format: \(reason)")
+    case .invalidAssetReference(let assetRef, let reason):
+        print("Invalid asset '\(assetRef)': \(reason)")
+    }
+} catch {
+    print("Unknown error: \(error.localizedDescription)")
+}
+```
 
 ### 3.24 Progress bar (CLI)
 
@@ -701,6 +1353,139 @@ do {
     print("Wrote FCPXML file.")
 } catch {
     print("Error writing to file.")
+}
+```
+
+### 4.7 Complete timeline workflow
+
+```swift
+import PipelineNeo
+import CoreMedia
+
+// Create timeline format
+let format = TimelineFormat.hd1080p(
+    frameDuration: CMTime(value: 1001, timescale: 24000),
+    colorSpace: .rec709
+)
+
+// Create clips
+let clip1 = TimelineClip(
+    assetRef: "r1",
+    offset: CMTime(value: 0, timescale: 1),
+    duration: CMTime(value: 10, timescale: 1),
+    start: .zero,
+    lane: 0
+)
+
+let clip2 = TimelineClip(
+    assetRef: "r2",
+    offset: CMTime(value: 10, timescale: 1),
+    duration: CMTime(value: 5, timescale: 1),
+    start: .zero,
+    lane: 0
+)
+
+// Create timeline with metadata
+var timeline = Timeline(
+    name: "My Project",
+    format: format,
+    clips: [clip1, clip2]
+)
+
+// Add markers
+timeline.addMarker(Marker(start: CMTime(value: 5, timescale: 1), value: "Marker 1"))
+timeline.addChapterMarker(ChapterMarker(start: CMTime(value: 0, timescale: 1), value: "Chapter 1"))
+
+// Insert clip with ripple
+let newClip = TimelineClip(
+    assetRef: "r3",
+    offset: .zero,
+    duration: CMTime(value: 3, timescale: 1),
+    lane: 0
+)
+let (updatedTimeline, result) = timeline.insertingClipWithRipple(
+    newClip,
+    at: CMTime(value: 5, timescale: 1),
+    lane: 0
+)
+print("Shifted \(result.shiftedClips.count) clips")
+
+// Create export assets
+let assets = [
+    FCPXMLExportAsset(
+        id: "r1",
+        name: "Clip 1",
+        src: URL(fileURLWithPath: "/path/to/clip1.mov"),
+        duration: CMTime(value: 10, timescale: 1),
+        hasVideo: true,
+        hasAudio: true
+    ),
+    FCPXMLExportAsset(
+        id: "r2",
+        name: "Clip 2",
+        src: URL(fileURLWithPath: "/path/to/clip2.mov"),
+        duration: CMTime(value: 5, timescale: 1),
+        hasVideo: true,
+        hasAudio: true
+    ),
+    FCPXMLExportAsset(
+        id: "r3",
+        name: "Clip 3",
+        src: URL(fileURLWithPath: "/path/to/clip3.mov"),
+        duration: CMTime(value: 3, timescale: 1),
+        hasVideo: true,
+        hasAudio: true
+    )
+]
+
+// Export to bundle
+let exporter = FCPXMLBundleExporter(version: .default, includeMedia: false)
+let bundleURL = try exporter.exportBundle(
+    timeline: updatedTimeline,
+    assets: assets,
+    to: outputDirectory,
+    bundleName: "My Project"
+)
+print("Exported to: \(bundleURL.path)")
+```
+
+### 4.8 Validate assets before export
+
+```swift
+import PipelineNeo
+
+// Validate all assets before export
+let validator = AssetValidator()
+let detector = MIMETypeDetector()
+
+for asset in assets {
+    guard let src = asset.src else { continue }
+    
+    // Validate asset exists and MIME type is compatible
+    // Assume clips are on lane 0 (video/image/audio allowed)
+    let result = await validator.validateAsset(
+        at: src,
+        forLane: 0,
+        mimeTypeDetector: detector
+    )
+    
+    if !result.isValid {
+        print("Warning: Asset \(asset.id) failed validation: \(result.reason ?? "unknown")")
+        // Handle invalid asset (skip, fix, or error)
+    } else {
+        print("Asset \(asset.id) validated: \(result.mimeType ?? "unknown")")
+    }
+}
+
+// Validate clip-specific assets
+for clip in timeline.clips {
+    if let asset = assets.first(where: { $0.id == clip.assetRef }),
+       let src = asset.src {
+        let result = await clip.validateAsset(at: src)
+        if !result.isValid {
+            print("Clip \(clip.assetRef) on lane \(clip.lane) has invalid asset")
+        }
+    }
 }
 ```
 
