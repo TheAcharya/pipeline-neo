@@ -39,12 +39,12 @@ This codebase is developed using AI agents.
 ## Core Features
 
 - Read, create, and modify FCPXML documents via a protocol-oriented API (resources, events, projects, sequences).
-- Load single .fcpxml files or .fcpxmld bundles (FCPXMLFileLoader; sync and async).
+- Load single .fcpxml files or .fcpxmld bundles (`FCPXMLFileLoader`; sync and async).
 - Parse and validate against bundled DTDs (1.5–1.14): structural/reference validation and DTD schema validation.
 - Typed access to resources, events, clips, and projects (helpers and APIs).
-- Timecode and timing with SwiftTimecode: CMTime, Timecode, FCPXML time strings; all FCP frame rates; frame-boundary conform.
-- FCPXMLTimecode: custom timecode type for FCPXML (arithmetic, frame alignment, CMTime conversion, FCPXML string parsing).
-- Typed element filtering (FCPXMLElementType; multicam vs compound inferred from structure).
+- Timecode and timing with SwiftTimecode: `CMTime`, `Timecode`, FCPXML time strings; all FCP frame rates; frame-boundary conform.
+- `FCPXMLTimecode`: custom timecode type for FCPXML (arithmetic, frame alignment, `CMTime` conversion, FCPXML string parsing).
+- Typed element filtering (`FCPXMLElementType`; multicam vs compound inferred from structure).
 - Cut detection on project spines: edit points (hard cut, transition, gap) and same-clip vs different-clips; sync and async.
 - Version conversion: convert to a target version (e.g. 1.14 → 1.10), strip elements not in target DTD, validate; save as .fcpxml or .fcpxmld (bundle from 1.10+).
 - Per-version DTD validation against a chosen version or the document’s declared version.
@@ -52,7 +52,7 @@ This codebase is developed using AI agents.
 - Timeline and export: build `Timeline`, export to FCPXML string or .fcpxmld bundle (optional media copy).
 - Timeline manipulation: ripple insert (shifts subsequent clips), auto lane assignment, clip queries (by lane, time range, asset ID), lane range computation.
 - Timeline metadata: markers, chapter markers, keywords, ratings, custom metadata on timeline and clips; timestamps (`createdAt`, `modifiedAt`).
-- TimelineFormat enhancements: presets (`hd720p`, `dci4K`, `hd1080i`, `hd720i`), computed properties (`aspectRatio`, `isHD`, `isUHD`, `interlaced`).
+- `TimelineFormat` enhancements: presets (`hd720p`, `dci4K`, `hd1080i`, `hd720i`), computed properties (`aspectRatio`, `isHD`, `isUHD`, `interlaced`).
 - MIME type detection: detect MIME types from URLs using `UTType` and `AVFoundation` (video/audio/image formats).
 - Asset validation: validate asset existence and MIME type compatibility with lanes (negative = audio only, non-negative = video/image/audio).
 - Silence detection: detect silence at start/end of audio files (configurable threshold and minimum duration).
