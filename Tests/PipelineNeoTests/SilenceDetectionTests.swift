@@ -73,8 +73,8 @@ final class SilenceDetectionTests: XCTestCase {
             XCTAssertEqual(result.trimStart, 0.0, accuracy: 0.001)
             XCTAssertEqual(result.trimEnd, 0.0, accuracy: 0.001)
         } catch {
-            // Error is acceptable for non-existent file
-            XCTAssertTrue(error is FCPXMLError || error is NSError)
+            // Error is acceptable for non-existent file - error was thrown (verified by catch block)
+            _ = error // Suppress unused variable warning
         }
     }
     
@@ -90,8 +90,8 @@ final class SilenceDetectionTests: XCTestCase {
             XCTAssertEqual(result.trimStart, 0.0, accuracy: 0.001)
             XCTAssertEqual(result.trimEnd, 0.0, accuracy: 0.001)
         } catch {
-            // Error is acceptable for non-existent file
-            XCTAssertTrue(error is FCPXMLError || error is NSError)
+            // Error is acceptable for non-existent file - error was thrown (verified by catch block)
+            _ = error // Suppress unused variable warning
         }
     }
     
@@ -106,8 +106,8 @@ final class SilenceDetectionTests: XCTestCase {
             // Should return a result (even if zero trim)
             XCTAssertNotNil(result)
         } catch {
-            // Error is acceptable for non-existent file
-            XCTAssertTrue(error is FCPXMLError || error is NSError)
+            // Error is acceptable for non-existent file - error was thrown (verified by catch block)
+            _ = error // Suppress unused variable warning
         }
     }
     

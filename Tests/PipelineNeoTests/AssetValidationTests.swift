@@ -128,7 +128,7 @@ final class AssetValidationTests: XCTestCase {
     // MARK: - TimelineClip Integration Tests
     
     func testTimelineClipValidateAsset() async throws {
-        var clip = TimelineClip(
+        let clip = TimelineClip(
             assetRef: "r1",
             offset: .zero,
             duration: CMTime(value: 10, timescale: 1),
@@ -145,7 +145,7 @@ final class AssetValidationTests: XCTestCase {
     }
     
     func testTimelineClipIsAudioAsset() async throws {
-        var clip = TimelineClip(
+        let clip = TimelineClip(
             assetRef: "r1",
             offset: .zero,
             duration: CMTime(value: 10, timescale: 1),
@@ -166,7 +166,7 @@ final class AssetValidationTests: XCTestCase {
     }
     
     func testTimelineClipIsVideoAsset() async throws {
-        var clip = TimelineClip(
+        let clip = TimelineClip(
             assetRef: "r1",
             offset: .zero,
             duration: CMTime(value: 10, timescale: 1),
@@ -187,7 +187,7 @@ final class AssetValidationTests: XCTestCase {
     }
     
     func testTimelineClipIsImageAsset() async throws {
-        var clip = TimelineClip(
+        let clip = TimelineClip(
             assetRef: "r1",
             offset: .zero,
             duration: CMTime(value: 10, timescale: 1),

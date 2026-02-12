@@ -200,8 +200,8 @@ final class ParallelFileIOTests: XCTestCase {
                 XCTAssertNotNil(result.error)
             }
         } catch {
-            // Throwing is also acceptable
-            XCTAssertTrue(error is FCPXMLError || error is NSError)
+            // Throwing is also acceptable - error was thrown (verified by catch block)
+            _ = error // Suppress unused variable warning
         }
     }
     

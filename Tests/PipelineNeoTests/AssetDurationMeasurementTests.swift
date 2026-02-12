@@ -107,8 +107,8 @@ final class AssetDurationMeasurementTests: XCTestCase {
             // If it doesn't throw, should return unknown or nil duration
             XCTAssertTrue(result.mediaType == .unknown || result.duration == nil)
         } catch {
-            // Error is acceptable for non-existent file
-            XCTAssertTrue(error is FCPXMLError || error is NSError)
+            // Error is acceptable for non-existent file - error was thrown (verified by catch block)
+            _ = error // Suppress unused variable warning
         }
     }
     
@@ -123,8 +123,8 @@ final class AssetDurationMeasurementTests: XCTestCase {
             // If it doesn't throw, should return unknown or nil duration
             XCTAssertTrue(result.mediaType == .unknown || result.duration == nil)
         } catch {
-            // Error is acceptable for non-existent file
-            XCTAssertTrue(error is FCPXMLError || error is NSError)
+            // Error is acceptable for non-existent file - error was thrown (verified by catch block)
+            _ = error // Suppress unused variable warning
         }
     }
     
