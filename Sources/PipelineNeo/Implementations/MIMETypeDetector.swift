@@ -27,13 +27,13 @@ public struct MIMETypeDetector: MIMETypeDetection, MIMETypeDetectionSync, Sendab
     /// Detects MIME type synchronously using UTType and file extension fallback.
     public func detectMIMETypeSync(at url: URL) -> String? {
         // Strategy 1: Use UTType from file extension
-        if #available(macOS 11.0, *) {
-            if let utType = UTType(filenameExtension: url.pathExtension) {
-                if let mimeType = utType.preferredMIMEType {
-                    return mimeType
-                }
+        #if canImport(UniformTypeIdentifiers)
+        if let utType = UTType(filenameExtension: url.pathExtension) {
+            if let mimeType = utType.preferredMIMEType {
+                return mimeType
             }
         }
+        #endif
         
         // Strategy 2: File extension fallback
         return mimeTypeFromExtension(url.pathExtension)

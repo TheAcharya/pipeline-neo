@@ -156,27 +156,31 @@ public struct SilenceDetector: SilenceDetection, SilenceDetectionSync, Sendable 
         at url: URL,
         threshold: Float = -90.0
     ) throws -> SilenceDetectionResult {
-        // Use a semaphore to wait for async completion
-        var result: SilenceDetectionResult?
-        var thrownError: Error?
+        // Use a thread-safe wrapper to bridge async to sync
+        final class ResultBox: @unchecked Sendable {
+            var result: SilenceDetectionResult?
+            var error: Error?
+        }
+        
+        let box = ResultBox()
         let semaphore = DispatchSemaphore(value: 0)
         
         Task {
             do {
-                result = try await detectSilence(at: url, threshold: threshold, progress: nil)
+                box.result = try await detectSilence(at: url, threshold: threshold, progress: nil)
             } catch {
-                thrownError = error
+                box.error = error
             }
             semaphore.signal()
         }
         
         semaphore.wait()
         
-        if let error = thrownError {
+        if let error = box.error {
             throw error
         }
         
-        guard let result = result else {
+        guard let result = box.result else {
             throw FCPXMLError.documentOperationFailed("Silence detection failed")
         }
         

@@ -25,17 +25,17 @@ public struct AssetDurationMeasurer: AssetDurationMeasurement, AssetDurationMeas
     /// Detects media type from file extension or MIME type.
     private func detectMediaType(from url: URL) -> MediaType {
         // Try to detect from file extension using UTType
-        if #available(macOS 11.0, *) {
-            if let utType = UTType(filenameExtension: url.pathExtension) {
-                if utType.conforms(to: .audio) {
-                    return .audio
-                } else if utType.conforms(to: .movie) || utType.conforms(to: .video) {
-                    return .video
-                } else if utType.conforms(to: .image) {
-                    return .image
-                }
+        #if canImport(UniformTypeIdentifiers)
+        if let utType = UTType(filenameExtension: url.pathExtension) {
+            if utType.conforms(to: .audio) {
+                return .audio
+            } else if utType.conforms(to: .movie) || utType.conforms(to: .video) {
+                return .video
+            } else if utType.conforms(to: .image) {
+                return .image
             }
         }
+        #endif
         
         // Fallback to extension-based detection
         let ext = url.pathExtension.lowercased()
@@ -126,27 +126,31 @@ public struct AssetDurationMeasurer: AssetDurationMeasurement, AssetDurationMeas
     /// - Returns: Result containing media type and duration.
     /// - Throws: Error if measurement fails.
     public func measureDuration(at url: URL) throws -> DurationMeasurementResult {
-        // Use a semaphore to wait for async completion
-        var result: DurationMeasurementResult?
-        var thrownError: Error?
+        // Use a thread-safe wrapper to bridge async to sync
+        final class ResultBox: @unchecked Sendable {
+            var result: DurationMeasurementResult?
+            var error: Error?
+        }
+        
+        let box = ResultBox()
         let semaphore = DispatchSemaphore(value: 0)
         
         Task {
             do {
-                result = try await measureDuration(at: url, progress: nil)
+                box.result = try await measureDuration(at: url, progress: nil)
             } catch {
-                thrownError = error
+                box.error = error
             }
             semaphore.signal()
         }
         
         semaphore.wait()
         
-        if let error = thrownError {
+        if let error = box.error {
             throw error
         }
         
-        guard let result = result else {
+        guard let result = box.result else {
             throw FCPXMLError.documentOperationFailed("Duration measurement failed")
         }
         
