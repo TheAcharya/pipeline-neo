@@ -14,6 +14,9 @@ jobs:
   build:
     runs-on: macos-15 # required for Xcode 16.x
     timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: ${{ github.workspace }}
 
     steps:
     - name: Checkout repository
@@ -189,6 +192,9 @@ jobs:
     needs: [build]
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: ${{ github.workspace }}
     permissions:
       contents: write
       actions: write
