@@ -43,12 +43,21 @@ This codebase is developed using AI agents.
 - Parse and validate against bundled DTDs (1.5–1.14): structural/reference validation and DTD schema validation.
 - Typed access to resources, events, clips, and projects (helpers and APIs).
 - Timecode and timing with SwiftTimecode: CMTime, Timecode, FCPXML time strings; all FCP frame rates; frame-boundary conform.
+- FCPXMLTimecode: custom timecode type for FCPXML (arithmetic, frame alignment, CMTime conversion, FCPXML string parsing).
 - Typed element filtering (FCPXMLElementType; multicam vs compound inferred from structure).
 - Cut detection on project spines: edit points (hard cut, transition, gap) and same-clip vs different-clips; sync and async.
 - Version conversion: convert to a target version (e.g. 1.14 → 1.10), strip elements not in target DTD, validate; save as .fcpxml or .fcpxmld (bundle from 1.10+).
 - Per-version DTD validation against a chosen version or the document’s declared version.
 - Media extraction and copy: extract asset/locator URLs, copy to a directory with deduplication; sync and async.
 - Timeline and export: build Timeline, export to FCPXML string or .fcpxmld bundle (optional media copy).
+- Timeline manipulation: ripple insert (shifts subsequent clips), auto lane assignment, clip queries (by lane, time range, asset ID), lane range computation.
+- Timeline metadata: markers, chapter markers, keywords, ratings, custom metadata on timeline and clips; timestamps (createdAt, modifiedAt).
+- TimelineFormat enhancements: presets (hd720p, dci4K, hd1080i, hd720i), computed properties (aspectRatio, isHD, isUHD, interlaced).
+- MIME type detection: detect MIME types from URLs using UTType and AVFoundation (video/audio/image formats).
+- Asset validation: validate asset existence and MIME type compatibility with lanes (negative = audio only, non-negative = video/image/audio).
+- Silence detection: detect silence at start/end of audio files (configurable threshold and minimum duration).
+- Asset duration measurement: measure actual duration from AVFoundation (audio/video/images).
+- Parallel file I/O: concurrent read/write operations for improved performance.
 - Experimental CLI: `pipeline-neo` with `--check-version`, `--convert-version`, `--validate`, `--media-copy`, and logging options `--log`, `--log-level`, `--quiet` (see CLI README).
 - Sync and async APIs; dependency-injected, concurrency-safe design for Swift 6.
 
@@ -215,7 +224,7 @@ Pipeline Neo supports FCPXML versions 1.5 through 1.14. All DTDs for these versi
 
 ## Architecture Overview
 
-- Protocols define parsing, timecode conversion, document operations, and error handling; each has a default implementation you can swap. FCPXMLService (and FCPXMLUtility) composes these and exposes sync and async APIs. ModularUtilities provides createPipeline, processFCPXML, validateDocument, convertTimecodes, and similar helpers.
+- Protocols define parsing, timecode conversion, document operations, error handling, MIME type detection, asset validation, silence detection, asset duration measurement, and parallel file I/O; each has a default implementation you can swap. FCPXMLService (and FCPXMLUtility) composes these and exposes sync and async APIs. ModularUtilities provides createPipeline, processFCPXML, validateDocument, convertTimecodes, and similar helpers.
 - FCPXMLFileLoader handles .fcpxml and .fcpxmld (including bundle Info.fcpxml). FCPXMLValidator and FCPXMLDTDValidator handle structural and schema validation; DTDs for 1.5–1.14 are bundled.
 - Extensions on CMTime, XMLElement, and XMLDocument offer convenience APIs; use modular overloads with an explicit dependency to inject your own. Error types are explicit (FCPXMLError, FCPXMLLoadError, export and validation errors); you can inject a custom error handler.
 

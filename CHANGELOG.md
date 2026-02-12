@@ -1,5 +1,27 @@
 # Changelog
 
+### 2.1.0
+
+**🎉 Released:**
+- 13th February 2026
+
+**🔧 Improvements:**
+- Timeline manipulation: ripple insert (shifts subsequent clips), auto lane assignment, clip queries (by lane, time range, asset ID), lane range computation
+- Timeline metadata: markers, chapter markers, keywords, ratings, custom metadata on timeline and clips
+- Timestamps: `createdAt` and `modifiedAt` on Timeline (auto-updated on mutations)
+- FCPXMLTimecode: custom timecode type wrapping Fraction (arithmetic, frame alignment, CMTime conversion, FCPXML string parsing)
+- MIME type detection: `MIMETypeDetection` protocol with UTType + AVFoundation support (video/audio/image formats)
+- Asset validation: `AssetValidation` protocol validates existence + MIME compatibility with lanes (negative = audio only, non-negative = video/image/audio)
+- Silence detection: `SilenceDetection` protocol detects silence at start/end of audio files (threshold, minimum duration)
+- Asset duration measurement: `AssetDurationMeasurement` protocol measures actual duration from AVFoundation (audio/video/images)
+- Parallel file I/O: `ParallelFileIO` protocol for concurrent read/write operations (performance optimization)
+- TimelineFormat enhancements: presets (hd720p, dci4K, hd1080i, hd720i), computed properties (aspectRatio, isHD, isUHD, isDCI4K, isStandard4K, is1080p, is720p, interlaced)
+- TimelineError: expanded with `assetNotFound`, `invalidFormat`, `invalidAssetReference` cases
+- Test suite: 320 tests (added TimelineManipulationTests, FCPXMLTimecodeTests, MIMETypeDetectionTests, AssetValidationTests, SilenceDetectionTests, AssetDurationMeasurementTests, ParallelFileIOTests)
+- Documentation: comprehensive Manual.md update with all APIs and examples, Tests README updated
+
+---
+
 ### 2.0.1
 
 **🎉 Released:**

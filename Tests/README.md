@@ -1,6 +1,6 @@
 # Pipeline Neo — Test Suite
 
-This directory contains the test suite for Pipeline Neo, a Swift 6 framework for Final Cut Pro FCPXML processing with SwiftTimecode integration. The suite currently has 181 tests. They ensure correctness, concurrency safety, and performance across parsing, timecode conversion, document and element operations, file loading, timeline export, validation, and all supported FCPXML versions and frame rates. The suite is modular: shared utilities resolve sample paths, file tests exercise individual FCPXML samples, and logic-and-parsing tests cover model types and structure.
+This directory contains the test suite for Pipeline Neo, a Swift 6 framework for Final Cut Pro FCPXML processing with SwiftTimecode integration. The suite currently has **320 tests**. They ensure correctness, concurrency safety, and performance across parsing, timecode conversion, document and element operations, file loading, timeline export, validation, timeline manipulation, media processing, and all supported FCPXML versions and frame rates. The suite is modular: shared utilities resolve sample paths, file tests exercise individual FCPXML samples, and logic-and-parsing tests cover model types and structure.
 
 ---
 
@@ -56,6 +56,13 @@ Tests/
     ├── CutDetectionTests.swift   # Cut detection (same-clip vs different-clips, boundary types)
     ├── VersionConversionTests.swift  # Version conversion, save as .fcpxml / .fcpxmld (bundle 1.10+ only)
     ├── MediaExtractionTests.swift    # Media reference extraction and copy (asset media-rep, locators)
+    ├── TimelineManipulationTests.swift  # Timeline manipulation: ripple insert, auto lane, metadata, timestamps (56 tests)
+    ├── FCPXMLTimecodeTests.swift  # FCPXMLTimecode custom timecode type (23 tests)
+    ├── MIMETypeDetectionTests.swift  # MIME type detection (UTType + AVFoundation) (10 tests)
+    ├── AssetValidationTests.swift  # Asset validation (existence + MIME compatibility) (11 tests)
+    ├── SilenceDetectionTests.swift  # Audio silence detection
+    ├── AssetDurationMeasurementTests.swift  # Asset duration measurement (audio/video/images)
+    ├── ParallelFileIOTests.swift  # Parallel file read/write operations
     ├── FCPXMLPerformanceTests.swift
     ├── PipelineNeoTests.swift
     ├── TimelineExportValidationTests.swift
@@ -149,6 +156,20 @@ Parser filter: testParserFilterMulticamAndCompoundResources, testFCPXMLUtilityDe
 
 Media extraction: MediaExtractionTests. extractMediaReferences (Example Cut 1, baseURL, sync/async); copyReferencedMedia (missing file skipped, real file copied, sync/async); testExtractThenCopy_MultipleTypes_DetectedAndCopied (extract then copy with video + audio refs, same flow as CLI --media-copy). Covers MediaExtractor, MediaExtractionResult, MediaCopyResult.
 
+Timeline manipulation: TimelineManipulationTests. Ripple insert (immutable and mutating versions, lane options, zero-duration handling); auto lane assignment (findAvailableLane, insertingClipAutoLane, insertClipAutoLane); clip queries (clips(onLane:), clips(inRange:start:end:), clips(withAssetRef:), laneRange); timeline and clip metadata (markers, chapterMarkers, keywords, ratings, custom metadata); timestamps (createdAt, modifiedAt initialization, updates on mutations, preservation on immutable operations). Covers Timeline, TimelineClip, RippleInsertResult, ClipPlacement, TimelineError.
+
+FCPXMLTimecode: FCPXMLTimecodeTests. Initialization (from seconds, value/timescale, CMTime, frames, FCPXML string); computed properties (value, timescale, seconds, fcpxmlString); arithmetic operations (+, -, *); comparison (Equatable, Comparable); CMTime conversion (toCMTime, from CMTime); frame alignment (frameAligned, aligned(to:)); Hashable and Codable conformance. Covers FCPXMLTimecode struct.
+
+MIME type detection: MIMETypeDetectionTests. Sync and async detection (UTType from file extension, AVFoundation asset inspection, extension fallback); video formats (mp4, mov, avi, mkv, etc.); audio formats (mp3, m4a, aac, wav, etc.); image formats (jpg, png, gif, etc.). Covers MIMETypeDetector, MIMETypeDetection protocol.
+
+Asset validation: AssetValidationTests. Existence validation (file not found); lane compatibility (negative lanes = audio only, non-negative = video/image/audio); sync and async validation; TimelineClip integration (validateAsset, isAudioAsset, isVideoAsset, isImageAsset). Covers AssetValidator, AssetValidationResult, AssetValidation protocol.
+
+Silence detection: SilenceDetectionTests. Audio silence detection (threshold, minimumDuration); silence at start/end; total silence duration; sync and async APIs. Covers SilenceDetector, SilenceDetectionResult, SilenceDetection protocol.
+
+Asset duration measurement: AssetDurationMeasurementTests. Duration measurement for audio/video/images; media type detection; sync and async APIs; image handling (no duration). Covers AssetDurationMeasurer, DurationMeasurementResult, MediaType, AssetDurationMeasurement protocol.
+
+Parallel file I/O: ParallelFileIOTests. Parallel write operations (multiple files concurrently); parallel read operations; success/failure counting; configuration (maxConcurrentOperations, useFileHandleOptimization). Covers ParallelFileIOExecutor, ParallelFileIOResult, ParallelFileIO protocol.
+
 ---
 
 ## 4. File tests (per-sample coverage)
@@ -195,7 +216,7 @@ FCPXMLStructureTests: Uses the Structure sample. testParse_Structure_AllEventsAn
 
 TimelineExportValidationTests covers the timeline model, exporters, validators, and file loader.
 
-Timeline and TimelineClip: testTimelineClipEndTime builds a clip with offset 10 and duration 5 and asserts endTime is 15 seconds. testTimelineDurationFromPrimaryLane builds a timeline with two clips on lane 0 and asserts total duration. testTimelineSortedClips builds a timeline with out-of-order clips and asserts sortedClips order. testTimelineFormatHelpers checks TimelineFormat.hd1080p and uhd4K width and height.
+Timeline and TimelineClip: testTimelineClipEndTime builds a clip with offset 10 and duration 5 and asserts endTime is 15 seconds. testTimelineDurationFromPrimaryLane builds a timeline with two clips on lane 0 and asserts total duration. testTimelineSortedClips builds a timeline with out-of-order clips and asserts sortedClips order. testTimelineFormatHelpers checks TimelineFormat.hd1080p and uhd4K width and height. testTimelineFormatPresets tests static factory methods (hd720p, dci4K, hd1080i, hd720i). testTimelineFormatComputedProperties tests computed properties (aspectRatio, isHD, isUHD, isDCI4K, isStandard4K, is1080p, is720p, interlaced). testTimelineFormatEquality tests equality with different properties. testTimelineFormatHelpersOnTimeline tests helper properties on Timeline (isHD, isUHD, aspectRatio).
 
 FCPXMLExporter: testFCPXMLExporterExportMinimal exports a minimal timeline with one clip and one asset and asserts the XML contains fcpxml, resources, r1, r2, asset-clip, ref. testFCPXMLExporterMissingAssetThrows asserts that exporting a timeline whose clip references an asset not in the assets array throws FCPXMLExportError.missingAsset. testFCPXMLExporterEmptyTimelineThrows asserts that exporting an empty timeline throws invalidTimeline.
 
@@ -212,6 +233,20 @@ FCPXMLFileLoader: testFCPXMLFileLoaderLoadsSingleFile writes a minimal fcpxml to
 ## 7. API and edge case tests
 
 APIAndEdgeCaseTests covers the async load API, optional logging, edge cases, and validation types.
+
+TimelineManipulationTests covers timeline manipulation features: ripple insert (shifting subsequent clips), auto lane assignment (finding available lanes), clip queries (by lane, time range, asset ID), lane range computation, timeline and clip metadata (markers, chapters, keywords, ratings, custom metadata), and timestamps (createdAt, modifiedAt tracking). Tests cover both immutable and mutating APIs, lane options for ripple insert, error handling (noAvailableLane), and timestamp updates on all mutating operations.
+
+FCPXMLTimecodeTests covers the custom FCPXMLTimecode type: initialization from various sources (seconds, value/timescale, CMTime, frames, FCPXML string), computed properties, arithmetic operations, comparison, CMTime conversion, frame alignment, and protocol conformances (Equatable, Hashable, Codable, Comparable, CustomStringConvertible).
+
+MIMETypeDetectionTests covers MIME type detection: synchronous and asynchronous detection using UTType and AVFoundation, support for video/audio/image formats, extension fallback mapping, and custom detector implementations.
+
+AssetValidationTests covers asset validation: file existence checking, MIME type detection, lane compatibility validation (negative lanes = audio only, non-negative = video/image/audio), sync and async APIs, TimelineClip integration methods (validateAsset, isAudioAsset, isVideoAsset, isImageAsset), and error handling.
+
+SilenceDetectionTests covers audio silence detection: detecting silence at start/end of audio files, configurable threshold and minimum duration, sync and async APIs, and result interpretation.
+
+AssetDurationMeasurementTests covers asset duration measurement: measuring actual duration from AVFoundation, media type detection (audio/video/image), handling images (no duration), sync and async APIs, and result interpretation.
+
+ParallelFileIOTests covers parallel file I/O: concurrent read and write operations, success/failure tracking, configuration options (maxConcurrentOperations, useFileHandleOptimization), and performance benefits of parallelization.
 
 FCPXMLFileLoader async load(from:): testFCPXMLFileLoaderAsyncLoadFromURL writes a minimal fcpxml to a temp file and calls loader.load(from:) async, asserting root element and name. testFCPXMLFileLoaderAsyncLoadThrowsForMissingFile calls load(from:) with a nonexistent URL and asserts FCPXMLLoadError (notAFile, readFailed, or parseFailed).
 
@@ -264,6 +299,8 @@ Structure: use arrange–act–assert. In async tests use async throws and await
 Adding a file test: add a new class under FileTests/ (e.g. FCPXMLFileTest_<Name>.swift). Use loadFCPXMLSample(named:) when the sample must exist, or urlForFCPXMLSample(named:) with FileManager.default.fileExists and XCTSkip when optional. Assert on fcpxml.root.element, fcpxml.version, fcpxml.allEvents(), fcpxml.allProjects(), resources, etc. as appropriate.
 
 Adding logic/parsing tests: add under LogicAndParsing/ for model types (Version, structure, parsing rules) rather than a single sample file.
+
+Adding feature tests: add new test files for major features (e.g. TimelineManipulationTests, MIMETypeDetectionTests, AssetValidationTests). Group related tests together and use descriptive test method names. Include both sync and async tests when applicable. Test edge cases, error conditions, and protocol conformance. For protocol-based features, test both the protocol interface and default implementations.
 
 ---
 
