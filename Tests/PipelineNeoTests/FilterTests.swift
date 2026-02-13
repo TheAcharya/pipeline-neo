@@ -261,7 +261,7 @@ final class FilterTests: XCTestCase {
     }
     
     func testClipVideoFiltersRoundTrip() {
-        var clip = FinalCutPro.FCPXML.Clip(duration: Fraction(5, 1))
+        let clip = FinalCutPro.FCPXML.Clip(duration: Fraction(5, 1))
         
         let filter = FinalCutPro.FCPXML.VideoFilter(
             effectID: "r1",
@@ -272,7 +272,6 @@ final class FilterTests: XCTestCase {
         )
         
         clip.videoFilters = [filter]
-        _ = clip // Explicitly use variable to acknowledge mutation
         
         XCTAssertEqual(clip.videoFilters.count, 1)
         XCTAssertEqual(clip.videoFilters[0].effectID, "r1")
@@ -384,14 +383,13 @@ final class FilterTests: XCTestCase {
     }
     
     func testTransitionFiltersRoundTrip() {
-        var transition = FinalCutPro.FCPXML.Transition(duration: Fraction(1, 1))
+        let transition = FinalCutPro.FCPXML.Transition(duration: Fraction(1, 1))
         
         let videoFilter = FinalCutPro.FCPXML.VideoFilter(effectID: "r1", name: "Video Effect")
         let audioFilter = FinalCutPro.FCPXML.AudioFilter(effectID: "r2", name: "Audio Effect")
         
         transition.videoFilters = [videoFilter]
         transition.audioFilters = [audioFilter]
-        _ = transition // Explicitly use variable to acknowledge mutation
         
         XCTAssertEqual(transition.videoFilters.count, 1)
         XCTAssertEqual(transition.audioFilters.count, 1)

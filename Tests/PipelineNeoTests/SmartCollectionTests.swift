@@ -236,7 +236,7 @@ final class SmartCollectionTests: XCTestCase {
     }
     
     func testSmartCollectionMatchTexts() {
-        var smartCollection = FinalCutPro.FCPXML.SmartCollection(name: "Test", match: .all)
+        let smartCollection = FinalCutPro.FCPXML.SmartCollection(name: "Test", match: .all)
         
         let matchTexts = [
             FinalCutPro.FCPXML.MatchText(rule: .includes, value: "test1"),
@@ -244,28 +244,26 @@ final class SmartCollectionTests: XCTestCase {
         ]
         
         smartCollection.matchTexts = matchTexts
-        _ = smartCollection // Explicitly use variable to acknowledge mutation
         
         XCTAssertEqual(smartCollection.matchTexts.count, 2)
         XCTAssertEqual(smartCollection.matchTexts[0].value, "test1")
     }
     
     func testSmartCollectionMatchRatings() {
-        var smartCollection = FinalCutPro.FCPXML.SmartCollection(name: "Favorites", match: .all)
+        let smartCollection = FinalCutPro.FCPXML.SmartCollection(name: "Favorites", match: .all)
         
         let matchRatings = [
             FinalCutPro.FCPXML.MatchRatings(value: .favorites)
         ]
         
         smartCollection.matchRatings = matchRatings
-        _ = smartCollection // Explicitly use variable to acknowledge mutation
         
         XCTAssertEqual(smartCollection.matchRatings.count, 1)
         XCTAssertEqual(smartCollection.matchRatings[0].value, .favorites)
     }
     
     func testSmartCollectionMatchMedias() {
-        var smartCollection = FinalCutPro.FCPXML.SmartCollection(name: "Video", match: .any)
+        let smartCollection = FinalCutPro.FCPXML.SmartCollection(name: "Video", match: .any)
         
         let matchMedias = [
             FinalCutPro.FCPXML.MatchMedia(rule: .isExactly, type: .videoOnly),
@@ -273,7 +271,6 @@ final class SmartCollectionTests: XCTestCase {
         ]
         
         smartCollection.matchMedias = matchMedias
-        _ = smartCollection // Explicitly use variable to acknowledge mutation
         
         XCTAssertEqual(smartCollection.matchMedias.count, 2)
     }
@@ -303,11 +300,10 @@ final class SmartCollectionTests: XCTestCase {
     }
     
     func testSmartCollectionToXML() {
-        var smartCollection = FinalCutPro.FCPXML.SmartCollection(name: "Test", match: .all)
+        let smartCollection = FinalCutPro.FCPXML.SmartCollection(name: "Test", match: .all)
         smartCollection.matchTexts = [
             FinalCutPro.FCPXML.MatchText(rule: .includes, value: "test")
         ]
-        _ = smartCollection // Explicitly use variable to acknowledge mutation
         
         XCTAssertEqual(smartCollection.element.name, "smart-collection")
         XCTAssertEqual(smartCollection.element.stringValue(forAttributeNamed: "name"), "Test")
@@ -318,15 +314,13 @@ final class SmartCollectionTests: XCTestCase {
     }
     
     func testSmartCollectionCodable() throws {
-        var smartCollection = FinalCutPro.FCPXML.SmartCollection(name: "Test", match: .all)
+        let smartCollection = FinalCutPro.FCPXML.SmartCollection(name: "Test", match: .all)
         smartCollection.matchTexts = [
             FinalCutPro.FCPXML.MatchText(rule: .includes, value: "test")
         ]
         smartCollection.matchRatings = [
             FinalCutPro.FCPXML.MatchRatings(value: .favorites)
         ]
-        _ = smartCollection.matchTexts // Explicitly use variable to acknowledge mutation
-        _ = smartCollection.matchRatings // Explicitly use variable to acknowledge mutation
         
         let encoder = JSONEncoder()
         let data = try encoder.encode(smartCollection)

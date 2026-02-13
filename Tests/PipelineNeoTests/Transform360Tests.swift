@@ -158,7 +158,7 @@ final class Transform360Tests: XCTestCase {
     }
     
     func testClipTransform360RoundTrip() {
-        var clip = FinalCutPro.FCPXML.Clip(duration: Fraction(5, 1))
+        let clip = FinalCutPro.FCPXML.Clip(duration: Fraction(5, 1))
         
         var adjustment = FinalCutPro.FCPXML.Transform360Adjustment(
             coordinateType: .spherical,
@@ -171,7 +171,6 @@ final class Transform360Tests: XCTestCase {
         adjustment.convergence = 0.5
         
         clip.transform360Adjustment = adjustment
-        _ = clip // Explicitly use variable to acknowledge mutation
         
         let retrieved = clip.transform360Adjustment
         XCTAssertNotNil(retrieved)

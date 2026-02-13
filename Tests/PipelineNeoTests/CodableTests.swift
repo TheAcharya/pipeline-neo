@@ -47,10 +47,9 @@ final class CodableTests: XCTestCase {
     
     func testRootCodableEncodingDecoding() throws {
         // Create a simple root element
-        var root = FinalCutPro.FCPXML.Root()
+        let root = FinalCutPro.FCPXML.Root()
         root.element.addAttribute(withName: "version", value: "1.9")
         root.resources = XMLElement(name: "resources")
-        _ = root // Explicitly use variable to acknowledge mutation
         
         // Encode to JSON
         let encoder = JSONEncoder()

@@ -122,7 +122,7 @@ final class CaptionTitleTests: XCTestCase {
     }
     
     func testCaptionTextStyleDefinitionRoundTrip() {
-        var caption = FinalCutPro.FCPXML.Caption(duration: Fraction(5, 1))
+        let caption = FinalCutPro.FCPXML.Caption(duration: Fraction(5, 1))
         
         var textStyle = FinalCutPro.FCPXML.TextStyle()
         textStyle.font = "Helvetica"
@@ -137,7 +137,6 @@ final class CaptionTitleTests: XCTestCase {
         )
         
         caption.typedTextStyleDefinitions = [styleDef]
-        _ = caption // Explicitly use variable to acknowledge mutation
         
         let retrieved = caption.typedTextStyleDefinitions
         XCTAssertEqual(retrieved.count, 1)
@@ -181,7 +180,7 @@ final class CaptionTitleTests: XCTestCase {
     }
     
     func testTitleTextStyleDefinitionRoundTrip() {
-        var title = FinalCutPro.FCPXML.Title(ref: "r1", duration: Fraction(5, 1))
+        let title = FinalCutPro.FCPXML.Title(ref: "r1", duration: Fraction(5, 1))
         
         var textStyle = FinalCutPro.FCPXML.TextStyle()
         textStyle.font = "Helvetica"
@@ -196,7 +195,6 @@ final class CaptionTitleTests: XCTestCase {
         )
         
         title.typedTextStyleDefinitions = [styleDef]
-        _ = title // Explicitly use variable to acknowledge mutation
         
         let retrieved = title.typedTextStyleDefinitions
         XCTAssertEqual(retrieved.count, 1)

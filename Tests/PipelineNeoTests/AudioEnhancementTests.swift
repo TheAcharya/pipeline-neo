@@ -223,7 +223,7 @@ final class AudioEnhancementTests: XCTestCase {
     }
     
     func testClipAudioEnhancementsRoundTrip() {
-        var clip = FinalCutPro.FCPXML.Clip(duration: Fraction(5, 1))
+        let clip = FinalCutPro.FCPXML.Clip(duration: Fraction(5, 1))
         
         let noiseReduction = FinalCutPro.FCPXML.NoiseReductionAdjustment(amount: 0.5)
         let humReduction = FinalCutPro.FCPXML.HumReductionAdjustment(frequency: .hz60)
@@ -236,7 +236,6 @@ final class AudioEnhancementTests: XCTestCase {
         clip.humReductionAdjustment = humReduction
         clip.equalizationAdjustment = equalization
         clip.matchEqualizationAdjustment = matchEQ
-        _ = clip // Explicitly use variable to acknowledge mutation
         
         XCTAssertEqual(clip.noiseReductionAdjustment?.amount, 0.5)
         XCTAssertEqual(clip.humReductionAdjustment?.frequency, .hz60)
