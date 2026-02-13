@@ -158,7 +158,7 @@ final class Transform360Tests: XCTestCase {
     }
     
     func testClipTransform360RoundTrip() {
-        let clip = FinalCutPro.FCPXML.Clip(duration: Fraction(5, 1))
+        var clip = FinalCutPro.FCPXML.Clip(duration: Fraction(5, 1))
         
         var adjustment = FinalCutPro.FCPXML.Transform360Adjustment(
             coordinateType: .spherical,
@@ -170,10 +170,9 @@ final class Transform360Tests: XCTestCase {
         adjustment.xOrientation = 10.0
         adjustment.convergence = 0.5
         
-        var updatedClip = clip
-        updatedClip.transform360Adjustment = adjustment
+        clip.transform360Adjustment = adjustment
         
-        let retrieved = updatedClip.transform360Adjustment
+        let retrieved = clip.transform360Adjustment
         XCTAssertNotNil(retrieved)
         XCTAssertEqual(retrieved?.coordinateType, .spherical)
         XCTAssertEqual(retrieved?.latitude, 45.0)
@@ -182,7 +181,7 @@ final class Transform360Tests: XCTestCase {
         XCTAssertEqual(retrieved?.convergence, 0.5)
         
         // Verify XML structure
-        let transformElement = updatedClip.element.firstChildElement(named: "adjust-360-transform")
+        let transformElement = clip.element.firstChildElement(named: "adjust-360-transform")
         XCTAssertNotNil(transformElement)
         XCTAssertEqual(transformElement?.stringValue(forAttributeNamed: "coordinates"), "spherical")
     }

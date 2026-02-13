@@ -122,7 +122,7 @@ final class CaptionTitleTests: XCTestCase {
     }
     
     func testCaptionTextStyleDefinitionRoundTrip() {
-        let caption = FinalCutPro.FCPXML.Caption(duration: Fraction(5, 1))
+        var caption = FinalCutPro.FCPXML.Caption(duration: Fraction(5, 1))
         
         var textStyle = FinalCutPro.FCPXML.TextStyle()
         textStyle.font = "Helvetica"
@@ -136,16 +136,15 @@ final class CaptionTitleTests: XCTestCase {
             textStyles: [textStyle]
         )
         
-        var updatedCaption = caption
-        updatedCaption.typedTextStyleDefinitions = [styleDef]
+        caption.typedTextStyleDefinitions = [styleDef]
         
-        let retrieved = updatedCaption.typedTextStyleDefinitions
+        let retrieved = caption.typedTextStyleDefinitions
         XCTAssertEqual(retrieved.count, 1)
         XCTAssertEqual(retrieved[0].id, "ts1")
         XCTAssertEqual(retrieved[0].textStyles[0].font, "Helvetica")
         
         // Verify XML structure
-        let styleDefElements = updatedCaption.element.childElements.filter { $0.name == "text-style-def" }
+        let styleDefElements = caption.element.childElements.filter { $0.name == "text-style-def" }
         XCTAssertEqual(styleDefElements.count, 1)
     }
     
@@ -181,7 +180,7 @@ final class CaptionTitleTests: XCTestCase {
     }
     
     func testTitleTextStyleDefinitionRoundTrip() {
-        let title = FinalCutPro.FCPXML.Title(ref: "r1", duration: Fraction(5, 1))
+        var title = FinalCutPro.FCPXML.Title(ref: "r1", duration: Fraction(5, 1))
         
         var textStyle = FinalCutPro.FCPXML.TextStyle()
         textStyle.font = "Helvetica"
@@ -195,10 +194,9 @@ final class CaptionTitleTests: XCTestCase {
             textStyles: [textStyle]
         )
         
-        var updatedTitle = title
-        updatedTitle.typedTextStyleDefinitions = [styleDef]
+        title.typedTextStyleDefinitions = [styleDef]
         
-        let retrieved = updatedTitle.typedTextStyleDefinitions
+        let retrieved = title.typedTextStyleDefinitions
         XCTAssertEqual(retrieved.count, 1)
         XCTAssertEqual(retrieved[0].id, "ts1")
         XCTAssertEqual(retrieved[0].textStyles[0].font, "Helvetica")

@@ -11,8 +11,12 @@
 import Foundation
 import CoreMedia
 
+// Note: This extension adds Codable conformance to CMTime for FCPXML time string encoding/decoding.
+// @retroactive is used to suppress the compiler warning about retroactive conformance, acknowledging
+// that we understand the risks and accept responsibility for potential conflicts if CoreMedia
+// adds Codable conformance in the future.
 @available(macOS 12.0, *)
-extension CMTime: Codable {
+extension CMTime: @retroactive Codable {
     
     /// Creates a CMTime from a decoder.
     /// - Parameter decoder: The decoder to read data from.
