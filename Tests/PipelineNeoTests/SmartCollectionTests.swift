@@ -244,7 +244,7 @@ final class SmartCollectionTests: XCTestCase {
         ]
         
         smartCollection.matchTexts = matchTexts
-        _ = smartCollection.matchTexts // Explicitly use variable to acknowledge mutation
+        _ = smartCollection // Explicitly use variable to acknowledge mutation
         
         XCTAssertEqual(smartCollection.matchTexts.count, 2)
         XCTAssertEqual(smartCollection.matchTexts[0].value, "test1")
@@ -258,7 +258,7 @@ final class SmartCollectionTests: XCTestCase {
         ]
         
         smartCollection.matchRatings = matchRatings
-        _ = smartCollection.matchRatings // Explicitly use variable to acknowledge mutation
+        _ = smartCollection // Explicitly use variable to acknowledge mutation
         
         XCTAssertEqual(smartCollection.matchRatings.count, 1)
         XCTAssertEqual(smartCollection.matchRatings[0].value, .favorites)
@@ -273,7 +273,7 @@ final class SmartCollectionTests: XCTestCase {
         ]
         
         smartCollection.matchMedias = matchMedias
-        _ = smartCollection.matchMedias // Explicitly use variable to acknowledge mutation
+        _ = smartCollection // Explicitly use variable to acknowledge mutation
         
         XCTAssertEqual(smartCollection.matchMedias.count, 2)
     }
@@ -307,7 +307,7 @@ final class SmartCollectionTests: XCTestCase {
         smartCollection.matchTexts = [
             FinalCutPro.FCPXML.MatchText(rule: .includes, value: "test")
         ]
-        _ = smartCollection.matchTexts // Explicitly use variable to acknowledge mutation
+        _ = smartCollection // Explicitly use variable to acknowledge mutation
         
         XCTAssertEqual(smartCollection.element.name, "smart-collection")
         XCTAssertEqual(smartCollection.element.stringValue(forAttributeNamed: "name"), "Test")

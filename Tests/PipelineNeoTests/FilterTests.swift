@@ -272,7 +272,7 @@ final class FilterTests: XCTestCase {
         )
         
         clip.videoFilters = [filter]
-        _ = clip.videoFilters // Explicitly use variable to acknowledge mutation
+        _ = clip // Explicitly use variable to acknowledge mutation
         
         XCTAssertEqual(clip.videoFilters.count, 1)
         XCTAssertEqual(clip.videoFilters[0].effectID, "r1")
@@ -391,8 +391,7 @@ final class FilterTests: XCTestCase {
         
         transition.videoFilters = [videoFilter]
         transition.audioFilters = [audioFilter]
-        _ = transition.videoFilters // Explicitly use variable to acknowledge mutation
-        _ = transition.audioFilters // Explicitly use variable to acknowledge mutation
+        _ = transition // Explicitly use variable to acknowledge mutation
         
         XCTAssertEqual(transition.videoFilters.count, 1)
         XCTAssertEqual(transition.audioFilters.count, 1)

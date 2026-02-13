@@ -137,7 +137,7 @@ final class CaptionTitleTests: XCTestCase {
         )
         
         caption.typedTextStyleDefinitions = [styleDef]
-        _ = caption.typedTextStyleDefinitions // Explicitly use variable to acknowledge mutation
+        _ = caption // Explicitly use variable to acknowledge mutation
         
         let retrieved = caption.typedTextStyleDefinitions
         XCTAssertEqual(retrieved.count, 1)
@@ -196,7 +196,7 @@ final class CaptionTitleTests: XCTestCase {
         )
         
         title.typedTextStyleDefinitions = [styleDef]
-        _ = title.typedTextStyleDefinitions // Explicitly use variable to acknowledge mutation
+        _ = title // Explicitly use variable to acknowledge mutation
         
         let retrieved = title.typedTextStyleDefinitions
         XCTAssertEqual(retrieved.count, 1)

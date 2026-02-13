@@ -171,7 +171,7 @@ final class Transform360Tests: XCTestCase {
         adjustment.convergence = 0.5
         
         clip.transform360Adjustment = adjustment
-        _ = clip.transform360Adjustment // Explicitly use variable to acknowledge mutation
+        _ = clip // Explicitly use variable to acknowledge mutation
         
         let retrieved = clip.transform360Adjustment
         XCTAssertNotNil(retrieved)
