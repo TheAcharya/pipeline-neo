@@ -1,2 +1,14 @@
+# macOS
 .DS_Store
-.build
+.nova
+
+## Build generated
+/.build
+DerivedData/
+
+# Xcode
+xcuserdata/
+
+# Misc
+.netrc
+.idea/
