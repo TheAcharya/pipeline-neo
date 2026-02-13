@@ -75,27 +75,29 @@ public final class CutDetector: CutDetection, Sendable {
 
             let editType: EditPoint.EditType
             let transitionName: String?
+            
+            // Check if clips are directly adjacent (no elements between them)
             if inIdx == outIdx + 1 {
-                let between = storyElements[outIdx + 1]
-                if between.fcpxType == .transition {
-                    editType = .transition
-                    transitionName = between.fcpxName ?? between.getElementAttribute("name")
-                } else if between.fcpxType == .gap {
-                    editType = .gapCut
-                    transitionName = nil
-                } else {
-                    editType = .hardCut
-                    transitionName = nil
-                }
+                // Clips are adjacent - hard cut with no transition or gap
+                editType = .hardCut
+                transitionName = nil
             } else {
-                let firstBetween = storyElements[outIdx + 1]
-                if firstBetween.fcpxType == .transition {
+                // There are elements between the clips - check all of them
+                // Elements between clips are in the range (outIdx + 1)..<inIdx
+                let elementsBetween = Array(storyElements[(outIdx + 1)..<inIdx])
+                
+                // Prioritize transitions over gaps (if both exist, it's a transition)
+                let transition = elementsBetween.first { $0.fcpxType == .transition }
+                let gap = elementsBetween.first { $0.fcpxType == .gap }
+                
+                if let transition = transition {
                     editType = .transition
-                    transitionName = firstBetween.fcpxName ?? firstBetween.getElementAttribute("name")
-                } else if firstBetween.fcpxType == .gap {
+                    transitionName = transition.fcpxName ?? transition.getElementAttribute("name")
+                } else if gap != nil {
                     editType = .gapCut
                     transitionName = nil
                 } else {
+                    // No transition or gap found - hard cut
                     editType = .hardCut
                     transitionName = nil
                 }

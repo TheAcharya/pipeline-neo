@@ -96,6 +96,54 @@ final class VersionConversionTests: XCTestCase, @unchecked Sendable {
         }
         return nil
     }
+    
+    // MARK: - Edge Cases
+    
+    func testConvertToVersion_DocumentAlwaysHasRoot() throws {
+        // Verify that converted documents always have a root element
+        // This tests the edge case handling in FCPXMLVersionConverter
+        let doc = service.createFCPXMLDocument(version: "1.14")
+        let converted = try service.convertToVersion(doc, targetVersion: .v1_10)
+        
+        // Converted document should always have a root element
+        let root = converted.rootElement()
+        XCTAssertNotNil(root, "Converted document should always have a root element")
+        XCTAssertEqual(root?.name, "fcpxml", "Root element should be 'fcpxml'")
+        XCTAssertEqual(converted.fcpxmlVersion, "1.10", "Version should be set correctly")
+    }
+    
+    func testConvertToVersion_StrippingWorksWithValidRoot() throws {
+        // Verify that element stripping works when root exists
+        let doc = service.createFCPXMLDocument(version: "1.14")
+        
+        // Add an element that should be stripped when converting to 1.10
+        // (adjust-colorConform was introduced in 1.11)
+        guard let root = doc.rootElement() else {
+            return XCTFail("Document should have root element")
+        }
+        
+        let resources = root.firstChildElement(named: "resources") ?? XMLElement(name: "resources")
+        if root.firstChildElement(named: "resources") == nil {
+            root.addChild(resources)
+        }
+        
+        let asset = XMLElement(name: "asset")
+        asset.setAttributesWith(["id": "r1", "name": "Test"])
+        let adjustColorConform = XMLElement(name: "adjust-colorConform")
+        adjustColorConform.setAttributesWith(["enabled": "1"])
+        asset.addChild(adjustColorConform)
+        resources.addChild(asset)
+        
+        let converted = try service.convertToVersion(doc, targetVersion: .v1_10)
+        
+        // Verify adjust-colorConform was stripped
+        let convertedRoot = converted.rootElement()
+        XCTAssertNotNil(convertedRoot, "Converted document should have root")
+        
+        // Search for adjust-colorConform - it should not exist
+        let found = findElement(named: "adjust-colorConform", in: convertedRoot!)
+        XCTAssertNil(found, "adjust-colorConform should be stripped when converting to 1.10")
+    }
 
     // MARK: - Save as .fcpxml
 

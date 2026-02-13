@@ -411,11 +411,29 @@ public final class FCPXMLService: Sendable {
     }
 
     /// Asynchronously validates the document against the DTD for the given FCPXML version (1.5–1.14).
+    ///
+    /// **Note:** This method calls the synchronous validator directly. Since validation is CPU-bound
+    /// and works with non-Sendable `XMLDocument` types, wrapping in `Task` would not provide
+    /// concurrency benefits and could introduce thread-safety issues. The async signature allows
+    /// this method to be used in async contexts while maintaining type safety.
+    ///
+    /// - Parameters:
+    ///   - document: The FCPXML document to validate.
+    ///   - version: The FCPXML version whose DTD to use (e.g. `.v1_10`, `.v1_14`).
+    /// - Returns: `.success` if the document conforms to that version's DTD; otherwise a result with `dtd_validation` error(s).
     public func validateDocumentAgainstDTD(_ document: XMLDocument, version: FCPXMLVersion) async -> ValidationResult {
         dtdValidator.validate(document, version: version)
     }
 
     /// Asynchronously validates the document against the DTD for its declared root version.
+    ///
+    /// **Note:** This method calls the synchronous validator directly. Since validation is CPU-bound
+    /// and works with non-Sendable `XMLDocument` types, wrapping in `Task` would not provide
+    /// concurrency benefits and could introduce thread-safety issues. The async signature allows
+    /// this method to be used in async contexts while maintaining type safety.
+    ///
+    /// - Parameter document: The FCPXML document to validate.
+    /// - Returns: `.success` if the document conforms to its declared version's DTD; otherwise a result with errors (e.g. unknown version or DTD validation failure).
     public func validateDocumentAgainstDeclaredVersion(_ document: XMLDocument) async -> ValidationResult {
         _validateDocumentAgainstDeclaredVersion(document)
     }

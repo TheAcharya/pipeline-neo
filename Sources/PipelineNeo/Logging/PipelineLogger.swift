@@ -89,7 +89,8 @@ public struct PrintPipelineLogger: PipelineLogger, Sendable {
         if let metadata = metadata, !metadata.isEmpty {
             line += " " + metadata.map { "\($0.key)=\($0.value)" }.joined(separator: " ")
         }
-        print(line)
+        // Write to stderr to avoid interfering with progress bars on stdout
+        fputs("\(line)\n", stderr)
     }
 }
 
@@ -159,7 +160,8 @@ public final class FilePipelineLogger: PipelineLogger, Sendable {
             }
             line += "\n"
             if self.writeToConsole {
-                print(line.trimmingCharacters(in: .newlines))
+                // Write to stderr to avoid interfering with progress bars on stdout
+                fputs(line, stderr)
             }
             if let handle = self.fileHandle, self.writeToFile {
                 if let data = line.data(using: .utf8) {

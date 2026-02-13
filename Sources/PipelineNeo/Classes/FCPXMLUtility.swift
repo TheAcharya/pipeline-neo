@@ -26,6 +26,8 @@ public final class FCPXMLUtility: Sendable {
 	private let cutDetector: CutDetection
 	private let versionConverter: FCPXMLVersionConverting
 	private let mediaExtractor: MediaExtraction
+	private let semanticValidator: FCPXMLValidator
+	private let dtdValidator: FCPXMLDTDValidator
 
 	// MARK: - Initializing
 
@@ -38,6 +40,8 @@ public final class FCPXMLUtility: Sendable {
 		cutDetector: CutDetection = CutDetector(),
 		versionConverter: FCPXMLVersionConverting = FCPXMLVersionConverter(),
 		mediaExtractor: MediaExtraction = MediaExtractor(),
+		semanticValidator: FCPXMLValidator = FCPXMLValidator(),
+		dtdValidator: FCPXMLDTDValidator = FCPXMLDTDValidator(),
 		logger: PipelineLogger = NoOpPipelineLogger()
 	) {
 		self.parser = parser
@@ -47,6 +51,8 @@ public final class FCPXMLUtility: Sendable {
 		self.cutDetector = cutDetector
 		self.versionConverter = versionConverter
 		self.mediaExtractor = mediaExtractor
+		self.semanticValidator = semanticValidator
+		self.dtdValidator = dtdValidator
 		self.logger = logger
 	}
 
@@ -65,6 +71,16 @@ public final class FCPXMLUtility: Sendable {
 	/// - Returns: A filtered array of XMLElement objects
 	public func filter(fcpxElements elements: [XMLElement], ofTypes types: [FCPXMLElementType]) -> [XMLElement] {
 		return parser.filter(elements: elements, ofTypes: types)
+	}
+	
+	/// Filters elements by FCPXML element types (alias for `filter(fcpxElements:ofTypes:)` for API consistency).
+	///
+	/// - Parameters:
+	///   - elements: An array of XMLElement objects
+	///   - types: An array of FCPXMLElementType enumeration values
+	/// - Returns: A filtered array of XMLElement objects
+	public func filterElements(_ elements: [XMLElement], ofTypes types: [FCPXMLElementType]) -> [XMLElement] {
+		return filter(fcpxElements: elements, ofTypes: types)
 	}
 	
 	// MARK: - Time Conversion Methods
@@ -185,6 +201,134 @@ public final class FCPXMLUtility: Sendable {
 		await mediaExtractor.copyReferencedMedia(from: document, to: destinationURL, baseURL: baseURL, progress: progress)
 	}
 	
+	// MARK: - Validation Methods
+	
+	/// Validates FCPXML document (root element and basic structure only).
+	///
+	/// For schema validation against a specific FCPXML version's DTD, use
+	/// `validateDocumentAgainstDTD(_:version:)` or `validateDocumentAgainstDeclaredVersion(_:)`.
+	/// - Parameter document: Document to validate
+	/// - Returns: True if valid, false otherwise
+	public func validateDocument(_ document: XMLDocument) -> Bool {
+		return parser.validate(document)
+	}
+	
+	/// Validates the document against the DTD for the given FCPXML version (1.5–1.14).
+	///
+	/// Use this to ensure a document conforms to a specific version's schema before
+	/// import or after conversion. Each FCPXML version has a distinct DTD in the package.
+	/// - Parameters:
+	///   - document: The FCPXML document to validate.
+	///   - version: The FCPXML version whose DTD to use (e.g. `.v1_10`, `.v1_14`).
+	/// - Returns: `.success` if the document conforms to that version's DTD; otherwise a result with `dtd_validation` error(s).
+	public func validateDocumentAgainstDTD(_ document: XMLDocument, version: FCPXMLVersion) -> ValidationResult {
+		logger.log(level: .debug, message: "Validating document against DTD", metadata: ["version": version.rawValue])
+		let result = dtdValidator.validate(document, version: version)
+		if result.isValid {
+			logger.log(level: .debug, message: "DTD validation passed", metadata: ["version": version.rawValue])
+		} else {
+			logger.log(level: .warning, message: "DTD validation failed", metadata: ["version": version.rawValue, "errors": result.detailedDescription])
+		}
+		return result
+	}
+	
+	/// Validates the document against the DTD for its declared root version.
+	///
+	/// Reads the document's `fcpxml` root `version` attribute and validates against
+	/// the matching DTD (1.5–1.14). Use to check that a document conforms to the schema
+	/// it claims. If the version is missing or not supported, returns an error result.
+	/// - Parameter document: The FCPXML document to validate.
+	/// - Returns: `.success` if the document conforms to its declared version's DTD; otherwise a result with errors (e.g. unknown version or DTD validation failure).
+	public func validateDocumentAgainstDeclaredVersion(_ document: XMLDocument) -> ValidationResult {
+		_validateDocumentAgainstDeclaredVersion(document)
+	}
+	
+	/// Performs robust validation: semantic (root, resources, ref resolution) and DTD (against the document's declared version).
+	///
+	/// Use this for a full check before processing or to report validation status to the user.
+	/// - Parameter document: The FCPXML document to validate.
+	/// - Returns: A report combining semantic and DTD results; ``DocumentValidationReport/isValid`` is `true` only when both pass.
+	public func performValidation(_ document: XMLDocument) -> DocumentValidationReport {
+		_performValidation(document)
+	}
+	
+	private func _performValidation(_ document: XMLDocument) -> DocumentValidationReport {
+		logger.log(level: .debug, message: "Performing full validation (semantic + DTD)", metadata: nil)
+		let semanticResult = semanticValidator.validate(document)
+		let dtdResult = _validateDocumentAgainstDeclaredVersion(document)
+		let report = DocumentValidationReport(semantic: semanticResult, dtd: dtdResult)
+		if report.isValid {
+			logger.log(level: .debug, message: report.summary, metadata: nil)
+		} else {
+			logger.log(level: .warning, message: report.summary, metadata: ["details": report.detailedDescription])
+		}
+		return report
+	}
+	
+	private func _validateDocumentAgainstDeclaredVersion(_ document: XMLDocument) -> ValidationResult {
+		guard let versionString = document.fcpxmlVersion, !versionString.isEmpty else {
+			return .error(ValidationError(
+				type: .invalidAttributeValue,
+				message: "Document has no FCPXML version attribute on root",
+				context: [:]
+			))
+		}
+		guard let version = FCPXMLVersion(string: versionString) else {
+			return .error(ValidationError(
+				type: .invalidAttributeValue,
+				message: "Unsupported or invalid FCPXML version: '\(versionString)'",
+				context: ["version": versionString]
+			))
+		}
+		return dtdValidator.validate(document, version: version)
+	}
+	
+	/// Asynchronously validates FCPXML document (root element and basic structure only).
+	public func validateDocument(_ document: XMLDocument) async -> Bool {
+		return await parser.validate(document)
+	}
+	
+	/// Asynchronously validates the document against the DTD for the given FCPXML version (1.5–1.14).
+	///
+	/// **Note:** This method calls the synchronous validator directly. Since validation is CPU-bound
+	/// and works with non-Sendable `XMLDocument` types, wrapping in `Task` would not provide
+	/// concurrency benefits and could introduce thread-safety issues. The async signature allows
+	/// this method to be used in async contexts while maintaining type safety.
+	///
+	/// - Parameters:
+	///   - document: The FCPXML document to validate.
+	///   - version: The FCPXML version whose DTD to use (e.g. `.v1_10`, `.v1_14`).
+	/// - Returns: `.success` if the document conforms to that version's DTD; otherwise a result with `dtd_validation` error(s).
+	public func validateDocumentAgainstDTD(_ document: XMLDocument, version: FCPXMLVersion) async -> ValidationResult {
+		dtdValidator.validate(document, version: version)
+	}
+	
+	/// Asynchronously validates the document against the DTD for its declared root version.
+	///
+	/// **Note:** This method calls the synchronous validator directly. Since validation is CPU-bound
+	/// and works with non-Sendable `XMLDocument` types, wrapping in `Task` would not provide
+	/// concurrency benefits and could introduce thread-safety issues. The async signature allows
+	/// this method to be used in async contexts while maintaining type safety.
+	///
+	/// - Parameter document: The FCPXML document to validate.
+	/// - Returns: `.success` if the document conforms to its declared version's DTD; otherwise a result with errors (e.g. unknown version or DTD validation failure).
+	public func validateDocumentAgainstDeclaredVersion(_ document: XMLDocument) async -> ValidationResult {
+		_validateDocumentAgainstDeclaredVersion(document)
+	}
+	
+	/// Asynchronously performs robust validation: semantic and DTD (against the document's declared version).
+	///
+	/// **Note:** This method calls synchronous validators directly. Since validation is CPU-bound
+	/// and works with non-Sendable `XMLDocument` types, wrapping in `Task` would not provide
+	/// concurrency benefits and could introduce thread-safety issues. The async signature allows
+	/// this method to be used in async contexts while maintaining type safety.
+	///
+	/// - Parameter document: The FCPXML document to validate.
+	/// - Returns: A report combining semantic and DTD results; ``DocumentValidationReport/isValid`` is `true` only when both pass.
+	public func performValidation(_ document: XMLDocument) async -> DocumentValidationReport {
+		_performValidation(document)
+	}
+	
 	/// Converts a project counter value to the project's timecode.
 	///
 	/// - Parameters:
@@ -193,18 +337,10 @@ public final class FCPXMLUtility: Sendable {
 	/// - Returns: An optional CMTime value of the timecode value.
 	@available(*, deprecated, message: "Use sequenceTimecode(fromCounterValue:inSequence:) instead.")
 	public func projectTimecode(fromCounterValue counterValue: CMTime, inProject project: XMLElement) -> CMTime? {
-		
-        guard let projectSequence = project.fcpxProjectSequence else {
-            return nil
-        }
-        
-		guard let projectSequenceTCStart = projectSequence.fcpxTCStart else {
+		guard let projectSequence = project.fcpxProjectSequence else {
 			return nil
 		}
-		
-		let timecodeValue = CMTimeAdd(projectSequenceTCStart, counterValue)
-		
-		return timecodeValue
+		return sequenceTimecode(fromCounterValue: counterValue, inSequence: projectSequence)
 	}
 	
 	/// Converts a project timecode value to the project's counter time.
@@ -215,19 +351,10 @@ public final class FCPXMLUtility: Sendable {
 	/// - Returns: An optional CMTime value of the counter time.
 	@available(*, deprecated, message: "Use sequenceCounterTime(fromTimecodeValue:inSequence:) instead.")
 	public func projectCounterTime(fromTimecodeValue timecodeValue: CMTime, inProject project: XMLElement) -> CMTime? {
-		
-        // Convert the timecode values to sequence counter time values
-        guard let projectSequence = project.fcpxProjectSequence else {
-            return nil
-        }
-		
-		guard let projectSequenceTCStart = projectSequence.fcpxTCStart else {
+		guard let projectSequence = project.fcpxProjectSequence else {
 			return nil
 		}
-		
-		let counterValue = CMTimeSubtract(timecodeValue, projectSequenceTCStart)
-		
-		return counterValue
+		return sequenceCounterTime(fromTimecodeValue: timecodeValue, inSequence: projectSequence)
 	}
     
     /// Converts a sequence counter value to the sequence's timecode.

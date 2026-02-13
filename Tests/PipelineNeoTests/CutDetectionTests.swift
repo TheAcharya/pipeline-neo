@@ -99,6 +99,132 @@ final class CutDetectionTests: XCTestCase, @unchecked Sendable {
         XCTAssertEqual(result.differentClipsCutCount, 0)
     }
 
+    // MARK: - Edge Cases: Multiple Elements Between Clips
+
+    func testDetectCuts_MultipleElementsBetweenClips_PrioritizesTransition() throws {
+        // Create a spine with: [Clip A] [Gap] [Transition] [Clip B]
+        // This tests the bug fix where multiple elements between clips weren't properly handled
+        let document = service.createFCPXMLDocument(version: "1.10")
+        guard let root = document.rootElement() else {
+            XCTFail("Failed to get root element")
+            return
+        }
+        
+        // Create a project with sequence
+        let project = XMLElement(name: "project")
+        project.setAttributesAs(["name": "Test Project"])
+        let sequence = XMLElement(name: "sequence")
+        let spine = XMLElement(name: "spine")
+        
+        // Create Clip A
+        let clipA = XMLElement(name: "asset-clip")
+        clipA.setAttributesAs([
+            "name": "Clip A",
+            "ref": "r1",
+            "offset": "0s",
+            "duration": "3600/2400s"
+        ])
+        
+        // Create Gap
+        let gap = XMLElement(name: "gap")
+        gap.setAttributesAs([
+            "name": "Gap",
+            "offset": "3600/2400s",
+            "duration": "1200/2400s"
+        ])
+        
+        // Create Transition
+        let transition = XMLElement(name: "transition")
+        transition.setAttributesAs([
+            "name": "Cross Dissolve",
+            "offset": "4800/2400s",
+            "duration": "600/2400s"
+        ])
+        
+        // Create Clip B
+        let clipB = XMLElement(name: "asset-clip")
+        clipB.setAttributesAs([
+            "name": "Clip B",
+            "ref": "r2",
+            "offset": "5400/2400s",
+            "duration": "3600/2400s"
+        ])
+        
+        // Build structure: spine -> [clipA, gap, transition, clipB]
+        spine.addChild(clipA)
+        spine.addChild(gap)
+        spine.addChild(transition)
+        spine.addChild(clipB)
+        sequence.addChild(spine)
+        project.addChild(sequence)
+        root.addChild(project)
+        
+        // Detect cuts
+        let result = service.detectCuts(inSpine: spine)
+        
+        // Should detect one edit point between Clip A and Clip B
+        XCTAssertEqual(result.totalEditPoints, 1, "Should detect one edit point")
+        
+        guard let editPoint = result.editPoints.first else {
+            XCTFail("No edit point detected")
+            return
+        }
+        
+        // Should prioritize transition over gap
+        XCTAssertEqual(editPoint.editType, .transition, "Should detect transition, not gap")
+        XCTAssertEqual(editPoint.transitionName, "Cross Dissolve", "Should capture transition name")
+        XCTAssertEqual(editPoint.sourceRelationship, .differentClips, "Should be different clips")
+    }
+    
+    func testDetectCuts_AdjacentClips_HardCut() throws {
+        // Create a spine with: [Clip A] [Clip B] (no elements between)
+        let document = service.createFCPXMLDocument(version: "1.10")
+        guard let root = document.rootElement() else {
+            XCTFail("Failed to get root element")
+            return
+        }
+        
+        let project = XMLElement(name: "project")
+        project.setAttributesAs(["name": "Test Project"])
+        let sequence = XMLElement(name: "sequence")
+        let spine = XMLElement(name: "spine")
+        
+        let clipA = XMLElement(name: "asset-clip")
+        clipA.setAttributesAs([
+            "name": "Clip A",
+            "ref": "r1",
+            "offset": "0s",
+            "duration": "3600/2400s"
+        ])
+        
+        let clipB = XMLElement(name: "asset-clip")
+        clipB.setAttributesAs([
+            "name": "Clip B",
+            "ref": "r2",
+            "offset": "3600/2400s",
+            "duration": "3600/2400s"
+        ])
+        
+        spine.addChild(clipA)
+        spine.addChild(clipB)
+        sequence.addChild(spine)
+        project.addChild(sequence)
+        root.addChild(project)
+        
+        let result = service.detectCuts(inSpine: spine)
+        
+        XCTAssertEqual(result.totalEditPoints, 1, "Should detect one edit point")
+        
+        guard let editPoint = result.editPoints.first else {
+            XCTFail("No edit point detected")
+            return
+        }
+        
+        // Adjacent clips should be hard cut
+        XCTAssertEqual(editPoint.editType, .hardCut, "Adjacent clips should be hard cut")
+        XCTAssertNil(editPoint.transitionName, "Hard cut should have no transition name")
+    }
+
     // MARK: - Async
 
     func testDetectCutsAsync() async throws {

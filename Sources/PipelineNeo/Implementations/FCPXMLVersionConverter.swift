@@ -63,7 +63,17 @@ public final class FCPXMLVersionConverter: FCPXMLVersionConverting, Sendable {
         copy.fcpxmlVersion = targetVersion.stringValue
 
         let toStrip = Self.elementNamesToStrip(whenConvertingTo: targetVersion)
-        if !toStrip.isEmpty, let root = copy.rootElement() {
+        if !toStrip.isEmpty {
+            guard let root = copy.rootElement() else {
+                // XMLDocument should always have a root element when created from valid XML data.
+                // If root is nil, this indicates potential document corruption or an edge case.
+                // In debug builds, assert to catch this during development.
+                // In release builds, conversion continues without stripping (version is still set correctly).
+                #if DEBUG
+                assertionFailure("FCPXMLVersionConverter: Document copy has no root element. Element stripping skipped.")
+                #endif
+                return copy
+            }
             stripElements(in: root, names: toStrip)
         }
 

@@ -173,4 +173,131 @@ final class MediaExtractionTests: XCTestCase, @unchecked Sendable {
         XCTAssertEqual(copyResult.copied.count, 2, "Both files copied")
         XCTAssertEqual(copyResult.failed.count, 0)
     }
+
+    // MARK: - URL Resolution Edge Cases
+
+    func testExtractMediaReferences_InvalidURL_HandledGracefully() throws {
+        // Test that URLs without schemes are handled (Foundation's URL(string:) may create URLs even without schemes)
+        // The important thing is that the MediaReference is created and can be handled appropriately
+        let fcpxml = """
+        <?xml version="1.0" encoding="UTF-8"?>
+        <!DOCTYPE fcpxml>
+        <fcpxml version="1.10">
+            <resources>
+                <format id="r1" name="FFVideoFormat1080p25" frameDuration="100/2500s" width="1920" height="1080"/>
+                <asset id="r2" name="Invalid" format="r1">
+                    <media-rep kind="original-media" src="not-a-valid-url-without-scheme"/>
+                </asset>
+            </resources>
+            <library><event name="E"><project name="P"><sequence format="r1" duration="100/25s" tcStart="0s"/></project></event></library>
+        </fcpxml>
+        """
+        let data = Data(fcpxml.utf8)
+        let document = try service.parseFCPXML(from: data)
+        
+        // Extract without baseURL
+        let result = service.extractMediaReferences(from: document, baseURL: nil)
+        
+        XCTAssertEqual(result.references.count, 1, "Should still create MediaReference")
+        let ref = try XCTUnwrap(result.references.first)
+        // URL may or may not be nil depending on Foundation's URL parsing behavior
+        // The important thing is that if it's not a file URL, it will be skipped during copy
+        XCTAssertEqual(ref.resourceID, "r2")
+        if let url = ref.url {
+            // If URL exists, verify it's not a file URL (so it will be skipped)
+            XCTAssertFalse(url.isFileURL, "URL without scheme should not be a file URL")
+        }
+    }
+
+    func testExtractMediaReferences_RelativeURLWithoutBase_HandledGracefully() throws {
+        // Test that relative URLs without baseURL are handled appropriately
+        // Foundation's URL(string:) may create URLs, but they won't be file URLs
+        let fcpxml = """
+        <?xml version="1.0" encoding="UTF-8"?>
+        <!DOCTYPE fcpxml>
+        <fcpxml version="1.10">
+            <resources>
+                <format id="r1" name="FFVideoFormat1080p25" frameDuration="100/2500s" width="1920" height="1080"/>
+                <asset id="r2" name="Relative" format="r1">
+                    <media-rep kind="original-media" src="relative/path/to/file.mov"/>
+                </asset>
+            </resources>
+            <library><event name="E"><project name="P"><sequence format="r1" duration="100/25s" tcStart="0s"/></project></event></library>
+        </fcpxml>
+        """
+        let data = Data(fcpxml.utf8)
+        let document = try service.parseFCPXML(from: data)
+        
+        // Extract without baseURL
+        let result = service.extractMediaReferences(from: document, baseURL: nil)
+        
+        XCTAssertEqual(result.references.count, 1)
+        let ref = try XCTUnwrap(result.references.first)
+        // URL may exist but won't be a file URL, so it will be skipped during copy
+        if let url = ref.url {
+            XCTAssertFalse(url.isFileURL, "Relative URL without baseURL should not resolve to file URL")
+        }
+    }
+
+    func testExtractMediaReferences_RelativeURLWithBase_ResolvesCorrectly() throws {
+        // Test that relative URLs with baseURL resolve correctly
+        let tempDir = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        try FileManager.default.createDirectory(at: tempDir, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: tempDir) }
+        
+        let relativePath = "media/clip.mov"
+        let fcpxml = """
+        <?xml version="1.0" encoding="UTF-8"?>
+        <!DOCTYPE fcpxml>
+        <fcpxml version="1.10">
+            <resources>
+                <format id="r1" name="FFVideoFormat1080p25" frameDuration="100/2500s" width="1920" height="1080"/>
+                <asset id="r2" name="Relative" format="r1">
+                    <media-rep kind="original-media" src="\(relativePath)"/>
+                </asset>
+            </resources>
+            <library><event name="E"><project name="P"><sequence format="r1" duration="100/25s" tcStart="0s"/></project></event></library>
+        </fcpxml>
+        """
+        let data = Data(fcpxml.utf8)
+        let document = try service.parseFCPXML(from: data)
+        
+        // Extract with baseURL - relative URL should resolve
+        let result = service.extractMediaReferences(from: document, baseURL: tempDir)
+        
+        XCTAssertEqual(result.references.count, 1)
+        let ref = try XCTUnwrap(result.references.first)
+        XCTAssertNotNil(ref.url, "URL should be resolved when baseURL is provided")
+        XCTAssertEqual(ref.url?.lastPathComponent, "clip.mov")
+    }
+
+    func testCopyReferencedMedia_NilURL_Skips() throws {
+        // Test that references with nil URLs are skipped during copy
+        let fcpxml = """
+        <?xml version="1.0" encoding="UTF-8"?>
+        <!DOCTYPE fcpxml>
+        <fcpxml version="1.10">
+            <resources>
+                <format id="r1" name="FFVideoFormat1080p25" frameDuration="100/2500s" width="1920" height="1080"/>
+                <asset id="r2" name="Invalid" format="r1">
+                    <media-rep kind="original-media" src="invalid-url-without-scheme"/>
+                </asset>
+            </resources>
+            <library><event name="E"><project name="P"><sequence format="r1" duration="100/25s" tcStart="0s"/></project></event></library>
+        </fcpxml>
+        """
+        let data = Data(fcpxml.utf8)
+        let document = try service.parseFCPXML(from: data)
+        
+        let destDir = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        try FileManager.default.createDirectory(at: destDir, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: destDir) }
+        
+        let result = service.copyReferencedMedia(from: document, to: destDir, baseURL: nil, progress: nil)
+        
+        // Should have no entries because nil URL references are skipped
+        XCTAssertEqual(result.entries.count, 0, "References with nil URLs should be skipped during copy")
+        XCTAssertEqual(result.copied.count, 0)
+        XCTAssertEqual(result.skipped.count, 0)
+    }
 }
