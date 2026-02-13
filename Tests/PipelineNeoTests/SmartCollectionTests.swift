@@ -236,43 +236,46 @@ final class SmartCollectionTests: XCTestCase {
     }
     
     func testSmartCollectionMatchTexts() {
-        var smartCollection = FinalCutPro.FCPXML.SmartCollection(name: "Test", match: .all)
+        let smartCollection = FinalCutPro.FCPXML.SmartCollection(name: "Test", match: .all)
         
         let matchTexts = [
             FinalCutPro.FCPXML.MatchText(rule: .includes, value: "test1"),
             FinalCutPro.FCPXML.MatchText(rule: .includes, value: "test2")
         ]
         
-        smartCollection.matchTexts = matchTexts
+        var updatedCollection = smartCollection
+        updatedCollection.matchTexts = matchTexts
         
-        XCTAssertEqual(smartCollection.matchTexts.count, 2)
-        XCTAssertEqual(smartCollection.matchTexts[0].value, "test1")
+        XCTAssertEqual(updatedCollection.matchTexts.count, 2)
+        XCTAssertEqual(updatedCollection.matchTexts[0].value, "test1")
     }
     
     func testSmartCollectionMatchRatings() {
-        var smartCollection = FinalCutPro.FCPXML.SmartCollection(name: "Favorites", match: .all)
+        let smartCollection = FinalCutPro.FCPXML.SmartCollection(name: "Favorites", match: .all)
         
         let matchRatings = [
             FinalCutPro.FCPXML.MatchRatings(value: .favorites)
         ]
         
-        smartCollection.matchRatings = matchRatings
+        var updatedCollection = smartCollection
+        updatedCollection.matchRatings = matchRatings
         
-        XCTAssertEqual(smartCollection.matchRatings.count, 1)
-        XCTAssertEqual(smartCollection.matchRatings[0].value, .favorites)
+        XCTAssertEqual(updatedCollection.matchRatings.count, 1)
+        XCTAssertEqual(updatedCollection.matchRatings[0].value, .favorites)
     }
     
     func testSmartCollectionMatchMedias() {
-        var smartCollection = FinalCutPro.FCPXML.SmartCollection(name: "Video", match: .any)
+        let smartCollection = FinalCutPro.FCPXML.SmartCollection(name: "Video", match: .any)
         
         let matchMedias = [
             FinalCutPro.FCPXML.MatchMedia(rule: .isExactly, type: .videoOnly),
             FinalCutPro.FCPXML.MatchMedia(rule: .isExactly, type: .videoWithAudio)
         ]
         
-        smartCollection.matchMedias = matchMedias
+        var updatedCollection = smartCollection
+        updatedCollection.matchMedias = matchMedias
         
-        XCTAssertEqual(smartCollection.matchMedias.count, 2)
+        XCTAssertEqual(updatedCollection.matchMedias.count, 2)
     }
     
     func testSmartCollectionFromXML() throws {
@@ -300,36 +303,38 @@ final class SmartCollectionTests: XCTestCase {
     }
     
     func testSmartCollectionToXML() {
-        var smartCollection = FinalCutPro.FCPXML.SmartCollection(name: "Test", match: .all)
-        smartCollection.matchTexts = [
+        let smartCollection = FinalCutPro.FCPXML.SmartCollection(name: "Test", match: .all)
+        var updatedCollection = smartCollection
+        updatedCollection.matchTexts = [
             FinalCutPro.FCPXML.MatchText(rule: .includes, value: "test")
         ]
         
-        XCTAssertEqual(smartCollection.element.name, "smart-collection")
-        XCTAssertEqual(smartCollection.element.stringValue(forAttributeNamed: "name"), "Test")
-        XCTAssertEqual(smartCollection.element.stringValue(forAttributeNamed: "match"), "all")
+        XCTAssertEqual(updatedCollection.element.name, "smart-collection")
+        XCTAssertEqual(updatedCollection.element.stringValue(forAttributeNamed: "name"), "Test")
+        XCTAssertEqual(updatedCollection.element.stringValue(forAttributeNamed: "match"), "all")
         
-        let matchTextElements = smartCollection.element.childElements.filter { $0.name == "match-text" }
+        let matchTextElements = updatedCollection.element.childElements.filter { $0.name == "match-text" }
         XCTAssertEqual(matchTextElements.count, 1)
     }
     
     func testSmartCollectionCodable() throws {
-        var smartCollection = FinalCutPro.FCPXML.SmartCollection(name: "Test", match: .all)
-        smartCollection.matchTexts = [
+        let smartCollection = FinalCutPro.FCPXML.SmartCollection(name: "Test", match: .all)
+        var updatedCollection = smartCollection
+        updatedCollection.matchTexts = [
             FinalCutPro.FCPXML.MatchText(rule: .includes, value: "test")
         ]
-        smartCollection.matchRatings = [
+        updatedCollection.matchRatings = [
             FinalCutPro.FCPXML.MatchRatings(value: .favorites)
         ]
         
         let encoder = JSONEncoder()
-        let data = try encoder.encode(smartCollection)
+        let data = try encoder.encode(updatedCollection)
         
         let decoder = JSONDecoder()
         let decoded = try decoder.decode(FinalCutPro.FCPXML.SmartCollection.self, from: data)
         
-        XCTAssertEqual(decoded.name, smartCollection.name)
-        XCTAssertEqual(decoded.match, smartCollection.match)
+        XCTAssertEqual(decoded.name, updatedCollection.name)
+        XCTAssertEqual(decoded.match, updatedCollection.match)
         XCTAssertEqual(decoded.matchTexts.count, 1)
         XCTAssertEqual(decoded.matchRatings.count, 1)
     }

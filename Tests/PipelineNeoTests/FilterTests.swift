@@ -261,7 +261,7 @@ final class FilterTests: XCTestCase {
     }
     
     func testClipVideoFiltersRoundTrip() {
-        var clip = FinalCutPro.FCPXML.Clip(duration: Fraction(5, 1))
+        let clip = FinalCutPro.FCPXML.Clip(duration: Fraction(5, 1))
         
         let filter = FinalCutPro.FCPXML.VideoFilter(
             effectID: "r1",
@@ -271,13 +271,14 @@ final class FilterTests: XCTestCase {
             ]
         )
         
-        clip.videoFilters = [filter]
+        var updatedClip = clip
+        updatedClip.videoFilters = [filter]
         
-        XCTAssertEqual(clip.videoFilters.count, 1)
-        XCTAssertEqual(clip.videoFilters[0].effectID, "r1")
+        XCTAssertEqual(updatedClip.videoFilters.count, 1)
+        XCTAssertEqual(updatedClip.videoFilters[0].effectID, "r1")
         
         // Verify XML structure
-        let filterElements = clip.element.childElements.filter { $0.name == "filter-video" }
+        let filterElements = updatedClip.element.childElements.filter { $0.name == "filter-video" }
         XCTAssertEqual(filterElements.count, 1)
     }
     
@@ -383,20 +384,21 @@ final class FilterTests: XCTestCase {
     }
     
     func testTransitionFiltersRoundTrip() {
-        var transition = FinalCutPro.FCPXML.Transition(duration: Fraction(1, 1))
+        let transition = FinalCutPro.FCPXML.Transition(duration: Fraction(1, 1))
         
         let videoFilter = FinalCutPro.FCPXML.VideoFilter(effectID: "r1", name: "Video Effect")
         let audioFilter = FinalCutPro.FCPXML.AudioFilter(effectID: "r2", name: "Audio Effect")
         
-        transition.videoFilters = [videoFilter]
-        transition.audioFilters = [audioFilter]
+        var updatedTransition = transition
+        updatedTransition.videoFilters = [videoFilter]
+        updatedTransition.audioFilters = [audioFilter]
         
-        XCTAssertEqual(transition.videoFilters.count, 1)
-        XCTAssertEqual(transition.audioFilters.count, 1)
+        XCTAssertEqual(updatedTransition.videoFilters.count, 1)
+        XCTAssertEqual(updatedTransition.audioFilters.count, 1)
         
         // Verify XML structure
-        let videoFilterElements = transition.element.childElements.filter { $0.name == "filter-video" }
-        let audioFilterElements = transition.element.childElements.filter { $0.name == "filter-audio" }
+        let videoFilterElements = updatedTransition.element.childElements.filter { $0.name == "filter-video" }
+        let audioFilterElements = updatedTransition.element.childElements.filter { $0.name == "filter-audio" }
         XCTAssertEqual(videoFilterElements.count, 1)
         XCTAssertEqual(audioFilterElements.count, 1)
     }

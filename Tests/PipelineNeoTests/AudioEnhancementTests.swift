@@ -223,7 +223,7 @@ final class AudioEnhancementTests: XCTestCase {
     }
     
     func testClipAudioEnhancementsRoundTrip() {
-        var clip = FinalCutPro.FCPXML.Clip(duration: Fraction(5, 1))
+        let clip = FinalCutPro.FCPXML.Clip(duration: Fraction(5, 1))
         
         let noiseReduction = FinalCutPro.FCPXML.NoiseReductionAdjustment(amount: 0.5)
         let humReduction = FinalCutPro.FCPXML.HumReductionAdjustment(frequency: .hz60)
@@ -232,21 +232,22 @@ final class AudioEnhancementTests: XCTestCase {
             data: FinalCutPro.FCPXML.KeyedData(key: "matchEQ", value: "data")
         )
         
-        clip.noiseReductionAdjustment = noiseReduction
-        clip.humReductionAdjustment = humReduction
-        clip.equalizationAdjustment = equalization
-        clip.matchEqualizationAdjustment = matchEQ
+        var updatedClip = clip
+        updatedClip.noiseReductionAdjustment = noiseReduction
+        updatedClip.humReductionAdjustment = humReduction
+        updatedClip.equalizationAdjustment = equalization
+        updatedClip.matchEqualizationAdjustment = matchEQ
         
-        XCTAssertEqual(clip.noiseReductionAdjustment?.amount, 0.5)
-        XCTAssertEqual(clip.humReductionAdjustment?.frequency, .hz60)
-        XCTAssertEqual(clip.equalizationAdjustment?.mode, .voiceEnhance)
-        XCTAssertEqual(clip.matchEqualizationAdjustment?.data.key, "matchEQ")
+        XCTAssertEqual(updatedClip.noiseReductionAdjustment?.amount, 0.5)
+        XCTAssertEqual(updatedClip.humReductionAdjustment?.frequency, .hz60)
+        XCTAssertEqual(updatedClip.equalizationAdjustment?.mode, .voiceEnhance)
+        XCTAssertEqual(updatedClip.matchEqualizationAdjustment?.data.key, "matchEQ")
         
         // Verify XML structure
-        let noiseElement = clip.element.firstChildElement(named: "adjust-noiseReduction")
-        let humElement = clip.element.firstChildElement(named: "adjust-humReduction")
-        let eqElement = clip.element.firstChildElement(named: "adjust-EQ")
-        let matchEQElement = clip.element.firstChildElement(named: "adjust-matchEQ")
+        let noiseElement = updatedClip.element.firstChildElement(named: "adjust-noiseReduction")
+        let humElement = updatedClip.element.firstChildElement(named: "adjust-humReduction")
+        let eqElement = updatedClip.element.firstChildElement(named: "adjust-EQ")
+        let matchEQElement = updatedClip.element.firstChildElement(named: "adjust-matchEQ")
         
         XCTAssertNotNil(noiseElement)
         XCTAssertNotNil(humElement)
