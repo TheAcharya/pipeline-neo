@@ -89,13 +89,31 @@ public final class MediaExtractor: MediaExtraction, Sendable {
         )
     }
 
+    /// Resolves a URL string to a URL object.
+    ///
+    /// Resolution strategy:
+    /// 1. If `srcString` is an absolute URL with a scheme (e.g., "file:///path" or "http://example.com"), returns it directly.
+    /// 2. If `baseURL` is provided, attempts to resolve `srcString` relative to `baseURL`.
+    /// 3. Otherwise, attempts to create a URL from `srcString` directly using Foundation's `URL(string:)`.
+    ///
+    /// - Parameters:
+    ///   - srcString: The URL string to resolve (may be absolute or relative).
+    ///   - baseURL: Optional base URL for resolving relative paths.
+    /// - Returns: Resolved URL, or `nil` if Foundation's URL creation fails.
+    ///
+    /// - Note: When this method returns `nil`, the `MediaReference` will still be created but with `url: nil`.
+    ///   Such references are automatically skipped during media copy operations. Additionally, URLs that are
+    ///   not file URLs (e.g., http:// URLs) are also skipped during copy operations.
     private func _resolveURL(_ srcString: String, baseURL: URL?) -> URL? {
+        // Try absolute URL with scheme first (file://, http://, etc.)
         if let u = URL(string: srcString), u.scheme != nil {
             return u
         }
+        // Try relative to baseURL if provided
         if let base = baseURL {
             return URL(string: srcString, relativeTo: base)?.absoluteURL
         }
+        // Last resort: try direct creation (may return nil for invalid strings)
         return URL(string: srcString)
     }
 
@@ -110,14 +128,18 @@ public final class MediaExtractor: MediaExtraction, Sendable {
         let fm = FileManager.default
         for ref in fileRefs {
             guard let sourceURL = ref.url else {
+                // Advance progress even for skipped items (nil URL)
+                progress?.advance(by: 1)
                 continue
             }
             guard sourceURL.isFileURL else {
                 entries.append(.skipped(source: sourceURL, reason: "Not a file URL"))
+                progress?.advance(by: 1)
                 continue
             }
             if seenSourceURLs.contains(sourceURL) {
                 entries.append(.skipped(source: sourceURL, reason: "Duplicate"))
+                progress?.advance(by: 1)
                 continue
             }
             seenSourceURLs.insert(sourceURL)
@@ -129,6 +151,7 @@ public final class MediaExtractor: MediaExtraction, Sendable {
             let destURL = destinationURL.appendingPathComponent(filename)
             if !fm.fileExists(atPath: sourceURL.path) {
                 entries.append(.skipped(source: sourceURL, reason: "File does not exist"))
+                progress?.advance(by: 1)
                 continue
             }
             do {

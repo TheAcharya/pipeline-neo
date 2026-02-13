@@ -2013,11 +2013,13 @@ extension XMLElement {
 						}
 						
 					} else if itemChildElement.fcpxType == .spine { // Found a synchronized clip with multiple clips inside
-						// FIXME: Need to test this out and see if it works.
+						// Handles sync-clip containing a spine with nested clips
 						
 						guard let spineChildren = itemChildElement.children else {
 							continue
 						}
+						
+						var foundMatch = false
 						
 						for spineChild in spineChildren {
 							
@@ -2032,9 +2034,14 @@ extension XMLElement {
 									
 									debugLog("Matching synchronized clip found: \(item.fcpxName ?? "unnamed element")")
 									matchingItems.append(item)
+									foundMatch = true
+									break // Found match in this spineChild, no need to check further nested clips
 								}
 							}
 							
+							if foundMatch {
+								break // Found match in spine, no need to check other spineChildren
+							}
 						}
 					}
 				}
@@ -2119,28 +2126,79 @@ extension XMLElement {
 							continue
 						}
 						
+						var foundMatchInCompound = false
+						
 						for childClip in spineChildren {
 							guard let childClipElement = childClip as? XMLElement else { continue }
 							
 							if childClipElement.fcpxRef == resource.fcpxID {  // Check primary storyline clip
 								debugLog("Matching compound clip found: \(item.fcpxName ?? "unnamed element")")
 								matchingItems.append(item)
+								foundMatchInCompound = true
+								break
 								
-							} else {  // Check clips attached to this primary storyline clip
+							} else {  // Check clips attached to this primary storyline clip and secondary storylines
 							
 								guard let childClipElementChildren = childClipElement.children else {
-									break
+									continue
 								}
 								
-								for attachedClip in childClipElementChildren {
-									guard let attachedClipElement = attachedClip as? XMLElement else { continue }
+								for childElement in childClipElementChildren {
+									guard let childElementAsXML = childElement as? XMLElement else { continue }
 									
-									if attachedClipElement.fcpxRef == resource.fcpxID {
+									// Check if this is an attached clip (direct child clip)
+									if childElementAsXML.fcpxRef == resource.fcpxID {
 										debugLog("Matching compound clip found: \(item.fcpxName ?? "unnamed element")")
 										matchingItems.append(item)
+										foundMatchInCompound = true
+										break
 									}
 									
-									// FIXME: Doesn't check secondary storylines right now. Need to go a level deeper.
+									// Check if this is a secondary storyline (spine child)
+									if childElementAsXML.fcpxType == .spine {
+										guard let secondarySpineChildren = childElementAsXML.children else {
+											continue
+										}
+										
+										for secondaryClip in secondarySpineChildren {
+											guard let secondaryClipElement = secondaryClip as? XMLElement else { continue }
+											
+											if secondaryClipElement.fcpxRef == resource.fcpxID {
+												debugLog("Matching compound clip found in secondary storyline: \(item.fcpxName ?? "unnamed element")")
+												matchingItems.append(item)
+												foundMatchInCompound = true
+												break
+											}
+											
+											// Also check nested clips within secondary storyline clips
+											guard let secondaryClipChildren = secondaryClipElement.children else {
+												continue
+											}
+											
+											for nestedSecondaryClip in secondaryClipChildren {
+												guard let nestedSecondaryClipElement = nestedSecondaryClip as? XMLElement else { continue }
+												
+												if nestedSecondaryClipElement.fcpxRef == resource.fcpxID {
+													debugLog("Matching compound clip found in nested secondary storyline clip: \(item.fcpxName ?? "unnamed element")")
+													matchingItems.append(item)
+													foundMatchInCompound = true
+													break
+												}
+											}
+											
+											if foundMatchInCompound {
+												break
+											}
+										}
+										
+										if foundMatchInCompound {
+											break
+										}
+									}
+								}
+								
+								if foundMatchInCompound {
+									break // Found match, no need to check other primary storyline clips
 								}
 								
 							}
@@ -2572,13 +2630,21 @@ extension XMLElement {
 			children = self.elements(forName: elementType!.rawValue)
 		}
 		
-		// FIXME: Something isn't working here and isn't identifying the clips. Maybe it's the timing values?
+		// Check each child element for overlap with the specified time range
+		// Note: Elements without timing attributes (offset/duration) will be silently skipped
+		// as clipRangeOverlapsWith returns (false, false, false) when fcpxParentInPoint/OutPoint are nil
 		for element in children {
+			
+			// Verify element has timing attributes before checking overlap
+			guard element.fcpxOffset != nil, element.fcpxDuration != nil else {
+				debugLog("Skipping element '\(element.fcpxName ?? "unnamed")' - missing timing attributes (offset or duration)")
+				continue
+			}
 			
 			let overlaps = element.clipRangeOverlapsWith(inPoint, outPoint: outPoint)
 			
 			if overlaps.overlaps == true {
-				debugLog("\(element.fcpxName ?? "unnamed element") \(overlaps.withClipInPoint),\(overlaps.withClipOutPoint)")
+				debugLog("\(element.fcpxName ?? "unnamed element") overlaps: inPoint=\(overlaps.withClipInPoint), outPoint=\(overlaps.withClipOutPoint)")
 				
 				elementsInRange.append((XMLElement: element, overlapsInPoint: overlaps.withClipInPoint, overlapsOutPoint: overlaps.withClipOutPoint))
 				

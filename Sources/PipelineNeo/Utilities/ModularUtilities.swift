@@ -16,6 +16,10 @@ import SwiftTimecode
 @available(macOS 12.0, *)
 public struct ModularUtilities: Sendable {
     
+    /// Shared validator instance for reuse across validation calls.
+    /// Since `FCPXMLValidator` is stateless, a single instance can be safely reused.
+    private static let sharedValidator = FCPXMLValidator()
+    
     /// Creates a complete FCPXML processing pipeline with all dependencies
     /// - Returns: Configured FCPXMLService
     public static func createPipeline() -> FCPXMLService {
@@ -59,12 +63,12 @@ public struct ModularUtilities: Sendable {
     /// Validates FCPXML document structure using the semantic validator.
     ///
     /// Delegates to `FCPXMLValidator` for root element, resources, and ref resolution checks.
+    /// Uses a shared validator instance for efficiency (validator is stateless and thread-safe).
     ///
     /// - Parameter document: Document to validate.
     /// - Returns: Validation result with error messages.
     public static func validateDocument(_ document: XMLDocument) -> (isValid: Bool, errors: [String]) {
-        let validator = FCPXMLValidator()
-        let result = validator.validate(document)
+        let result = sharedValidator.validate(document)
         let errorMessages = result.errors.map(\.message)
         return (result.isValid, errorMessages)
     }
@@ -108,11 +112,12 @@ public struct ModularUtilities: Sendable {
     
     /// Asynchronously validates FCPXML document structure.
     ///
+    /// Uses a shared validator instance for efficiency (validator is stateless and thread-safe).
+    ///
     /// - Parameter document: Document to validate.
     /// - Returns: Validation result with error messages.
     public static func validateDocument(_ document: XMLDocument) async -> (isValid: Bool, errors: [String]) {
-        let validator = FCPXMLValidator()
-        let result = validator.validate(document)
+        let result = sharedValidator.validate(document)
         let errorMessages = result.errors.map(\.message)
         return (result.isValid, errorMessages)
     }
@@ -120,8 +125,7 @@ public struct ModularUtilities: Sendable {
     /// Asynchronously validates FCPXML document (deprecated: parser parameter is unused).
     @available(*, deprecated, message: "Use validateDocument(_:) without the parser parameter.")
     public static func validateDocument(_ document: XMLDocument, using parser: FCPXMLParsing) async -> (isValid: Bool, errors: [String]) {
-        let validator = FCPXMLValidator()
-        let result = validator.validate(document)
+        let result = sharedValidator.validate(document)
         let errorMessages = result.errors.map(\.message)
         return (result.isValid, errorMessages)
     }

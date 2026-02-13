@@ -37,6 +37,12 @@ Complete manual and usage guide for Pipeline Neo, a Swift 6 framework for Final 
    - [Silence detection](#319f-silence-detection)
    - [Asset duration measurement](#319g-asset-duration-measurement)
    - [Parallel file I/O](#319h-parallel-file-io)
+   - [Typed adjustment models](#319i-typed-adjustment-models)
+   - [Typed effect and filter models](#319j-typed-effect-and-filter-models)
+   - [Caption and title models](#319k-caption-and-title-models)
+   - [Keyframe animation](#319l-keyframe-animation)
+   - [CMTime Codable extension](#319m-cmtime-codable-extension)
+   - [Collection folders and keyword collections](#319n-collection-folders-and-keyword-collections)
    - [XMLDocument extension API](#320-xmldocument-extension-api)
    - [XMLElement extension API](#321-xmlelement-extension-api)
    - [FinalCutPro.FCPXML model](#322-finalcutprofcpxml-model)
@@ -1150,6 +1156,276 @@ let executor = ParallelFileIOExecutor(
     maxConcurrentOperations: 4,  // Default: number of CPU cores
     useFileHandleOptimization: true  // Default: true for better performance
 )
+```
+
+### 3.19i Typed adjustment models
+
+Pipeline Neo provides typed models for all major FCPXML adjustments, enabling type-safe manipulation of clip adjustments:
+
+**Available Adjustment Models:**
+- `CropAdjustment` — Crop, trim, and pan modes
+- `TransformAdjustment` — Position, scale, rotation, anchor
+- `BlendAdjustment` — Blend amount and mode
+- `StabilizationAdjustment` — Stabilization type (automatic, inertiaCam, smoothCam)
+- `VolumeAdjustment` — Volume level
+- `LoudnessAdjustment` — Loudness parameters
+- `NoiseReductionAdjustment` — Noise reduction amount
+- `HumReductionAdjustment` — Hum reduction frequency (50Hz, 60Hz)
+- `EqualizationAdjustment` — EQ modes (flat, voiceEnhance, musicEnhance, loudness, humReduction, bassBoost, bassReduce, trebleBoost, trebleReduce) with parameters
+- `MatchEqualizationAdjustment` — Match EQ with keyed data
+- `Transform360Adjustment` — 360° video transform with coordinate types (spherical, cartesian)
+
+**Usage Example:**
+
+```swift
+import PipelineNeo
+import CoreMedia
+import SwiftTimecode
+
+// Access adjustments from a clip
+var clip = FinalCutPro.FCPXML.Clip(duration: Fraction(5, 1))
+
+// Set Transform360 adjustment
+var transform360 = FinalCutPro.FCPXML.Transform360Adjustment(
+    coordinateType: .spherical,
+    isEnabled: true,
+    autoOrient: true
+)
+transform360.latitude = 45.0
+transform360.longitude = 90.0
+clip.transform360Adjustment = transform360
+
+// Set audio enhancement adjustments
+var noiseReduction = FinalCutPro.FCPXML.NoiseReductionAdjustment(amount: 0.5)
+clip.noiseReductionAdjustment = noiseReduction
+
+var equalization = FinalCutPro.FCPXML.EqualizationAdjustment(
+    mode: .voiceEnhance,
+    parameters: []
+)
+clip.equalizationAdjustment = equalization
+
+// All adjustments are Codable and can be serialized
+let encoder = JSONEncoder()
+let data = try encoder.encode(transform360)
+```
+
+### 3.19j Typed effect and filter models
+
+Pipeline Neo provides typed models for video/audio filters and effects with full parameter support:
+
+**Available Models:**
+- `VideoFilter` — Video filters with parameters
+- `AudioFilter` — Audio filters with parameters
+- `VideoFilterMask` — Filter masks with shape and isolation
+- `FilterParameter` — Parameters with fade in/out and keyframe animation support
+
+**Usage Example:**
+
+```swift
+import PipelineNeo
+import CoreMedia
+import SwiftTimecode
+
+// Create a video filter with parameters
+var filter = FinalCutPro.FCPXML.VideoFilter(name: "Color Correction")
+filter.parameters = [
+    FinalCutPro.FCPXML.FilterParameter(name: "Brightness", value: "1.0"),
+    FinalCutPro.FCPXML.FilterParameter(name: "Contrast", value: "1.2")
+]
+
+// Access filters from a clip
+var clip = FinalCutPro.FCPXML.Clip(duration: Fraction(5, 1))
+clip.videoFilters = [filter]
+
+// All filter models are Codable
+let encoder = JSONEncoder()
+let data = try encoder.encode(filter)
+```
+
+### 3.19k Caption and title models
+
+Pipeline Neo provides enhanced Caption and Title models with typed text style support:
+
+**Available Models:**
+- `Caption` — Closed captions with typed text style definitions
+- `Title` — Title clips with typed text style definitions
+- `TextStyle` — Text formatting (font, color, alignment, shadows, etc.)
+- `TextStyleDefinition` — Reusable text style definitions
+
+**Usage Example:**
+
+```swift
+import PipelineNeo
+import SwiftTimecode
+
+// Create a caption with text style
+var caption = FinalCutPro.FCPXML.Caption(duration: Fraction(5, 1))
+
+var textStyle = FinalCutPro.FCPXML.TextStyle()
+textStyle.font = "Helvetica"
+textStyle.fontSize = 24
+textStyle.fontColor = "1.0 1.0 1.0 1.0"
+textStyle.isBold = true
+textStyle.alignment = .center
+
+let styleDef = FinalCutPro.FCPXML.TextStyleDefinition(
+    id: "ts1",
+    name: "Caption Style",
+    textStyles: [textStyle]
+)
+
+caption.typedTextStyleDefinitions = [styleDef]
+
+// Create a title with text style
+var title = FinalCutPro.FCPXML.Title(ref: "r1", duration: Fraction(10, 1))
+
+var titleTextStyle = FinalCutPro.FCPXML.TextStyle()
+titleTextStyle.font = "Helvetica"
+titleTextStyle.fontSize = 48
+titleTextStyle.fontColor = "1.0 1.0 0.0 1.0"
+titleTextStyle.alignment = .center
+
+let titleStyleDef = FinalCutPro.FCPXML.TextStyleDefinition(
+    id: "ts2",
+    name: "Title Style",
+    textStyles: [titleTextStyle]
+)
+
+title.typedTextStyleDefinitions = [titleStyleDef]
+```
+
+### 3.19l Keyframe animation
+
+Pipeline Neo provides typed models for keyframe animations, fade in/out effects, and parameter animations:
+
+**Available Models:**
+- `KeyframeAnimation` — Animation curves with keyframes
+- `Keyframe` — Individual keyframe points with interpolation and curve types
+- `FadeIn` — Fade in effects with fade types
+- `FadeOut` — Fade out effects with fade types
+- `FadeType` — Fade type enum (linear, easeIn, easeOut, easeInOut)
+- `KeyframeInterpolation` — Interpolation modes (linear, ease, easeIn, easeOut)
+- `KeyframeCurve` — Curve types (linear, smooth)
+
+**Usage Example:**
+
+```swift
+import PipelineNeo
+import CoreMedia
+
+// Create a fade in effect
+let fadeIn = FinalCutPro.FCPXML.FadeIn(
+    type: .easeIn,
+    duration: CMTime(seconds: 1.0, preferredTimescale: 600)
+)
+
+// Create a fade out effect
+let fadeOut = FinalCutPro.FCPXML.FadeOut(
+    type: .easeOut,
+    duration: CMTime(seconds: 1.0, preferredTimescale: 600)
+)
+
+// Create keyframe animation
+let keyframe1 = FinalCutPro.FCPXML.Keyframe(
+    time: CMTime(seconds: 0.0, preferredTimescale: 600),
+    value: "0.0",
+    interpolation: .linear,
+    curve: .smooth
+)
+
+let keyframe2 = FinalCutPro.FCPXML.Keyframe(
+    time: CMTime(seconds: 1.0, preferredTimescale: 600),
+    value: "1.0",
+    interpolation: .ease,
+    curve: .smooth
+)
+
+let animation = FinalCutPro.FCPXML.KeyframeAnimation(
+    keyframes: [keyframe1, keyframe2]
+)
+
+// Use with filter parameters
+let parameter = FinalCutPro.FCPXML.FilterParameter(
+    name: "Opacity",
+    fadeIn: fadeIn,
+    fadeOut: fadeOut,
+    keyframeAnimation: animation
+)
+
+// All animation models are Codable
+let encoder = JSONEncoder()
+let data = try encoder.encode(animation)
+```
+
+### 3.19m CMTime Codable extension
+
+Pipeline Neo provides a Codable extension for CMTime, enabling direct encoding/decoding as FCPXML time strings:
+
+**Usage Example:**
+
+```swift
+import PipelineNeo
+import CoreMedia
+
+// CMTime is now Codable
+let time = CMTime(seconds: 5.0, preferredTimescale: 600)
+
+// Encode to JSON (as FCPXML time string)
+let encoder = JSONEncoder()
+let data = try encoder.encode(time)
+// Encodes as: "3000/600s"
+
+// Decode from JSON (from FCPXML time string)
+let decoder = JSONDecoder()
+let decoded = try decoder.decode(CMTime.self, from: data)
+
+// Works with any Codable container
+struct AnimationData: Codable {
+    let duration: CMTime
+    let startTime: CMTime
+}
+
+let animation = AnimationData(
+    duration: CMTime(seconds: 2.0, preferredTimescale: 600),
+    startTime: CMTime(seconds: 0.0, preferredTimescale: 600)
+)
+
+let animationData = try encoder.encode(animation)
+```
+
+### 3.19n Collection folders and keyword collections
+
+Pipeline Neo provides typed models for organizing clips and media using collection folders and keyword collections:
+
+**Available Models:**
+- `CollectionFolder` — Container for organizing collections (supports nested folders)
+- `KeywordCollection` — Keyword-based collection for organizing clips
+
+**Usage Example:**
+
+```swift
+import PipelineNeo
+
+// Create keyword collections
+let keywords1 = FinalCutPro.FCPXML.KeywordCollection(name: "Action Scenes")
+let keywords2 = FinalCutPro.FCPXML.KeywordCollection(name: "Dialogue")
+
+// Create nested collection folders
+let subfolder = FinalCutPro.FCPXML.CollectionFolder(
+    name: "Subfolder",
+    keywordCollections: [keywords1]
+)
+
+let parentFolder = FinalCutPro.FCPXML.CollectionFolder(
+    name: "My Project",
+    collectionFolders: [subfolder],
+    keywordCollections: [keywords2]
+)
+
+// All collection models are Codable
+let encoder = JSONEncoder()
+let data = try encoder.encode(parentFolder)
 ```
 
 ### 3.20 XMLDocument extension API

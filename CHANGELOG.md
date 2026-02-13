@@ -1,5 +1,37 @@
 # Changelog
 
+### 2.2.0
+
+**🎉 Released:**
+- 14th February 2026
+
+**🔧 Improvements:**
+- `CutDetector`: fixed edit type classification for non-adjacent clips (prioritizes transitions over gaps when multiple elements exist between clips)
+- `XMLElementExtension`: fixed synchronized clip matching to prevent duplicate entries when multiple nested children match the same resource
+- `XMLElementExtension`: fixed compound clip traversal to properly check secondary storylines (spine elements) for matching resources
+- `XMLElementExtension`: improved `childElementsWithinRangeOf` to explicitly handle elements with missing timing attributes (`fcpxOffset`/`fcpxDuration`)
+- `MediaExtractor`: enhanced URL resolution documentation for `nil` URLs and non-file URLs (automatically skipped during copy operations)
+- `FCPXMLVersionConverter`: added explicit error handling for edge case where `rootElement()` returns `nil` during version conversion (debug assertion in development builds)
+- `FCPXMLUtility`: added missing validation methods (`validateDocumentAgainstDTD`, `validateDocumentAgainstDeclaredVersion`, `performValidation`) for API parity with `FCPXMLService` (sync and async)
+- `FCPXMLUtility`: added `filterElements(_:ofTypes:)` alias method for API consistency with `FCPXMLService` while maintaining backward compatibility
+- `ModularUtilities`: optimized validator instance creation by using a shared static validator instance (eliminates repeated instance creation overhead)
+- `FCPXMLUtility`: refactored deprecated project time conversion methods (`projectTimecode`, `projectCounterTime`) to properly delegate to sequence methods, eliminating code duplication
+- `FCPXMLService`/`FCPXMLUtility`: enhanced async validation method documentation explaining CPU-bound validation behavior and non-Sendable type constraints
+- `ProgressBar`: enhanced thread safety documentation with comprehensive warnings and usage guidelines (clarifies `@unchecked Sendable` does not imply thread safety)
+- `ProgressReporter`: enhanced protocol documentation to clarify thread safety expectations for implementations
+- Typed adjustment models: `CropAdjustment`, `TransformAdjustment`, `BlendAdjustment`, `StabilizationAdjustment`, `VolumeAdjustment`, `LoudnessAdjustment` with full `Clip` integration via computed properties
+- Audio enhancement adjustments: `NoiseReductionAdjustment`, `HumReductionAdjustment`, `EqualizationAdjustment`, `MatchEqualizationAdjustment` with parameter validation and `Clip` integration
+- Transform360 adjustment: `Transform360Adjustment` model for 360° video with coordinate types (spherical, cartesian), position/orientation parameters, auto-orient, convergence, interaxial
+- Typed filter models: `VideoFilter`, `AudioFilter`, `VideoFilterMask`, `FilterParameter` with keyframe animation support (`FadeIn`, `FadeOut`, `KeyframeAnimation`)
+- Caption and Title models: `Caption` and `Title` with `TextStyle` and `TextStyleDefinition` for rich text formatting (font, fontSize, textAlignment, etc.)
+- Keyframe animation: `KeyframeAnimation`, `Keyframe` with interpolation types (linear, ease, easeIn, easeOut), `FadeIn`/`FadeOut` with fade types (linear, easeIn, easeOut, easeInOut), integrated with `FilterParameter`
+- CMTime Codable extension: Direct `CMTime` encoding/decoding as FCPXML time strings ("value/timescale"s format) for seamless time value serialization
+- Collection organization: `CollectionFolder` and `KeywordCollection` models for organizing clips and media with nested folder structures
+- Test suite: 535 tests (added `AdjustmentTests`, `AudioEnhancementTests`, `Transform360Tests`, `CaptionTitleTests`, `KeyframeAnimationTests`, `CMTimeCodableTests`, `CollectionTests`, `FilterTests`, `CodableTests`, `ImportOptionsTests`, `SmartCollectionTests`; previously added `CutDetectionTests`, `TimelineManipulationTests`, `MediaExtractionTests`, `VersionConversionTests`)
+- Documentation: updated `AGENT.md`, `.cursorrules`, `Tests/README.md`, `README.md`, `Documentation/Manual.md`, and `Documentation/README.md` to reflect all new features and current test count
+
+---
+
 ### 2.1.0
 
 **🎉 Released:**

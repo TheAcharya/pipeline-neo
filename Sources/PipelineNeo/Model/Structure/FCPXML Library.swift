@@ -97,7 +97,10 @@ extension FinalCutPro.FCPXML.Library {
         element.children(whereFCPElement: .event)
     }
     
-    // Note: smart-collection iterator not yet implemented.
+    /// Multiple `smart-collection` elements may exist within the `library` element.
+    public var smartCollections: LazyFCPXMLChildrenSequence<FinalCutPro.FCPXML.SmartCollection> {
+        element.children(whereFCPElement: FinalCutPro.FCPXML.SmartCollection.self)
+    }
 }
 
 // MARK: - Properties

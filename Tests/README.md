@@ -1,6 +1,6 @@
 # Pipeline Neo — Test Suite
 
-This directory contains the test suite for Pipeline Neo, a Swift 6 framework for Final Cut Pro FCPXML processing with SwiftTimecode integration. The suite currently has **320 tests**. They ensure correctness, concurrency safety, and performance across parsing, timecode conversion, document and element operations, file loading, timeline export, validation, timeline manipulation, media processing, and all supported FCPXML versions and frame rates. The suite is modular: shared utilities resolve sample paths, file tests exercise individual FCPXML samples, and logic-and-parsing tests cover model types and structure.
+This directory contains the test suite for Pipeline Neo, a Swift 6 framework for Final Cut Pro FCPXML processing with SwiftTimecode integration. The suite currently has **535 tests**. They ensure correctness, concurrency safety, and performance across parsing, timecode conversion, document and element operations, file loading, timeline export, validation, timeline manipulation, media processing, typed adjustment models, typed effect/filter models, typed caption/title models, keyframe animation, CMTime Codable extension, collection organization, and all supported FCPXML versions and frame rates. The suite is modular: shared utilities resolve sample paths, file tests exercise individual FCPXML samples, and logic-and-parsing tests cover model types and structure.
 
 ---
 
@@ -53,7 +53,18 @@ Tests/
     │   ├── FCPXMLRootVersionTests.swift
     │   └── FCPXMLStructureTests.swift
     ├── APIAndEdgeCaseTests.swift
+    ├── AdjustmentTests.swift  # Typed adjustment models (Crop, Transform, Blend, Stabilization, Volume, Loudness)
+    ├── AudioEnhancementTests.swift  # Audio enhancement adjustments (NoiseReduction, HumReduction, Equalization, MatchEqualization)
+    ├── CaptionTitleTests.swift  # Caption and Title models with TextStyle and TextStyleDefinition
+    ├── CMTimeCodableTests.swift  # CMTime Codable extension for FCPXML time strings
+    ├── CollectionTests.swift  # CollectionFolder and KeywordCollection models
+    ├── CodableTests.swift  # Codable conformance for various models
     ├── CutDetectionTests.swift   # Cut detection (same-clip vs different-clips, boundary types)
+    ├── FilterTests.swift  # Typed filter models (VideoFilter, AudioFilter, VideoFilterMask, FilterParameter)
+    ├── ImportOptionsTests.swift  # Import options and settings
+    ├── KeyframeAnimationTests.swift  # KeyframeAnimation, Keyframe, FadeIn, FadeOut models
+    ├── SmartCollectionTests.swift  # SmartCollection model
+    ├── Transform360Tests.swift  # Transform360Adjustment model for 360° video
     ├── VersionConversionTests.swift  # Version conversion, save as .fcpxml / .fcpxmld (bundle 1.10+ only)
     ├── MediaExtractionTests.swift    # Media reference extraction and copy (asset media-rep, locators)
     ├── TimelineManipulationTests.swift  # Timeline manipulation: ripple insert, auto lane, metadata, timestamps (56 tests)
@@ -170,6 +181,22 @@ Asset duration measurement: AssetDurationMeasurementTests. Duration measurement 
 
 Parallel file I/O: ParallelFileIOTests. Parallel write operations (multiple files concurrently); parallel read operations; success/failure counting; configuration (maxConcurrentOperations, useFileHandleOptimization). Covers ParallelFileIOExecutor, ParallelFileIOResult, ParallelFileIO protocol.
 
+Typed adjustment models: AdjustmentTests. CropAdjustment, TransformAdjustment, BlendAdjustment, StabilizationAdjustment, VolumeAdjustment, LoudnessAdjustment initialization, properties, Codable conformance, and Clip integration via computed properties. Covers all adjustment types with full XML round-tripping.
+
+Audio enhancement adjustments: AudioEnhancementTests. NoiseReductionAdjustment, HumReductionAdjustment, EqualizationAdjustment, MatchEqualizationAdjustment initialization, properties, Codable conformance, and Clip integration. Covers audio-specific adjustments with parameter validation.
+
+Transform360 adjustment: Transform360Tests. Transform360Adjustment model with coordinate types (spherical, cartesian), position/orientation parameters, auto-orient, convergence, interaxial. Initialization, Codable conformance, Clip integration, and coordinate type handling. Covers 360° video transformation support.
+
+Typed filter models: FilterTests. VideoFilter, AudioFilter, VideoFilterMask, FilterParameter initialization, properties, Codable conformance, and integration with clips. FilterParameter includes keyframe animation support (FadeIn, FadeOut, KeyframeAnimation). Covers all filter types with full XML round-tripping.
+
+Caption and Title models: CaptionTitleTests. Caption and Title models with TextStyle and TextStyleDefinition for rich text formatting. TextStyle properties (font, fontSize, textAlignment, etc.), TextStyleDefinition arrays, typed accessors (typedTextStyleDefinitions), and XML parsing/serialization. Covers full text formatting support for captions and titles.
+
+Keyframe animation: KeyframeAnimationTests. KeyframeAnimation, Keyframe with interpolation types (linear, ease, easeIn, easeOut), FadeIn/FadeOut with fade types (linear, easeIn, easeOut, easeInOut), FilterParameter integration. CMTime Codable handling for time values. Covers animation curves and timing control.
+
+CMTime Codable extension: CMTimeCodableTests. CMTime encoding/decoding as FCPXML time strings ("value/timescale"s format). Direct Codable conformance, round-trip validation, edge cases (zero, invalid strings). Covers CoreMedia.CMTime serialization for FCPXML.
+
+Collection organization: CollectionTests. CollectionFolder and KeywordCollection models for organizing clips and media. Nested folder structures, collection properties, Codable conformance, recursive folder handling. Covers media organization and library structure.
+
 ---
 
 ## 4. File tests (per-sample coverage)
@@ -247,6 +274,22 @@ SilenceDetectionTests covers audio silence detection: detecting silence at start
 AssetDurationMeasurementTests covers asset duration measurement: measuring actual duration from AVFoundation, media type detection (audio/video/image), handling images (no duration), sync and async APIs, and result interpretation.
 
 ParallelFileIOTests covers parallel file I/O: concurrent read and write operations, success/failure tracking, configuration options (maxConcurrentOperations, useFileHandleOptimization), and performance benefits of parallelization.
+
+AdjustmentTests covers typed adjustment models: CropAdjustment, TransformAdjustment, BlendAdjustment, StabilizationAdjustment, VolumeAdjustment, LoudnessAdjustment initialization, properties, Codable conformance, XML round-tripping, and Clip integration via computed properties.
+
+AudioEnhancementTests covers audio enhancement adjustments: NoiseReductionAdjustment, HumReductionAdjustment, EqualizationAdjustment, MatchEqualizationAdjustment initialization, properties, Codable conformance, parameter validation, and Clip integration.
+
+Transform360Tests covers Transform360 adjustment: Transform360Adjustment model with coordinate types (spherical, cartesian), position/orientation parameters, auto-orient, convergence, interaxial. Initialization, Codable conformance, Clip integration, and coordinate type handling for 360° video workflows.
+
+FilterTests covers typed filter models: VideoFilter, AudioFilter, VideoFilterMask, FilterParameter initialization, properties, Codable conformance, and integration with clips. FilterParameter includes keyframe animation support (FadeIn, FadeOut, KeyframeAnimation).
+
+CaptionTitleTests covers caption and title models: Caption and Title models with TextStyle and TextStyleDefinition for rich text formatting. TextStyle properties (font, fontSize, textAlignment, etc.), TextStyleDefinition arrays, typed accessors (typedTextStyleDefinitions), and XML parsing/serialization.
+
+KeyframeAnimationTests covers keyframe animation: KeyframeAnimation, Keyframe with interpolation types (linear, ease, easeIn, easeOut), FadeIn/FadeOut with fade types (linear, easeIn, easeOut, easeInOut), FilterParameter integration. CMTime Codable handling for time values in animation curves.
+
+CMTimeCodableTests covers CMTime Codable extension: CMTime encoding/decoding as FCPXML time strings ("value/timescale"s format). Direct Codable conformance, round-trip validation, edge cases (zero, invalid strings), and integration with animation models.
+
+CollectionTests covers collection organization: CollectionFolder and KeywordCollection models for organizing clips and media. Nested folder structures, collection properties, Codable conformance, recursive folder handling, and library structure management.
 
 FCPXMLFileLoader async load(from:): testFCPXMLFileLoaderAsyncLoadFromURL writes a minimal fcpxml to a temp file and calls loader.load(from:) async, asserting root element and name. testFCPXMLFileLoaderAsyncLoadThrowsForMissingFile calls load(from:) with a nonexistent URL and asserts FCPXMLLoadError (notAFile, readFailed, or parseFailed).
 

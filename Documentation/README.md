@@ -11,8 +11,9 @@ This folder contains the complete manual and usage guide for Pipeline Neo.
   - **Validation**: FCPXML version and element types, validation API (semantic + DTD), cut detection
   - **Timeline**: Timeline creation and export, timeline manipulation (ripple insert, auto lane assignment), timeline metadata and timestamps
   - **Media Processing**: MIME type detection, asset validation, silence detection, asset duration measurement
-  - **Advanced Features**: Version conversion and save, element extraction (presets and scope), experimental CLI
-  - **Extensions**: XMLDocument/XMLElement extensions, FinalCutPro.FCPXML model
+  - **Typed Models**: Adjustment models (Crop, Transform, Blend, Stabilization, Volume, Loudness, NoiseReduction, HumReduction, Equalization, MatchEqualization, Transform360), effect/filter models (VideoFilter, AudioFilter, VideoFilterMask), caption/title models with TextStyle support, keyframe animation (KeyframeAnimation, Keyframe, FadeIn, FadeOut), collection organization (CollectionFolder, KeywordCollection)
+  - **Advanced Features**: Version conversion and save, element extraction (presets and scope), experimental CLI, CMTime Codable extension
+  - **Extensions**: XMLDocument/XMLElement extensions, FinalCutPro.FCPXML model, CMTime Codable
   - **Utilities**: Error types, progress bar (CLI), FCPXMLTimecode custom timecode type
   - **Examples**: Complete workflows, practical code examples for all major features
 

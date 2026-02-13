@@ -24,7 +24,7 @@ extension FinalCutPro.FCPXML {
     /// > See [`effect`](
     /// > https://developer.apple.com/documentation/professional_video_applications/fcpxml_reference/effect
     /// > ).
-    public struct Effect: FCPXMLElement {
+    public struct Effect: FCPXMLElement, Equatable, Hashable, Codable {
         public let element: XMLElement
         
         public let elementType: ElementType = .effect
@@ -110,6 +110,54 @@ extension FinalCutPro.FCPXML.Effect {
     public var src: String? {
         get { element.fcpSRC }
         nonmutating set { element.fcpSRC = newValue }
+    }
+}
+
+// MARK: - Codable
+
+extension FinalCutPro.FCPXML.Effect {
+    private enum CodingKeys: String, CodingKey {
+        case id, name, uid
+        case sourceURL = "src"
+    }
+    
+    /// Encodes the effect to a container.
+    /// - Parameter encoder: The encoder to write data to.
+    /// - Throws: An error if encoding fails.
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(id, forKey: .id)
+        try container.encodeIfPresent(name, forKey: .name)
+        try container.encode(uid, forKey: .uid)
+        try container.encodeIfPresent(src, forKey: .sourceURL)
+    }
+    
+    /// Creates an effect from a decoder.
+    /// - Parameter decoder: The decoder to read data from.
+    /// - Throws: An error if decoding fails.
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        let id = try container.decode(String.self, forKey: .id)
+        let name = try container.decodeIfPresent(String.self, forKey: .name)
+        let uid = try container.decode(String.self, forKey: .uid)
+        let src = try container.decodeIfPresent(String.self, forKey: .sourceURL)
+        
+        self.init(id: id, name: name, uid: uid, src: src)
+    }
+}
+
+// MARK: - Equatable & Hashable
+
+extension FinalCutPro.FCPXML.Effect {
+    public static func == (lhs: FinalCutPro.FCPXML.Effect, rhs: FinalCutPro.FCPXML.Effect) -> Bool {
+        lhs.id == rhs.id && lhs.name == rhs.name && lhs.uid == rhs.uid && lhs.src == rhs.src
+    }
+    
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(id)
+        hasher.combine(name)
+        hasher.combine(uid)
+        hasher.combine(src)
     }
 }
 

@@ -9,8 +9,24 @@
 //
 
 import Foundation
+#if canImport(Darwin)
+import Darwin
+#elseif canImport(Glibc)
+import Glibc
+#endif
 
-/// A progress bar for terminal output. Not thread-safe; use from one thread (e.g. main/CLI).
+/// A progress bar for terminal output.
+///
+/// **Thread Safety:** This class is **not thread-safe**. It contains mutable state (`n`, `lastPrintN`, `lastPrintTime`)
+/// and performs terminal I/O operations. Use from a single thread (e.g. main thread or CLI context).
+/// Concurrent access from multiple threads will cause progress updates to interleave and produce incorrect output.
+///
+/// **Usage:** Create a `ProgressBar` instance and call `advance(by:)` or `update(_:)` from the same thread/context.
+/// When done, call `finish()` or `close()` to finalize output. Do not share a single `ProgressBar` instance
+/// across multiple threads or async tasks without synchronization.
+///
+/// **Note:** The `@unchecked Sendable` conformance is provided for protocol compatibility but does not imply
+/// thread safety. Always use from a single thread.
 public final class ProgressBar: ProgressReporter, @unchecked Sendable {
 
     private var total: Int?
@@ -36,6 +52,11 @@ public final class ProgressBar: ProgressReporter, @unchecked Sendable {
         unitDivisor = style.unitDivisor
         startTime = Date()
         width = style.ncols ?? 40
+        // Ensure we start on a new line to avoid logger interference
+        print()
+        fflush(stdout)
+        // Print initial state immediately
+        printProgress()
     }
 
     /// Creates a progress bar without a known total (no percentage).
@@ -52,11 +73,10 @@ public final class ProgressBar: ProgressReporter, @unchecked Sendable {
     /// Advances the bar by `n` steps and redraws when needed.
     public func update(_ n: Int = 1) {
         self.n += n
-        if shouldPrint() {
-            printProgress()
-            lastPrintN = self.n
-            lastPrintTime = Date()
-        }
+        // Always print on every update to show smooth progress animation
+        printProgress()
+        lastPrintN = self.n
+        lastPrintTime = Date()
     }
 
     /// ProgressReporter conformance: advance by n steps.
@@ -66,8 +86,20 @@ public final class ProgressBar: ProgressReporter, @unchecked Sendable {
 
     /// Closes the bar and moves to the next line.
     public func close() {
-        if n != lastPrintN {
+        // Ensure we show 100% if we have a total and haven't reached it yet
+        if let total = total, n < total {
+            self.n = total
             printProgress()
+        } else if n != lastPrintN {
+            printProgress()
+        }
+        // Clear the entire line before moving to next line
+        if let terminalWidth = getTerminalWidth() {
+            let clearLine = String(repeating: " ", count: terminalWidth)
+            print("\r\(clearLine)\r", terminator: "")
+        } else {
+            // Fallback: clear with ANSI escape sequence
+            print("\r\u{001B}[K", terminator: "")
         }
         print()
         fflush(stdout)
@@ -91,11 +123,9 @@ public final class ProgressBar: ProgressReporter, @unchecked Sendable {
     }
 
     private func shouldPrint() -> Bool {
-        let now = Date()
-        let timeSinceLastPrint = now.timeIntervalSince(lastPrintTime)
-        return timeSinceLastPrint >= minIntervalSeconds ||
-            (total != nil && Double(n - lastPrintN) / Double(total!) >= 0.01) ||
-            timeSinceLastPrint >= maxIntervalSeconds
+        // Always print on every update to show smooth progress
+        // This ensures users see progress regardless of operation speed
+        return true
     }
 
     private func printProgress() {
@@ -147,7 +177,11 @@ public final class ProgressBar: ProgressReporter, @unchecked Sendable {
         values["l_bar"] = "\(values["desc"]!) \(values["percentage"]!)\(style.barSeparator)"
 
         var output = style.barFormat.format
-        for (key, value) in values {
+        // Replace in order of key length (descending) to avoid partial replacements
+        // This ensures longer keys like "l_bar" are replaced before shorter ones like "bar"
+        let sortedKeys = values.keys.sorted { $0.count > $1.count }
+        for key in sortedKeys {
+            guard let value = values[key] else { continue }
             output = output.replacingOccurrences(of: "{\(key)}", with: value)
         }
 
@@ -160,8 +194,35 @@ public final class ProgressBar: ProgressReporter, @unchecked Sendable {
             output = output.replacingOccurrences(of: descStr, with: coloredDesc)
         }
 
-        print("\r\(output)", terminator: "")
+        // Truncate output if it exceeds terminal width to prevent wrapping
+        // Only truncate if terminal width is reasonable (at least 40 chars)
+        if let terminalWidth = getTerminalWidth(), terminalWidth >= 40, output.count > terminalWidth {
+            let truncated = String(output.prefix(terminalWidth - 1))
+            output = truncated
+        }
+
+        // Clear any existing content on the line first, then print progress
+        // This prevents logger messages from appearing on the same line
+        // Use ANSI escape sequence: \r to return to start, [2K to clear entire line
+        // Then print the progress bar output
+        let clearSequence = "\r\u{001B}[2K"
+        print("\(clearSequence)\(output)", terminator: "")
         fflush(stdout)
+        // Small delay to ensure the update is visible (helps with fast operations)
+        usleep(10000) // 10ms delay
+    }
+    
+    /// Gets the terminal width, or nil if unavailable.
+    private func getTerminalWidth() -> Int? {
+        var size = winsize()
+        if ioctl(STDOUT_FILENO, TIOCGWINSZ, &size) == 0 {
+            return Int(size.ws_col)
+        }
+        // Fallback: try environment variable
+        if let cols = ProcessInfo.processInfo.environment["COLUMNS"], let colsInt = Int(cols) {
+            return colsInt
+        }
+        return nil
     }
 
     private func formatInterval(_ interval: TimeInterval) -> String {
