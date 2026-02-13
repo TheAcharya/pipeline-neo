@@ -102,6 +102,11 @@ extension FinalCutPro.FCPXML.Event {
             element.addChildren(newValue)
         }
     }
+    
+    /// Multiple `smart-collection` elements may exist within the `event` element.
+    public var smartCollections: LazyFCPXMLChildrenSequence<FinalCutPro.FCPXML.SmartCollection> {
+        element.children(whereFCPElement: FinalCutPro.FCPXML.SmartCollection.self)
+    }
 }
 
 // MARK: - Typing

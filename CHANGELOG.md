@@ -1,9 +1,9 @@
 # Changelog
 
-### 2.1.1
+### 2.2.0
 
 **🎉 Released:**
-- TBA
+- 14th February 2026
 
 **🔧 Improvements:**
 - CutDetector: fixed edit type classification for non-adjacent clips (prioritizes transitions over gaps when multiple elements exist between clips)
@@ -19,8 +19,16 @@
 - FCPXMLService/FCPXMLUtility: enhanced async validation method documentation explaining CPU-bound validation behavior and non-Sendable type constraints
 - ProgressBar: enhanced thread safety documentation with comprehensive warnings and usage guidelines (clarifies `@unchecked Sendable` does not imply thread safety)
 - ProgressReporter: enhanced protocol documentation to clarify thread safety expectations for implementations
-- Test suite: 340 tests (added CutDetectionTests, TimelineManipulationTests for synchronized clips and compound clips, MediaExtractionTests for URL resolution, VersionConversionTests for root element handling)
-- Documentation: updated AGENT.md, .cursorrules, and Tests/README.md to reflect current test count
+- Typed adjustment models: CropAdjustment, TransformAdjustment, BlendAdjustment, StabilizationAdjustment, VolumeAdjustment, LoudnessAdjustment with full Clip integration via computed properties
+- Audio enhancement adjustments: NoiseReductionAdjustment, HumReductionAdjustment, EqualizationAdjustment, MatchEqualizationAdjustment with parameter validation and Clip integration
+- Transform360 adjustment: Transform360Adjustment model for 360° video with coordinate types (spherical, cartesian), position/orientation parameters, auto-orient, convergence, interaxial
+- Typed filter models: VideoFilter, AudioFilter, VideoFilterMask, FilterParameter with keyframe animation support (FadeIn, FadeOut, KeyframeAnimation)
+- Caption and Title models: Caption and Title with TextStyle and TextStyleDefinition for rich text formatting (font, fontSize, textAlignment, etc.)
+- Keyframe animation: KeyframeAnimation, Keyframe with interpolation types (linear, ease, easeIn, easeOut), FadeIn/FadeOut with fade types (linear, easeIn, easeOut, easeInOut), integrated with FilterParameter
+- CMTime Codable extension: Direct CMTime encoding/decoding as FCPXML time strings ("value/timescale"s format) for seamless time value serialization
+- Collection organization: CollectionFolder and KeywordCollection models for organizing clips and media with nested folder structures
+- Test suite: 535 tests (added AdjustmentTests, AudioEnhancementTests, Transform360Tests, CaptionTitleTests, KeyframeAnimationTests, CMTimeCodableTests, CollectionTests, FilterTests, CodableTests, ImportOptionsTests, SmartCollectionTests; previously added CutDetectionTests, TimelineManipulationTests, MediaExtractionTests, VersionConversionTests)
+- Documentation: updated AGENT.md, .cursorrules, Tests/README.md, README.md, Documentation/Manual.md, and Documentation/README.md to reflect all new features and current test count
 
 ---
 

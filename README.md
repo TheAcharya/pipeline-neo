@@ -58,6 +58,14 @@ This codebase is developed using AI agents.
 - Silence detection: detect silence at start/end of audio files (configurable threshold and minimum duration).
 - Asset duration measurement: measure actual duration from AVFoundation (audio/video/images).
 - Parallel file I/O: concurrent read/write operations for improved performance.
+- Typed adjustment models: Crop, Transform, Blend, Stabilization, Volume, Loudness, NoiseReduction, HumReduction, Equalization, MatchEqualization, Transform360 with full clip integration.
+- Typed effect and filter models: VideoFilter, AudioFilter, VideoFilterMask with FilterParameter support and keyframe animation.
+- Typed transition model: Transition with video/audio filters support.
+- Typed multicam models: Media.Multicam, Media.Multicam.Angle, MulticamSource, MCClip.
+- Typed caption and title models: Caption and Title with TextStyle and TextStyleDefinition for full text formatting support.
+- Keyframe animation: KeyframeAnimation, Keyframe with interpolation types, FadeIn/FadeOut with fade types, integrated with FilterParameter.
+- CMTime Codable extension: Direct CMTime encoding/decoding as FCPXML time strings for seamless integration.
+- Collection organization: CollectionFolder and KeywordCollection models for organizing clips and media.
 - Experimental CLI: `pipeline-neo` with `--check-version`, `--convert-version`, `--validate`, `--media-copy`, and logging options `--log`, `--log-level`, `--quiet` (see CLI README).
 - Sync and async APIs; dependency-injected, concurrency-safe design for Swift 6.
 

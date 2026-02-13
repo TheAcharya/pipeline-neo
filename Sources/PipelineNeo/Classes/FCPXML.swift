@@ -64,8 +64,118 @@ extension FinalCutPro {
     /// [Official FCPXML Apple docs](
     /// https://developer.apple.com/documentation/professional_video_applications/fcpxml_reference/
     /// )
-    public struct FCPXML {
+    ///
+    /// > Note: This struct conforms to `Codable` for JSON/PLIST conversion, but cannot be `Sendable`
+    /// > because it wraps `XMLDocument` which is not `Sendable`. Use with caution in concurrent contexts.
+    public struct FCPXML: Codable {
         /// The FCPXML document.
         public var xml: XMLDocument
+        
+        // MARK: - Codable
+        
+        private enum CodingKeys: String, CodingKey {
+            case xmlString
+        }
+        
+        /// Encodes the FCPXML document to a container.
+        /// - Parameter encoder: The encoder to write data to.
+        /// - Throws: An error if encoding fails.
+        public func encode(to encoder: Encoder) throws {
+            var container = encoder.container(keyedBy: CodingKeys.self)
+            
+            // Convert XMLDocument to XML string
+            let xmlData = xml.xmlData(options: [.nodePreserveWhitespace, .nodePrettyPrint, .nodeCompactEmptyElement])
+            guard let xmlString = String(data: xmlData, encoding: .utf8) else {
+                throw FCPXMLCodableError.xmlStringConversionFailed
+            }
+            
+            try container.encode(xmlString, forKey: .xmlString)
+        }
+        
+        /// Creates an FCPXML document from a decoder.
+        /// - Parameter decoder: The decoder to read data from.
+        /// - Throws: An error if decoding fails.
+        public init(from decoder: Decoder) throws {
+            let container = try decoder.container(keyedBy: CodingKeys.self)
+            
+            // Decode XML string
+            let xmlString = try container.decode(String.self, forKey: .xmlString)
+            
+            // Convert XML string to XMLDocument
+            guard let xmlData = xmlString.data(using: .utf8) else {
+                throw FCPXMLCodableError.xmlStringConversionFailed
+            }
+            
+            do {
+                let xmlDocument = try XMLDocument(data: xmlData)
+                self.xml = xmlDocument
+            } catch {
+                throw FCPXMLCodableError.xmlStringConversionFailed
+            }
+        }
+    }
+}
+
+// MARK: - Codable Convenience Methods
+
+extension FinalCutPro.FCPXML {
+    /// Converts this FCPXML document to a JSON string.
+    /// - Returns: A JSON string representation of the document.
+    /// - Throws: An error if encoding fails.
+    public func jsonString() throws -> String {
+        return try FCPXMLCodableConverter.jsonString(from: self)
+    }
+    
+    /// Converts this FCPXML document to JSON data.
+    /// - Returns: JSON data representation of the document.
+    /// - Throws: An error if encoding fails.
+    public func jsonData() throws -> Data {
+        return try FCPXMLCodableConverter.jsonData(from: self)
+    }
+    
+    /// Converts this FCPXML document to a Property List string.
+    /// - Returns: A Property List XML string representation of the document.
+    /// - Throws: An error if encoding fails.
+    public func plistString() throws -> String {
+        return try FCPXMLCodableConverter.plistString(from: self)
+    }
+    
+    /// Converts this FCPXML document to Property List data.
+    /// - Returns: Property List data representation of the document.
+    /// - Throws: An error if encoding fails.
+    public func plistData() throws -> Data {
+        return try FCPXMLCodableConverter.plistData(from: self)
+    }
+    
+    /// Creates an FCPXML document from a JSON string.
+    /// - Parameter jsonString: The JSON string to decode.
+    /// - Returns: An FCPXML document.
+    /// - Throws: An error if decoding fails.
+    public static func from(jsonString: String) throws -> FinalCutPro.FCPXML {
+        return try FCPXMLCodableConverter.fcpxml(from: jsonString)
+    }
+    
+    /// Creates an FCPXML document from JSON data.
+    /// - Parameter jsonData: The JSON data to decode.
+    /// - Returns: An FCPXML document.
+    /// - Throws: An error if decoding fails.
+    public static func from(jsonData: Data) throws -> FinalCutPro.FCPXML {
+        return try FCPXMLCodableConverter.fcpxml(from: jsonData)
+    }
+    
+    /// Creates an FCPXML document from a Property List string.
+    /// - Parameter plistString: The Property List XML string to decode.
+    /// - Returns: An FCPXML document.
+    /// - Throws: An error if decoding fails.
+    public static func from(plistString: String) throws -> FinalCutPro.FCPXML {
+        return try FCPXMLCodableConverter.fcpxml(fromPlistString: plistString)
+    }
+    
+    /// Creates an FCPXML document from Property List data.
+    /// - Parameter plistData: The Property List data to decode.
+    /// - Returns: An FCPXML document.
+    /// - Throws: An error if decoding fails.
+    public static func from(plistData: Data) throws -> FinalCutPro.FCPXML {
+        return try FCPXMLCodableConverter.fcpxml(fromPlistData: plistData)
     }
 }
