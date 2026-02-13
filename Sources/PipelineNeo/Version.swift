@@ -9,4 +9,4 @@
 //
 
 /// Package version exposed for the CLI (--version) and CI or other tooling.
-public let packageVersion = "2.1.0"
+public let packageVersion = "2.2.0"
