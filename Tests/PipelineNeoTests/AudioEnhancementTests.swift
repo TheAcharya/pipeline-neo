@@ -236,6 +236,10 @@ final class AudioEnhancementTests: XCTestCase {
         clip.humReductionAdjustment = humReduction
         clip.equalizationAdjustment = equalization
         clip.matchEqualizationAdjustment = matchEQ
+        _ = clip.noiseReductionAdjustment // Explicitly use variable to acknowledge mutation
+        _ = clip.humReductionAdjustment // Explicitly use variable to acknowledge mutation
+        _ = clip.equalizationAdjustment // Explicitly use variable to acknowledge mutation
+        _ = clip.matchEqualizationAdjustment // Explicitly use variable to acknowledge mutation
         
         XCTAssertEqual(clip.noiseReductionAdjustment?.amount, 0.5)
         XCTAssertEqual(clip.humReductionAdjustment?.frequency, .hz60)

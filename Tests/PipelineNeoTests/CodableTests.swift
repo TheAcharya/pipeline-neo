@@ -50,6 +50,7 @@ final class CodableTests: XCTestCase {
         var root = FinalCutPro.FCPXML.Root()
         root.element.addAttribute(withName: "version", value: "1.9")
         root.resources = XMLElement(name: "resources")
+        _ = root.resources // Explicitly use variable to acknowledge mutation
         
         // Encode to JSON
         let encoder = JSONEncoder()

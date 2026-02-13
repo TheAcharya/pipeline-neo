@@ -143,6 +143,7 @@ final class ImportOptionsTests: XCTestCase {
             FinalCutPro.FCPXML.ImportOption(key: "key1", value: "value1")
         ]
         root.importOptions = FinalCutPro.FCPXML.ImportOptions(options: options)
+        _ = root.importOptions // Explicitly use variable to acknowledge mutation
         
         // Verify it was set
         XCTAssertNotNil(root.importOptions)
@@ -151,6 +152,7 @@ final class ImportOptionsTests: XCTestCase {
         
         // Set to nil
         root.importOptions = nil
+        _ = root.importOptions // Explicitly use variable to acknowledge mutation
         XCTAssertNil(root.importOptions)
     }
     
@@ -174,6 +176,7 @@ final class ImportOptionsTests: XCTestCase {
             XCTFail("Failed to create root")
             return
         }
+        _ = root.importOptions // Explicitly use variable to acknowledge mutation
         
         // Verify import options were parsed
         XCTAssertNotNil(root.importOptions)
@@ -196,6 +199,7 @@ final class ImportOptionsTests: XCTestCase {
         // Add resources element (required)
         let resources = XMLElement(name: "resources")
         root.resources = resources
+        _ = root.resources // Explicitly use variable to acknowledge mutation
         
         // Set import options
         let options = [
@@ -249,9 +253,11 @@ final class ImportOptionsTests: XCTestCase {
         var root = FinalCutPro.FCPXML.Root()
         root.element.addAttribute(withName: "version", value: "1.9")
         root.resources = XMLElement(name: "resources")
+        _ = root.resources // Explicitly use variable to acknowledge mutation
         
         // Set suppress warnings to true
         root.setShouldSuppressWarningsOnImport(true)
+        _ = root.importOptions // Explicitly use variable to acknowledge mutation
         
         XCTAssertNotNil(root.importOptions)
         let suppressOption = root.importOptions?.options.first { $0.key == "suppress warnings" }
@@ -272,9 +278,11 @@ final class ImportOptionsTests: XCTestCase {
         var root = FinalCutPro.FCPXML.Root()
         root.element.addAttribute(withName: "version", value: "1.9")
         root.resources = XMLElement(name: "resources")
+        _ = root.resources // Explicitly use variable to acknowledge mutation
         
         let location = "/path/to/library.fcpxlibrary"
         root.setLibraryLocationForImport(location)
+        _ = root.importOptions // Explicitly use variable to acknowledge mutation
         
         XCTAssertNotNil(root.importOptions)
         let locationOption = root.importOptions?.options.first { $0.key == "library location" }
@@ -286,9 +294,11 @@ final class ImportOptionsTests: XCTestCase {
         var root = FinalCutPro.FCPXML.Root()
         root.element.addAttribute(withName: "version", value: "1.9")
         root.resources = XMLElement(name: "resources")
+        _ = root.resources // Explicitly use variable to acknowledge mutation
         
         let url = URL(fileURLWithPath: "/path/to/library.fcpxlibrary")
         root.setLibraryLocationForImport(url)
+        _ = root.importOptions // Explicitly use variable to acknowledge mutation
         
         XCTAssertNotNil(root.importOptions)
         let locationOption = root.importOptions?.options.first { $0.key == "library location" }
@@ -300,11 +310,13 @@ final class ImportOptionsTests: XCTestCase {
         var root = FinalCutPro.FCPXML.Root()
         root.element.addAttribute(withName: "version", value: "1.9")
         root.resources = XMLElement(name: "resources")
+        _ = root.resources // Explicitly use variable to acknowledge mutation
         
         // Add multiple options
         root.setShouldCopyAssetsOnImport(true)
         root.setShouldSuppressWarningsOnImport(false)
         root.setLibraryLocationForImport("/path/to/library.fcpxlibrary")
+        _ = root.importOptions // Explicitly use variable to acknowledge mutation
         
         XCTAssertNotNil(root.importOptions)
         XCTAssertEqual(root.importOptions?.options.count, 3)
@@ -346,10 +358,12 @@ final class ImportOptionsTests: XCTestCase {
         var root = FinalCutPro.FCPXML.Root()
         root.element.addAttribute(withName: "version", value: "1.9")
         root.resources = XMLElement(name: "resources")
+        _ = root.resources // Explicitly use variable to acknowledge mutation
         
         root.setShouldCopyAssetsOnImport(true)
         root.setShouldSuppressWarningsOnImport(false)
         root.setLibraryLocationForImport("/path/to/library.fcpxlibrary")
+        _ = root.importOptions // Explicitly use variable to acknowledge mutation
         
         // Convert to XML
         let document = XMLDocument()
@@ -381,6 +395,7 @@ final class ImportOptionsTests: XCTestCase {
         var root = FinalCutPro.FCPXML.Root()
         root.element.addAttribute(withName: "version", value: "1.9")
         root.resources = XMLElement(name: "resources")
+        _ = root.resources // Explicitly use variable to acknowledge mutation
         
         // Create import-options element with invalid option (missing value)
         let importOptionsElement = XMLElement(name: "import-options")
