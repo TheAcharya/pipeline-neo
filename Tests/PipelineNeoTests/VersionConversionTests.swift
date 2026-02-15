@@ -55,7 +55,10 @@ final class VersionConversionTests: XCTestCase, @unchecked Sendable {
     /// When converting to 1.10, elements not in the 1.10 DTD (e.g. adjust-colorConform from 1.11+) are stripped so FCP can import.
     func testConvertToVersion_1_10_StripsAdjustColorConform() throws {
         let doc = service.createFCPXMLDocument(version: "1.14")
-        guard let root = doc.rootElement() else { return XCTFail("No root") }
+        guard let root = doc.rootElement() else {
+            XCTFail("No root")
+            return
+        }
         let assetClip = XMLElement(name: "asset-clip")
         let adjustColorConform = XMLElement(name: "adjust-colorConform")
         adjustColorConform.setAttributesWith(["enabled": "1", "autoOrManual": "automatic", "conformType": "conformNone", "peakNitsOfPQSource": "1000", "peakNitsOfSDRToPQSource": "100"])
@@ -72,7 +75,10 @@ final class VersionConversionTests: XCTestCase, @unchecked Sendable {
     /// When converting to 1.12, adjust-stereo-3D (1.13+) is stripped.
     func testConvertToVersion_1_12_StripsAdjustStereo3D() throws {
         let doc = service.createFCPXMLDocument(version: "1.14")
-        guard let root = doc.rootElement() else { return XCTFail("No root") }
+        guard let root = doc.rootElement() else {
+            XCTFail("No root")
+            return
+        }
         let assetClip = XMLElement(name: "asset-clip")
         let adjustStereo = XMLElement(name: "adjust-stereo-3D")
         assetClip.addChild(adjustStereo)
@@ -119,7 +125,8 @@ final class VersionConversionTests: XCTestCase, @unchecked Sendable {
         // Add an element that should be stripped when converting to 1.10
         // (adjust-colorConform was introduced in 1.11)
         guard let root = doc.rootElement() else {
-            return XCTFail("Document should have root element")
+            XCTFail("Document should have root element")
+            return
         }
         
         let resources = root.firstChildElement(named: "resources") ?? XMLElement(name: "resources")

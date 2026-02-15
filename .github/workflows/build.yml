@@ -27,6 +27,9 @@ on:
 env:
   SCHEME: "PipelineNeo-Package"
 
+permissions:
+  contents: read
+
 jobs:
   # Non-strict concurrency (default Swift / targeted mode)
   macOS:

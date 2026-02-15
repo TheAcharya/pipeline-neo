@@ -51,7 +51,7 @@ Foundation XML types (XMLDocument, XMLElement) and SwiftTimecode types are not S
 ## Architecture
 
 - Protocols: Core operations are defined as protocols with both sync and async/await methods. Default implementations are provided; components can be swapped via dependency injection. Protocols include: FCPXMLParsing, TimecodeConversion, XMLDocumentOperations, ErrorHandling (sync-only, pure formatting), MIMETypeDetection, AssetValidation, SilenceDetection, AssetDurationMeasurement, ParallelFileIO, CutDetection, FCPXMLVersionConverting, MediaExtraction.
-- Implementations: FCPXMLParser, TimecodeConverter, XMLDocumentManager, ErrorHandler, CutDetector, FCPXMLVersionConverter, MediaExtractor, MIMETypeDetector, AssetValidator, SilenceDetector, AssetDurationMeasurer, ParallelFileIOHandler implement the protocols.
+- Implementations: FCPXMLParser, TimecodeConverter, XMLDocumentManager, ErrorHandler, CutDetector, FCPXMLVersionConverter, MediaExtractor, MIMETypeDetector, AssetValidator, SilenceDetector, AssetDurationMeasurer, ParallelFileIOExecutor implement the protocols.
 - Analysis: Cut detection (CutDetection protocol, CutDetector implementation) produces EditPoint and CutDetectionResult; classifies edit points by boundary type (hard cut, transition, gap) and source relationship (same-clip vs different-clips). FCPXMLService and FCPXMLUtility expose detectCuts(in:) and detectCuts(inSpine:) (sync and async).
 - Version conversion: FCPXMLVersionConverting protocol and FCPXMLVersionConverter; convertToVersion(_:targetVersion:) sets root version, strips elements not in the target version’s DTD (e.g. adjust-colorConform, adjust-stereo-3D), and returns a copy; saveAsFCPXML(_:to:) saves as .fcpxml; saveAsBundle(_:to:bundleName:) saves as .fcpxmld (FCPXMLBundleExporter.saveDocumentAsBundle; only for document version 1.10 or higher; FCPXMLVersion.supportsBundleFormat is true for 1.10+). DTD validation: FCPXMLService.validateDocumentAgainstDTD(_:version:) and validateDocumentAgainstDeclaredVersion(_:); FCPXMLDTDValidator injectable; CLI convert runs validation after conversion and fails if invalid. CLI --extension-type (fcpxmld | fcpxml; default fcpxmld) controls convert output format; 1.5–1.9 always output .fcpxml. Async methods are concurrency-safe; Task-based concurrency is avoided for non-Sendable types. FCPXMLParser delegates URL loading to FCPXMLFileLoader for unified file/bundle handling and consistent parse options. TimecodeConverter guards against invalid/non-finite CMTime inputs.
 - Media extraction: MediaExtraction protocol and MediaExtractor; extractMediaReferences(from:baseURL:) returns MediaExtractionResult (references from asset media-rep and locator resources; fileReferences for file URLs); copyReferencedMedia(from:to:baseURL:) copies file references to a directory with deduplication and unique filenames, returning MediaCopyResult (copied, skipped, failed). FCPXMLService and FCPXMLUtility expose both (sync and async).
@@ -114,14 +114,14 @@ Rules:
 Source layout under Sources/PipelineNeo/:
 
 - Analysis: EditPoint (edit type, source relationship), CutDetectionResult (edit points and counts).
-- Classes: FinalCutPro (namespace enum), FCPXML (core struct, init, properties), FCPXML Root, FCPXML Root Version, FCPXMLElementType, FCPXMLUtility, FCPXMLVersion.
+- Classes: FinalCutPro (namespace enum), FCPXML (core struct, init, properties), FCPXMLRoot, FCPXMLRootVersion, FCPXMLElementType, FCPXMLUtility, FCPXMLVersion.
 - Delegates: AttributeParserDelegate (property: `values`), FCPXMLParserDelegate (properties: `roles`, `resourceIDs`, `textStyleIDs`; O(1) deduplication via Set).
-- Errors: FCPXMLError, FCPXML ParseError, TimelineError.
+- Errors: FCPXMLError, FCPXMLParseError, TimelineError.
 - Extensions: CMTime+Modular, CMTimeExtension, CMTime+Codable, XMLDocument+Modular, XMLDocumentExtension, XMLElement+Modular, XMLElementExtension.
-- Implementations: FCPXMLParser, TimecodeConverter, XMLDocumentManager, ErrorHandler, CutDetector, FCPXMLVersionConverter, MediaExtractor, MIMETypeDetector, AssetValidator, SilenceDetector, AssetDurationMeasurer, ParallelFileIOHandler.
+- Implementations: FCPXMLParser, TimecodeConverter, XMLDocumentManager, ErrorHandler, CutDetector, FCPXMLVersionConverter, MediaExtractor, MIMETypeDetector, AssetValidator, SilenceDetector, AssetDurationMeasurer, ParallelFileIOExecutor.
 - Protocols: FCPXMLParsing, TimecodeConversion, XMLDocumentOperations, ErrorHandling, CutDetection, FCPXMLVersionConverting, MediaExtraction, MIMETypeDetection, AssetValidation, SilenceDetection, AssetDurationMeasurement, ParallelFileIO.
 - Services: FCPXMLService.
-- Utilities: ModularUtilities, FCPXML Time Utilities, SequencePlusAnySequence, XMLElementAncestorWalking, XMLElementSequenceAttributes.
+- Utilities: ModularUtilities, FCPXMLTimeUtilities, SequencePlusAnySequence, XMLElementAncestorWalking, XMLElementSequenceAttributes.
 - Annotations: ChapterMarker, Keyword, Marker, Metadata, Rating (creation-oriented value types; for parsing models see Model/).
 - Export: FCPXMLExporter, FCPXMLBundleExporter, FCPXMLExportAsset.
 - Timeline: Timeline (with manipulation methods: ripple insert, auto lane assignment, clip queries, lane range, metadata, timestamps), TimelineClip (with asset validation methods), TimelineFormat (with presets and computed properties).
