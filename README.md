@@ -14,7 +14,7 @@ Pipeline Neo is currently in an experimental stage and does not yet cover the fu
 This codebase is developed using AI agents.
 
 > [!IMPORTANT]
-> Pipeline Neo has yet to be extensively tested in production environments, real-world workflows, or application integration. This library serves as a modernised foundation for AI-assisted development and experimentation with FCPXML processing capabilities. Additionally, this project would not be actively maintained, so please consider this when planning long-term integrations.
+> Pipeline Neo has yet to be extensively tested in production environments, real-world workflows, or application integration. This library serves as a modernised foundation for AI-assisted development and experimentation with FCPXML processing capabilities.
 
 ## Table of Contents
 
@@ -80,7 +80,7 @@ let package = Package(
         .macOS(.v12)
     ],
     dependencies: [
-        .package(url: "https://github.com/TheAcharya/pipeline-neo", from: "2.2.0")
+        .package(url: "https://github.com/TheAcharya/pipeline-neo", from: "2.3.0")
     ],
     targets: [
         .target(
@@ -143,7 +143,7 @@ sudo rm /usr/local/bin/pipeline-neo
 ### Compiled From Source
 
 ```shell
-VERSION=2.2.0 # replace this with the git tag of the version you need
+VERSION=2.3.0 # replace this with the git tag of the version you need
 git clone https://github.com/TheAcharya/pipeline-neo.git
 cd pipeline-neo
 git checkout "tags/$VERSION"
