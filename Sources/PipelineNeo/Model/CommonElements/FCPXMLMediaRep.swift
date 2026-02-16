@@ -21,8 +21,7 @@ extension FinalCutPro.FCPXML {
     ///
     /// > Final Cut Pro FCPXML 1.11 Reference:
     /// >
-    /// > References a media representation, that is either the original or a proxy media managed by
-    /// > Final Cut Pro.
+    /// > References a media representation, that is either the original or a proxy media managed by Final Cut Pro.
     /// >
     /// > A media that Final Cut Pro manages in its library can have a proxy media representation,
     /// > in addition to the original media representation. Use the media-rep element to describe a
