@@ -4,6 +4,7 @@
 //  © 2026 • Licensed under MIT License
 //
 
+import Foundation
 import XCTest
 import SwiftTimecode
 @testable import PipelineNeo
@@ -53,6 +54,43 @@ final class FilterTests: XCTestCase {
         XCTAssertEqual(decoded.name, param.name)
         XCTAssertEqual(decoded.key, param.key)
         XCTAssertEqual(decoded.value, param.value)
+    }
+    
+    func testFilterParameterAuxValueInitialization() {
+        let param = FinalCutPro.FCPXML.FilterParameter(
+            name: "Gain",
+            key: "gain",
+            value: "1.0",
+            auxValue: "dB",
+            isEnabled: true
+        )
+        XCTAssertEqual(param.name, "Gain")
+        XCTAssertEqual(param.auxValue, "dB")
+    }
+    
+    func testFilterParameterAuxValueCodable() throws {
+        let param = FinalCutPro.FCPXML.FilterParameter(
+            name: "Test",
+            key: "k",
+            value: "v",
+            auxValue: "aux"
+        )
+        let data = try JSONEncoder().encode(param)
+        let decoded = try JSONDecoder().decode(FinalCutPro.FCPXML.FilterParameter.self, from: data)
+        XCTAssertEqual(decoded.auxValue, "aux")
+    }
+    
+    func testFilterParameterFromParamElementWithAuxValue() {
+        let paramElement = XMLElement(name: "param")
+        paramElement.addAttribute(withName: "name", value: "Gain")
+        paramElement.addAttribute(withName: "key", value: "gain")
+        paramElement.addAttribute(withName: "value", value: "0.8")
+        paramElement.addAttribute(withName: "auxValue", value: "linear")
+        paramElement.addAttribute(withName: "enabled", value: "1")
+        let param = FinalCutPro.FCPXML.FilterParameter(paramElement: paramElement)
+        XCTAssertNotNil(param)
+        XCTAssertEqual(param?.name, "Gain")
+        XCTAssertEqual(param?.auxValue, "linear")
     }
     
     // MARK: - KeyedData Tests

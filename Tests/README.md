@@ -1,22 +1,37 @@
 # Pipeline Neo — Test Suite
 
-This directory contains the test suite for Pipeline Neo, a Swift 6 framework for Final Cut Pro FCPXML processing with SwiftTimecode integration. The suite currently has **535 tests**. They ensure correctness, concurrency safety, and performance across parsing, timecode conversion, document and element operations, file loading, timeline export, validation, timeline manipulation, media processing, typed adjustment models, typed effect/filter models, typed caption/title models, keyframe animation, CMTime Codable extension, collection organization, and all supported FCPXML versions and frame rates. The suite is modular: shared utilities resolve sample paths, file tests exercise individual FCPXML samples, and logic-and-parsing tests cover model types and structure.
+This directory contains the test suite for Pipeline Neo, a Swift 6 framework for Final Cut Pro FCPXML processing with SwiftTimecode integration.
+
+- **Test count:** 587 tests  
+- **Scope:** Parsing, timecode, document operations, file loading, timeline export, validation, timeline manipulation, media processing, typed models (adjustments, filters, captions/titles, keyframe animation), CMTime Codable, collections, Live Drawing (1.11+), HiddenClipMarker (1.13+), Format/Asset 1.13+ (heroEye, heroEyeOverride, mediaReps), SmartCollection match rules, and all supported FCPXML versions and frame rates  
+- **Layout:** Shared utilities for sample paths; file tests per sample; logic/parsing tests for model types and structure  
 
 ---
 
 ## Table of Contents
 
+**Structure & running**
+
 1. [Test structure](#1-test-structure)
 2. [Running tests](#2-running-tests)
+
+**Coverage**
+
 3. [Test categories and coverage](#3-test-categories-and-coverage)
-4. [File tests (per-sample coverage)](#4-file-tests-per-sample-coverage)
+4. [File tests (per-sample)](#4-file-tests-per-sample-coverage)
 5. [Logic and parsing tests](#5-logic-and-parsing-tests)
-6. [Timeline, export, and validation tests](#6-timeline-export-and-validation-tests)
+6. [Timeline, export, and validation](#6-timeline-export-and-validation-tests)
 7. [API and edge case tests](#7-api-and-edge-case-tests)
 8. [Performance tests](#8-performance-tests)
+
+**Reference**
+
 9. [Supported frame rates](#9-supported-frame-rates)
 10. [FCPXML versions](#10-fcpxml-versions)
 11. [Sample files](#11-sample-files)
+
+**Contributing & troubleshooting**
+
 12. [Writing and organising tests](#12-writing-and-organising-tests)
 13. [Continuous integration](#13-continuous-integration)
 14. [Debugging tests](#14-debugging-tests)
@@ -33,11 +48,11 @@ This directory contains the test suite for Pipeline Neo, a Swift 6 framework for
 Tests/
 ├── README.md
 ├── FCPXML Samples/
-│   └── FCPXML/                 # Sample .fcpxml files (24.fcpxml, Structure.fcpxml, etc.)
+│   └── FCPXML/                 # Sample .fcpxml files
 └── PipelineNeoTests/
-    ├── TestResources.swift    # packageRoot, fcpxmlSamplesDirectory, urlForFCPXMLSample, FCPXMLSampleName
-    ├── FCPXMLTestUtilities.swift  # loadFCPXMLSampleData(named:), loadFCPXMLSample(named:), fcpxmlFrameRateSampleNames, allFCPXMLSampleNames()
-    ├── FileTests/             # One test class per sample or category
+    ├── TestResources.swift     # packageRoot, fcpxmlSamplesDirectory, urlForFCPXMLSample
+    ├── FCPXMLTestUtilities.swift  # loadFCPXMLSampleData, loadFCPXMLSample, fcpxmlFrameRateSampleNames, allFCPXMLSampleNames
+    ├── FileTests/
     │   ├── FCPXMLFileTest_24.swift
     │   ├── FCPXMLFileTest_Complex.swift
     │   ├── FCPXMLFileTest_BasicMarkers.swift
@@ -51,36 +66,42 @@ Tests/
     │   └── FCPXMLFileTest_Occlusion.swift
     ├── LogicAndParsing/
     │   ├── FCPXMLRootVersionTests.swift
-    │   └── FCPXMLStructureTests.swift
+    │   ├── FCPXMLStructureTests.swift
+    │   └── FCPXMLFormatAssetTests.swift   # Format heroEye (1.13+), Asset heroEyeOverride/mediaReps
     ├── APIAndEdgeCaseTests.swift
-    ├── AdjustmentTests.swift  # Typed adjustment models (Crop, Transform, Blend, Stabilization, Volume, Loudness)
-    ├── AudioEnhancementTests.swift  # Audio enhancement adjustments (NoiseReduction, HumReduction, Equalization, MatchEqualization)
-    ├── CaptionTitleTests.swift  # Caption and Title models with TextStyle and TextStyleDefinition
-    ├── CMTimeCodableTests.swift  # CMTime Codable extension for FCPXML time strings
-    ├── CollectionTests.swift  # CollectionFolder and KeywordCollection models
-    ├── CodableTests.swift  # Codable conformance for various models
-    ├── CutDetectionTests.swift   # Cut detection (same-clip vs different-clips, boundary types)
-    ├── FilterTests.swift  # Typed filter models (VideoFilter, AudioFilter, VideoFilterMask, FilterParameter)
-    ├── ImportOptionsTests.swift  # Import options and settings
-    ├── KeyframeAnimationTests.swift  # KeyframeAnimation, Keyframe, FadeIn, FadeOut models
-    ├── SmartCollectionTests.swift  # SmartCollection model
-    ├── Transform360Tests.swift  # Transform360Adjustment model for 360° video
-    ├── VersionConversionTests.swift  # Version conversion, save as .fcpxml / .fcpxmld (bundle 1.10+ only)
-    ├── MediaExtractionTests.swift    # Media reference extraction and copy (asset media-rep, locators)
-    ├── TimelineManipulationTests.swift  # Timeline manipulation: ripple insert, auto lane, metadata, timestamps (56 tests)
-    ├── FCPXMLTimecodeTests.swift  # FCPXMLTimecode custom timecode type (23 tests)
-    ├── MIMETypeDetectionTests.swift  # MIME type detection (UTType + AVFoundation) (10 tests)
-    ├── AssetValidationTests.swift  # Asset validation (existence + MIME compatibility) (11 tests)
-    ├── SilenceDetectionTests.swift  # Audio silence detection
-    ├── AssetDurationMeasurementTests.swift  # Asset duration measurement (audio/video/images)
-    ├── ParallelFileIOTests.swift  # Parallel file read/write operations
+    ├── AdjustmentTests.swift
+    ├── AudioEnhancementTests.swift
+    ├── CaptionTitleTests.swift
+    ├── CMTimeCodableTests.swift
+    ├── CollectionTests.swift
+    ├── CodableTests.swift
+    ├── CutDetectionTests.swift
+    ├── FilterTests.swift
+    ├── ImportOptionsTests.swift
+    ├── KeyframeAnimationTests.swift
+    ├── SmartCollectionTests.swift
+    ├── Transform360Tests.swift
+    ├── VersionConversionTests.swift
+    ├── MediaExtractionTests.swift
+    ├── TimelineManipulationTests.swift
+    ├── FCPXMLTimecodeTests.swift
+    ├── MIMETypeDetectionTests.swift
+    ├── AssetValidationTests.swift
+    ├── SilenceDetectionTests.swift
+    ├── AssetDurationMeasurementTests.swift
+    ├── ParallelFileIOTests.swift
     ├── FCPXMLPerformanceTests.swift
     ├── PipelineNeoTests.swift
     ├── TimelineExportValidationTests.swift
     └── XCTestManifests.swift
 ```
 
-TestResources.swift provides path resolution from the test file location to the package root and then to `Tests/FCPXML Samples/FCPXML/`, so sample URLs work from both Xcode and `swift test` without bundle resources. FCPXMLTestUtilities adds helpers that load sample data or a full FinalCutPro.FCPXML instance and throw XCTSkip when a sample is missing. PipelineNeoTests.swift holds the main test class with shared dependencies (parser, timecode converter, document manager, error handler) injected in setUpWithError. XCTestManifests.swift exposes tests for Swift Package Manager on Linux.
+**Shared utilities**
+
+- **TestResources.swift** — Path resolution from test file to package root and `Tests/FCPXML Samples/FCPXML/`; works from Xcode and `swift test` without bundle resources.
+- **FCPXMLTestUtilities** — `loadFCPXMLSampleData(named:)`, `loadFCPXMLSample(named:)`; throw `XCTSkip` when a sample is missing.
+- **PipelineNeoTests.swift** — Main test class; shared dependencies (parser, timecode converter, document manager, error handler) injected in `setUpWithError`.
+- **XCTestManifests.swift** — Exposes tests for Swift Package Manager on Linux.
 
 ---
 
@@ -89,297 +110,253 @@ TestResources.swift provides path resolution from the test file location to the 
 ### Swift Package Manager
 
 ```bash
-# Run all tests
-swift test
-
-# Verbose output
-swift test --verbose
-
-# Run a single test by name
-swift test --filter testAllSupportedFrameRates
-
-# Run tests matching a pattern
-swift test --filter PipelineNeoTests
+swift test                    # All tests
+swift test --verbose         # Verbose
+swift test --filter testAllSupportedFrameRates   # Single test
+swift test --filter PipelineNeoTests             # By pattern
 ```
 
 ### Xcode
 
-1. Open the package (File → Open the folder or .swiftpm workspace).
-2. Select the PipelineNeo scheme.
-3. ⌃⌘U (or Product → Test) to run all tests.
-4. Use the Test Navigator (⌘6) to run or re-run individual tests.
+1. Open the package (folder or .swiftpm workspace).
+2. Select the **PipelineNeo** scheme.
+3. **⌃⌘U** (Product → Test) to run all tests.
+4. Test Navigator (**⌘6**) to run individual tests.
 
 ### Linux
 
-Tests are discoverable on Linux via XCTestManifests.swift. Run with `swift test` in a Linux environment that provides XCTest.
+Tests are discoverable via **XCTestManifests.swift**. Run `swift test` in an environment that provides XCTest.
 
 ---
 
 ## 3. Test categories and coverage
 
-PipelineNeoTests.swift is organised with MARK sections. Summary of categories and what they cover:
+### 3.1 PipelineNeoTests.swift (MARK sections)
 
-Test dependencies / setup: setUpWithError and tearDownWithError create and tear down parser, timecodeConverter, documentManager, errorHandler, FCPXMLUtility, and FCPXMLService. All tests use these instances to validate the modular, protocol-oriented API.
+| Category | What it covers |
+|----------|-----------------|
+| **Setup** | `setUpWithError` / `tearDownWithError`; parser, timecodeConverter, documentManager, errorHandler, FCPXMLUtility, FCPXMLService |
+| **FCPXMLUtility** | Initialisation, element filtering by `FCPXMLElementType`, CMTime ↔ FCPXML time string, time conforming |
+| **FCPXMLService** | Initialisation, document creation, timecode/CMTime conversion |
+| **Modular components** | Parser, TimecodeConverter, DocumentManager, ErrorHandler (parse, validate, create, add resource, message formatting) |
+| **Modular utilities** | `ModularUtilities.createPipeline()` returns configured FCPXMLService |
+| **Async and concurrency** | Sendable service in TaskGroup; async parser, converter, document manager, service, utilities, element filtering, time conforming, FCPXML time string conversion, XML operations, concurrent ops |
+| **Performance (basic)** | Filter elements by type; timecode conversion |
+| **Frame rate** | All eight FCP frame rates (round-trip); drop-frame (29.97, 59.94) |
+| **Time values** | Various/large CMTime; round-trip via converter |
+| **FCPXML time strings** | Valid value/timescale formats; invalid strings → CMTime.zero |
+| **Time conforming** | `conform(time:toFrameDuration:)` for all eight FCP frame durations |
+| **Error handling** | ErrorHandler for FCPXMLError; parser with invalid XML |
+| **Document management** | Document creation 1.5–1.14; add resources/sequences; validate structure |
+| **Element filtering** | Core, extended, and all `FCPXMLElementType` coverage |
+| **Modular extensions** | CMTime (timecode, fcpxmlTime, conformed); XMLElement (setAttribute, getAttribute, createChild); XMLDocument (addResource, addSequence, isValid) |
+| **Performance (params)** | Timecode conversion all frame rates; document creation loop; element filtering large dataset |
+| **Edge cases** | Edge time values; concurrent timecode conversion |
+| **FCPXMLElementType** | tagName, isInferred (multicam, compound, asset, sequence, clip, none) |
+| **FCPXMLError** | Every case has non-empty errorDescription |
+| **ModularUtilities API** | createCustomPipeline, validateDocument (invalid doc), processFCPXML, processMultipleFCPXML, convertTimecodes |
+| **XMLDocument extension** | fcpxEventNames, add(events:); resource(matchingID:), remove(resourceAtIndex:); fcpxmlString, fcpxmlVersion; init(contentsOfFCPXML:) |
+| **XMLElement extension** | fcpxType, isFCPXResource, isFCPXStoryElement; fcpxEvent, eventClips, addToEvent, removeFromEvent; fcpxDuration; eventClips throws when not event |
+| **Parser filter** | Filter media by first child (multicam/compound); FCPXMLUtility.defaultForExtensions |
 
-FCPXMLUtility: testFCPXMLUtilityInitialisation, testFilterElements, testCMTimeFromFCPXMLTime, testFCPXMLTimeFromCMTime, testConformTime. Covers utility initialisation, element filtering by FCPXMLElementType, CMTime to and from FCPXML time string, and time conforming to frame duration.
+### 3.2 Dedicated test files (by theme)
 
-FCPXMLService: testFCPXMLServiceInitialisation, testCreateFCPXMLDocument, testTimecodeConversion, testCMTimeFromTimecode. Covers service initialisation, document creation, and timecode and CMTime conversion via the service.
+**Media & extraction**
 
-Modular components: testParserComponent, testTimecodeConverterComponent, testDocumentManagerComponent, testErrorHandlerComponent. Covers parser parse and validate, TimecodeConverter round-trip, DocumentManager create and add resource, ErrorHandler message formatting.
+- **MediaExtractionTests** — extractMediaReferences, copyReferencedMedia (sync/async); extract-then-copy flow (CLI --media-copy). MediaExtractor, MediaExtractionResult, MediaCopyResult.
 
-Modular utilities: testModularUtilitiesCreatePipeline. Ensures ModularUtilities.createPipeline() returns a configured FCPXMLService.
+**Timeline & manipulation**
 
-Async and concurrency: testSwift6ConcurrencySendableServiceInTaskGroup, testAsyncParserComponent, testAsyncTimecodeConverterComponent, testAsyncDocumentManagerComponent, testAsyncFCPXMLService, testAsyncModularUtilities, testAsyncElementFiltering, testAsyncTimeConforming, testAsyncFCPXMLTimeStringConversion, testAsyncXMLElementOperations, testAsyncConcurrentOperations. Covers Sendable service in TaskGroup, async variants of parser, timecode converter, document manager, service, utilities, element filtering, time conforming, FCPXML time string conversion, XML element operations, and concurrent async operations.
+- **TimelineManipulationTests** — Ripple insert (immutable/mutating, lane options); auto lane (findAvailableLane, insertingClipAutoLane, insertClipAutoLane); clip queries (onLane, inRange, withAssetRef, laneRange); metadata (markers, chapters, keywords, ratings); timestamps (createdAt, modifiedAt). Timeline, TimelineClip, RippleInsertResult, ClipPlacement, TimelineError.
 
-Performance (basic): testPerformanceFilterElements, testPerformanceTimecodeConversion. Measures filtering elements by type and timecode conversion throughput.
+**Timecode & timing**
 
-Frame rate: testAllSupportedFrameRates, testDropFrameTimecode. Covers all eight FCP-supported frame rates (timecode round-trip) and drop-frame (29.97, 59.94).
+- **FCPXMLTimecodeTests** — FCPXMLTimecode: init (seconds, value/timescale, CMTime, frames, FCPXML string); value, timescale, seconds, fcpxmlString; arithmetic (+, -, *); comparison; toCMTime; frame alignment; Hashable, Codable.
 
-Time values: testVariousTimeValues, testLargeTimeValues. Various and large CMTime values and round-trip via timecode converter.
+**Media processing**
 
-FCPXML time strings: testFCPXMLTimeStringFormats, testInvalidFCPXMLTimeStrings. Valid value/timescale formats and round-trip; invalid strings (empty, malformed, wrong count) produce CMTime.zero.
+- **MIMETypeDetectionTests** — Sync/async detection (UTType, AVFoundation, extension fallback); video/audio/image formats. MIMETypeDetector.
+- **AssetValidationTests** — Existence; lane compatibility (negative = audio only); sync/async; TimelineClip (validateAsset, isAudioAsset, isVideoAsset, isImageAsset). AssetValidator, AssetValidationResult.
+- **SilenceDetectionTests** — Silence at start/end; threshold, minimumDuration; sync/async. SilenceDetector, SilenceDetectionResult.
+- **AssetDurationMeasurementTests** — Duration for audio/video/images; media type; sync/async; image (no duration). AssetDurationMeasurer, DurationMeasurementResult, MediaType.
+- **ParallelFileIOTests** — Parallel read/write; success/failure counts; maxConcurrentOperations, useFileHandleOptimization. ParallelFileIOExecutor, ParallelFileIOResult.
 
-Time conforming: testTimeConformingWithDifferentFrameDurations. conform(time:toFrameDuration:) for all eight FCP frame durations; conformed time is a multiple of frame duration.
+**Typed models**
 
-Error handling: testErrorHandlerWithAllErrorTypes, testParserWithInvalidXML. ErrorHandler for FCPXMLError cases; parser with invalid XML.
+- **AdjustmentTests** — Crop, Transform, Blend, Stabilization, Volume, Loudness; init, properties, Codable, Clip integration; XML round-trip.
+- **AudioEnhancementTests** — NoiseReduction, HumReduction, Equalization, MatchEqualization; init, Codable, Clip integration.
+- **Transform360Tests** — Transform360Adjustment (spherical/cartesian, auto-orient, convergence, interaxial); Codable, Clip integration.
+- **FilterTests** — VideoFilter, AudioFilter, VideoFilterMask, FilterParameter (keyframe animation, param auxValue 1.11+); Codable, clip integration.
+- **CaptionTitleTests** — Caption, Title, TextStyle, TextStyleDefinition; typedTextStyleDefinitions; XML parse/serialization.
+- **KeyframeAnimationTests** — KeyframeAnimation, Keyframe (interpolation), FadeIn/FadeOut (fade types); FilterParameter integration; CMTime Codable.
+- **CMTimeCodableTests** — CMTime encode/decode as FCPXML time strings; round-trip; edge cases.
+- **CollectionTests** — CollectionFolder, KeywordCollection; nested folders; Codable.
 
-Document management: testDocumentManagerWithAllFCPXMLVersions, testDocumentManagerWithComplexStructure. Document creation for FCPXML versions 1.5 through 1.14; add resources and sequences and validate structure.
+**Format, Asset, version & structure**
 
-Element filtering: testElementFilteringWithAllElementTypes, testElementFilteringWithExtendedElementTypes, testElementFilteringWithAllFCPXMLElementTypes. Filter by core and extended types; filter by every FCPXMLElementType for full DTD element coverage.
-
-Modular extensions: testCMTimeModularExtensionsWithAllFrameRates, testXMLElementModularExtensionsWithComplexAttributes, testXMLDocumentModularExtensionsWithComplexStructure. CMTime timecode, fcpxmlTime, and conformed with converter; XMLElement setAttribute, getAttribute, createChild; XMLDocument addResource, addSequence, isValid.
-
-Performance (parameters): testPerformanceTimecodeConversionAllFrameRates, testPerformanceDocumentCreation, testPerformanceElementFilteringLargeDataset. Timecode conversion for all frame rates; document creation loop; element filtering over a large dataset.
-
-Edge cases: testEdgeCaseTimeValues, testConcurrencySafety. Edge time values (zero, very small, large); concurrent timecode conversion (DispatchQueue).
-
-FCPXMLElementType: testFCPXMLElementTypeTagNameAndIsInferred. tagName and isInferred for multicam, compound, asset, sequence, clip, none.
-
-FCPXMLError: testFCPXMLErrorAllCasesHaveDescription. Every FCPXMLError case has a non-empty errorDescription.
-
-ModularUtilities API: testModularUtilitiesCreateCustomPipeline, testModularUtilitiesValidateDocumentReturnsErrorsForInvalidDocument, testModularUtilitiesProcessFCPXMLFromDataViaTempURL, testModularUtilitiesProcessMultipleFCPXML, testModularUtilitiesConvertTimecodes. Custom pipeline; validateDocument with invalid document; processFCPXML from URL; processMultipleFCPXML; convertTimecodes.
-
-XMLDocument extension: testXMLDocumentExtensionFcpxEventNamesAndAddEvents, testXMLDocumentExtensionResourceMatchingIDAndRemove, testXMLDocumentExtensionFcpxmlStringAndVersion, testXMLDocumentContentsOfFCPXMLInitializer. fcpxEventNames and add(events:); resource(matchingID:) and remove(resourceAtIndex:); fcpxmlString and fcpxmlVersion; init(contentsOfFCPXML:).
-
-XMLElement extension: testXMLElementExtensionFcpxTypeAndIsFCPX, testXMLElementExtensionFcpxTypeMediaWithFirstChildMulticamOrSequence, testXMLElementExtensionFcpxEventAndEventClips, testXMLElementExtensionFcpxDuration, testXMLElementExtensionEventClipsThrowsWhenNotEvent. fcpxType (asset, sequence, clip, locator, media with first child multicam or sequence); isFCPXResource, isFCPXStoryElement; fcpxEvent, eventClips, addToEvent, removeFromEvent; fcpxDuration get and set; eventClips throws when element is not an event.
-
-Parser filter: testParserFilterMulticamAndCompoundResources, testFCPXMLUtilityDefaultForExtensions. Filter media by first child (multicam or compound); FCPXMLUtility.defaultForExtensions filtering.
-
-Media extraction: MediaExtractionTests. extractMediaReferences (Example Cut 1, baseURL, sync/async); copyReferencedMedia (missing file skipped, real file copied, sync/async); testExtractThenCopy_MultipleTypes_DetectedAndCopied (extract then copy with video + audio refs, same flow as CLI --media-copy). Covers MediaExtractor, MediaExtractionResult, MediaCopyResult.
-
-Timeline manipulation: TimelineManipulationTests. Ripple insert (immutable and mutating versions, lane options, zero-duration handling); auto lane assignment (findAvailableLane, insertingClipAutoLane, insertClipAutoLane); clip queries (clips(onLane:), clips(inRange:start:end:), clips(withAssetRef:), laneRange); timeline and clip metadata (markers, chapterMarkers, keywords, ratings, custom metadata); timestamps (createdAt, modifiedAt initialization, updates on mutations, preservation on immutable operations). Covers Timeline, TimelineClip, RippleInsertResult, ClipPlacement, TimelineError.
-
-FCPXMLTimecode: FCPXMLTimecodeTests. Initialization (from seconds, value/timescale, CMTime, frames, FCPXML string); computed properties (value, timescale, seconds, fcpxmlString); arithmetic operations (+, -, *); comparison (Equatable, Comparable); CMTime conversion (toCMTime, from CMTime); frame alignment (frameAligned, aligned(to:)); Hashable and Codable conformance. Covers FCPXMLTimecode struct.
-
-MIME type detection: MIMETypeDetectionTests. Sync and async detection (UTType from file extension, AVFoundation asset inspection, extension fallback); video formats (mp4, mov, avi, mkv, etc.); audio formats (mp3, m4a, aac, wav, etc.); image formats (jpg, png, gif, etc.). Covers MIMETypeDetector, MIMETypeDetection protocol.
-
-Asset validation: AssetValidationTests. Existence validation (file not found); lane compatibility (negative lanes = audio only, non-negative = video/image/audio); sync and async validation; TimelineClip integration (validateAsset, isAudioAsset, isVideoAsset, isImageAsset). Covers AssetValidator, AssetValidationResult, AssetValidation protocol.
-
-Silence detection: SilenceDetectionTests. Audio silence detection (threshold, minimumDuration); silence at start/end; total silence duration; sync and async APIs. Covers SilenceDetector, SilenceDetectionResult, SilenceDetection protocol.
-
-Asset duration measurement: AssetDurationMeasurementTests. Duration measurement for audio/video/images; media type detection; sync and async APIs; image handling (no duration). Covers AssetDurationMeasurer, DurationMeasurementResult, MediaType, AssetDurationMeasurement protocol.
-
-Parallel file I/O: ParallelFileIOTests. Parallel write operations (multiple files concurrently); parallel read operations; success/failure counting; configuration (maxConcurrentOperations, useFileHandleOptimization). Covers ParallelFileIOExecutor, ParallelFileIOResult, ParallelFileIO protocol.
-
-Typed adjustment models: AdjustmentTests. CropAdjustment, TransformAdjustment, BlendAdjustment, StabilizationAdjustment, VolumeAdjustment, LoudnessAdjustment initialization, properties, Codable conformance, and Clip integration via computed properties. Covers all adjustment types with full XML round-tripping.
-
-Audio enhancement adjustments: AudioEnhancementTests. NoiseReductionAdjustment, HumReductionAdjustment, EqualizationAdjustment, MatchEqualizationAdjustment initialization, properties, Codable conformance, and Clip integration. Covers audio-specific adjustments with parameter validation.
-
-Transform360 adjustment: Transform360Tests. Transform360Adjustment model with coordinate types (spherical, cartesian), position/orientation parameters, auto-orient, convergence, interaxial. Initialization, Codable conformance, Clip integration, and coordinate type handling. Covers 360° video transformation support.
-
-Typed filter models: FilterTests. VideoFilter, AudioFilter, VideoFilterMask, FilterParameter initialization, properties, Codable conformance, and integration with clips. FilterParameter includes keyframe animation support (FadeIn, FadeOut, KeyframeAnimation). Covers all filter types with full XML round-tripping.
-
-Caption and Title models: CaptionTitleTests. Caption and Title models with TextStyle and TextStyleDefinition for rich text formatting. TextStyle properties (font, fontSize, textAlignment, etc.), TextStyleDefinition arrays, typed accessors (typedTextStyleDefinitions), and XML parsing/serialization. Covers full text formatting support for captions and titles.
-
-Keyframe animation: KeyframeAnimationTests. KeyframeAnimation, Keyframe with interpolation types (linear, ease, easeIn, easeOut), FadeIn/FadeOut with fade types (linear, easeIn, easeOut, easeInOut), FilterParameter integration. CMTime Codable handling for time values. Covers animation curves and timing control.
-
-CMTime Codable extension: CMTimeCodableTests. CMTime encoding/decoding as FCPXML time strings ("value/timescale"s format). Direct Codable conformance, round-trip validation, edge cases (zero, invalid strings). Covers CoreMedia.CMTime serialization for FCPXML.
-
-Collection organization: CollectionTests. CollectionFolder and KeywordCollection models for organizing clips and media. Nested folder structures, collection properties, Codable conformance, recursive folder handling. Covers media organization and library structure.
+- **FCPXMLFormatAssetTests** — Format heroEye (get/set/init/parse); Asset heroEyeOverride; Asset mediaReps (single/multiple, round-trip). VersionConversionTests: heroEye/heroEyeOverride stripped when converting to &lt; 1.13.
+- **Live Drawing (1.11+)** — **APIAndEdgeCaseTests**: testLiveDrawingModelInitAndAttributes (init, role, dataLocator, animationType, name, duration); testLiveDrawingFromElementAndAnyTimelineRoundTrip (from element, AnyTimeline.liveDrawing).
+- **HiddenClipMarker (1.13+)** — **APIAndEdgeCaseTests**: testHiddenClipMarkerModelAndAnnotationElements (model from element, create new, fcpxAnnotations). VersionConversionTests: hidden-clip-marker stripped when converting to &lt; 1.13.
+- **SmartCollectionTests** — SmartCollection; MatchUsage, MatchRepresentation, MatchMarkers, MatchAnalysisType; round-trip; version stripping.
+- **VersionConversionTests** — Version conversion; save .fcpxml/.fcpxmld; DTD-based stripping (heroEye, hidden-clip-marker, etc.).
 
 ---
 
 ## 4. File tests (per-sample coverage)
 
-File tests live under PipelineNeoTests/FileTests/ and use samples from Tests/FCPXML Samples/FCPXML/. Each test class loads one or more samples and asserts parse success, version, root structure, events, projects, resources, or spine content as appropriate.
+File tests live under **PipelineNeoTests/FileTests/** and use samples from **Tests/FCPXML Samples/FCPXML/**. Each class loads one or more samples and asserts parse success, version, root, events, projects, resources, or spine as appropriate.
 
-FCPXMLFileTest_24: testParse loads the 24.fcpxml sample as FinalCutPro.FCPXML and asserts root name, version ver1_11, at least one event and project, project sequence with format "r1", and spine with at least one story element. testLoadViaLoaderAndParseViaService loads the same file via FCPXMLFileLoader and FCPXMLService and asserts root element.
+| Test class | Sample(s) | Asserts |
+|------------|-----------|---------|
+| **FCPXMLFileTest_24** | 24.fcpxml | Root, version ver1_11, events, project, sequence format "r1", spine story elements; load via FCPXMLFileLoader + FCPXMLService |
+| **FCPXMLFileTest_Complex** | Complex.fcpxml | Root, ver1_11, events, projects; version attribute; resources exist |
+| **FCPXMLFileTest_BasicMarkers** | BasicMarkers.fcpxml | Root, ver1_9, root equality, resources, library; allEvents, allProjects |
+| **FCPXMLFileTest_FrameRates** | Frame-rate samples | Each existing frame-rate sample parses; root, version ≥ 1.5; 24, 29.97, 60 called out |
+| **FCPXMLFileTest_AllSamples** | All .fcpxml in dir | Each loads via FCPXMLFileLoader and as FinalCutPro.FCPXML; root name "fcpxml"; skips if dir missing/empty |
+| **FCPXMLFileTest_Annotations** | Annotations.fcpxml | Root, events, projects |
+| **FCPXMLFileTest_StandaloneAssetClip** | StandaloneAssetClip.fcpxml | Root, ≥1 resource |
+| **FCPXMLFileTest_SyncClip** | SyncClip.fcpxml | Root, non-empty projects |
+| **FCPXMLFileTest_CompoundClips** | CompoundClips.fcpxml | Root, non-empty projects |
+| **FCPXMLFileTest_Keywords** | Keywords.fcpxml | Root name |
+| **FCPXMLFileTest_Occlusion** | Occlusion, Occlusion2, Occlusion3 | Root name for each |
 
-FCPXMLFileTest_Complex: testParse loads Complex.fcpxml and asserts root name, version ver1_11, and non-empty events and projects. testRootVersionAttribute asserts version major 1 and minor at least 10. testResourcesExist asserts root.resources has at least one child element.
-
-FCPXMLFileTest_BasicMarkers: testParse loads BasicMarkers.fcpxml and asserts root name, version ver1_9, root equality, resources with at least one child, and presence of library. testAllEventsAndProjects asserts non-empty allEvents() and allProjects().
-
-FCPXMLFileTest_FrameRates: testEachFrameRateSampleParsesAndHasValidRoot iterates over the ten frame-rate sample names (23.98, 24, 24With25Media, 25i, 29.97, 29.97d, 30, 50, 59.94, 60) and for each existing file parses as FinalCutPro.FCPXML and asserts root name and version at least 1.5. testFrameRateSample_24, testFrameRateSample_29_97, testFrameRateSample_60 load those three samples and assert root and (for 24) version ver1_11.
-
-FCPXMLFileTest_AllSamples: testAllAvailableSamplesParseSuccessfully enumerates all .fcpxml files in the samples directory and loads each with FCPXMLFileLoader, asserting root element and name "fcpxml". testAllAvailableSamplesParseAsFinalCutProFCPXML does the same using loadFCPXMLSample and asserts root element name. Both skip if the samples directory is missing or empty.
-
-FCPXMLFileTest_Annotations: testParse loads Annotations.fcpxml and asserts root name and non-empty events and projects.
-
-FCPXMLFileTest_StandaloneAssetClip: testParse loads StandaloneAssetClip.fcpxml and asserts root name and at least one resource child.
-
-FCPXMLFileTest_SyncClip: testParse loads SyncClip.fcpxml and asserts root name and non-empty projects.
-
-FCPXMLFileTest_CompoundClips: testParse loads CompoundClips.fcpxml and asserts root name and non-empty projects.
-
-FCPXMLFileTest_Keywords: testParse loads Keywords.fcpxml and asserts root name.
-
-FCPXMLFileTest_Occlusion: testParse_Occlusion, testParse_Occlusion2, testParse_Occlusion3 load Occlusion.fcpxml, Occlusion2.fcpxml, and Occlusion3.fcpxml and assert root name for each.
-
-All file tests that require a specific sample use loadFCPXMLSample(named:) or loadFCPXMLSampleData(named:), which throw XCTSkip when the file is missing, so the suite can run even if some samples are absent.
+Tests that require a sample use `loadFCPXMLSample(named:)` or `loadFCPXMLSampleData(named:)`, which throw **XCTSkip** when the file is missing so the suite can run with a subset of samples.
 
 ---
 
 ## 5. Logic and parsing tests
 
-LogicAndParsing/ contains tests that focus on model types and parsing rules rather than a single file.
+**LogicAndParsing/** holds tests for model types and parsing rules rather than a single file.
 
-FCPXMLRootVersionTests: Exercises FinalCutPro.FCPXML.Version. testVersion_1_12 and testVersion_1_12_1 check init(major, minor) and init(major, minor, patch) and rawValue. testVersion_Equatable and testVersion_Comparable check equality and ordering. testVersion_RawValue_EdgeCase_MajorVersionOnly checks rawValue "2" parses to major 2, minor 0, patch 0. testVersion_RawValue_Invalid checks that invalid strings (empty, "1.", "1.A", "A", etc.) yield nil. testVersion_Init_RawValue and testVersion_RawValue_Roundtrip check init(rawValue:) and round-trip. testVersion_StaticMembers checks ver1_11, ver1_14, latest, and allCases.
+**FCPXMLRootVersionTests** — `FinalCutPro.FCPXML.Version`: init(major, minor) and (major, minor, patch), rawValue; Equatable, Comparable; rawValue edge cases ("2" → major 2); invalid strings → nil; init(rawValue:) round-trip; static members (ver1_11, ver1_14, latest, allCases).
 
-FCPXMLStructureTests: Uses the Structure sample. testParse_Structure_AllEventsAndProjects asserts allEvents() returns exactly "Test Event" and "Test Event 2" and allProjects() returns "Test Project", "Test Project 2", "Test Project 3". testParse_Structure_RootHasResourcesOrLibrary asserts the root has a resources or library child. testParse_Structure_Version asserts version major at least 1 and minor at least 5.
+**FCPXMLStructureTests** — Structure sample: allEvents() → "Test Event", "Test Event 2"; allProjects() → "Test Project", "Test Project 2", "Test Project 3"; root has resources or library; version ≥ 1.5.
+
+**FCPXMLFormatAssetTests** — Format heroEye (get/set/init/parse, round-trip); Asset heroEyeOverride (get/set/init/parse); Asset mediaReps (single/multiple, count, order, init, round-trip with two reps). VersionConversionTests cover stripping to 1.5.
 
 ---
 
 ## 6. Timeline, export, and validation tests
 
-TimelineExportValidationTests covers the timeline model, exporters, validators, and file loader.
+**TimelineExportValidationTests** covers timeline model, exporters, validators, and file loader.
 
-Timeline and TimelineClip: testTimelineClipEndTime builds a clip with offset 10 and duration 5 and asserts endTime is 15 seconds. testTimelineDurationFromPrimaryLane builds a timeline with two clips on lane 0 and asserts total duration. testTimelineSortedClips builds a timeline with out-of-order clips and asserts sortedClips order. testTimelineFormatHelpers checks TimelineFormat.hd1080p and uhd4K width and height. testTimelineFormatPresets tests static factory methods (hd720p, dci4K, hd1080i, hd720i). testTimelineFormatComputedProperties tests computed properties (aspectRatio, isHD, isUHD, isDCI4K, isStandard4K, is1080p, is720p, interlaced). testTimelineFormatEquality tests equality with different properties. testTimelineFormatHelpersOnTimeline tests helper properties on Timeline (isHD, isUHD, aspectRatio).
+**Timeline & TimelineClip** — endTime; duration from primary lane; sortedClips order; TimelineFormat (hd1080p, uhd4K, presets, computed properties, equality); helpers on Timeline.
 
-FCPXMLExporter: testFCPXMLExporterExportMinimal exports a minimal timeline with one clip and one asset and asserts the XML contains fcpxml, resources, r1, r2, asset-clip, ref. testFCPXMLExporterMissingAssetThrows asserts that exporting a timeline whose clip references an asset not in the assets array throws FCPXMLExportError.missingAsset. testFCPXMLExporterEmptyTimelineThrows asserts that exporting an empty timeline throws invalidTimeline.
+**FCPXMLExporter** — Export minimal timeline (fcpxml, resources, refs); missingAsset throws; empty timeline throws invalidTimeline.
 
-FCPXMLBundleExporter: testFCPXMLBundleExporterCreatesBundle exports to a temp directory with includeMedia false and asserts the bundle directory exists, contains Out.fcpxmld, Info.fcpxml, and Info.plist, and the XML contains fcpxml. testFCPXMLBundleExporterWithMediaCopiesFiles exports with includeMedia true and a real temp file, then asserts the bundle has a Media directory with one file and the Info.fcpxml references media.
+**FCPXMLBundleExporter** — Creates bundle (Out.fcpxmld, Info.fcpxml, Info.plist); with includeMedia copies files and references in Info.fcpxml.
 
-FCPXMLValidator: testFCPXMLValidatorSuccessWithValidStructure builds a minimal valid document (fcpxml, resources, format) and asserts validate returns valid. testFCPXMLValidatorMissingRoot builds a document with a non-fcpxml root and asserts invalid and an error mentioning fcpxml. testFCPXMLValidatorUnresolvedRef builds a document with a ref to a missing resource and asserts invalid and an error about the ref.
+**FCPXMLValidator** — Valid structure → valid; non-fcpxml root → invalid; unresolved ref → invalid with error.
 
-FCPXMLDTDValidator: testFCPXMLDTDValidatorReturnsResult runs the DTD validator on a valid document and asserts validation succeeds (isValid true).
+**FCPXMLDTDValidator** — Returns result; valid document → isValid true.
 
-FCPXMLFileLoader: testFCPXMLFileLoaderLoadsSingleFile writes a minimal fcpxml to a temp file and loads it, asserting root element and name. testFCPXMLFileLoaderLoadsBundle creates a temp .fcpxmld bundle via FCPXMLBundleExporter, then loads it with the loader and asserts resolved URL is Info.fcpxml and root element exists. testFCPXMLFileLoaderThrowsForMissingURL asserts loading a nonexistent path throws FCPXMLLoadError.
+**FCPXMLFileLoader** — Loads single file (root, name); loads .fcpxmld bundle (resolved URL Info.fcpxml, root exists); missing URL throws FCPXMLLoadError.
 
 ---
 
 ## 7. API and edge case tests
 
-APIAndEdgeCaseTests covers the async load API, optional logging, edge cases, and validation types.
+**APIAndEdgeCaseTests** — Async load API; optional logging (NoOp, Print, createCustomPipeline); edge cases (parse empty/invalid/malformed data; invalid path, resolveFCPXMLFileURL); validation types (ValidationResult with errors, ValidationWarning); FCPXML creation (all versions); **Live Drawing (1.11+)** model and AnyTimeline round-trip; **HiddenClipMarker (1.13+)** model and fcpxAnnotations.
 
-TimelineManipulationTests covers timeline manipulation features: ripple insert (shifting subsequent clips), auto lane assignment (finding available lanes), clip queries (by lane, time range, asset ID), lane range computation, timeline and clip metadata (markers, chapters, keywords, ratings, custom metadata), and timestamps (createdAt, modifiedAt tracking). Tests cover both immutable and mutating APIs, lane options for ripple insert, error handling (noAvailableLane), and timestamp updates on all mutating operations.
+**Other files** (see [§3.2](#32-dedicated-test-files-by-theme)) — TimelineManipulationTests, FCPXMLTimecodeTests, MIMETypeDetectionTests, AssetValidationTests, SilenceDetectionTests, AssetDurationMeasurementTests, ParallelFileIOTests, AdjustmentTests, AudioEnhancementTests, Transform360Tests, FilterTests, CaptionTitleTests, KeyframeAnimationTests, CMTimeCodableTests, CollectionTests.
 
-FCPXMLTimecodeTests covers the custom FCPXMLTimecode type: initialization from various sources (seconds, value/timescale, CMTime, frames, FCPXML string), computed properties, arithmetic operations, comparison, CMTime conversion, frame alignment, and protocol conformances (Equatable, Hashable, Codable, Comparable, CustomStringConvertible).
+**FCPXMLFileLoader async** — testFCPXMLFileLoaderAsyncLoadFromURL (temp file, root/name); testFCPXMLFileLoaderAsyncLoadThrowsForMissingFile (FCPXMLLoadError).
 
-MIMETypeDetectionTests covers MIME type detection: synchronous and asynchronous detection using UTType and AVFoundation, support for video/audio/image formats, extension fallback mapping, and custom detector implementations.
+**PipelineLogger** — NoOpLogger, PrintLogger parse successfully; createCustomPipeline with logger; PipelineLogLevel (Comparable, from(string:), label).
 
-AssetValidationTests covers asset validation: file existence checking, MIME type detection, lane compatibility validation (negative lanes = audio only, non-negative = video/image/audio), sync and async APIs, TimelineClip integration methods (validateAsset, isAudioAsset, isVideoAsset, isImageAsset), and error handling.
+**Edge cases** — Parse empty data, invalid XML, malformed XML throw; load from invalid path, resolve nonexistent path throw.
 
-SilenceDetectionTests covers audio silence detection: detecting silence at start/end of audio files, configurable threshold and minimum duration, sync and async APIs, and result interpretation.
-
-AssetDurationMeasurementTests covers asset duration measurement: measuring actual duration from AVFoundation, media type detection (audio/video/image), handling images (no duration), sync and async APIs, and result interpretation.
-
-ParallelFileIOTests covers parallel file I/O: concurrent read and write operations, success/failure tracking, configuration options (maxConcurrentOperations, useFileHandleOptimization), and performance benefits of parallelization.
-
-AdjustmentTests covers typed adjustment models: CropAdjustment, TransformAdjustment, BlendAdjustment, StabilizationAdjustment, VolumeAdjustment, LoudnessAdjustment initialization, properties, Codable conformance, XML round-tripping, and Clip integration via computed properties.
-
-AudioEnhancementTests covers audio enhancement adjustments: NoiseReductionAdjustment, HumReductionAdjustment, EqualizationAdjustment, MatchEqualizationAdjustment initialization, properties, Codable conformance, parameter validation, and Clip integration.
-
-Transform360Tests covers Transform360 adjustment: Transform360Adjustment model with coordinate types (spherical, cartesian), position/orientation parameters, auto-orient, convergence, interaxial. Initialization, Codable conformance, Clip integration, and coordinate type handling for 360° video workflows.
-
-FilterTests covers typed filter models: VideoFilter, AudioFilter, VideoFilterMask, FilterParameter initialization, properties, Codable conformance, and integration with clips. FilterParameter includes keyframe animation support (FadeIn, FadeOut, KeyframeAnimation).
-
-CaptionTitleTests covers caption and title models: Caption and Title models with TextStyle and TextStyleDefinition for rich text formatting. TextStyle properties (font, fontSize, textAlignment, etc.), TextStyleDefinition arrays, typed accessors (typedTextStyleDefinitions), and XML parsing/serialization.
-
-KeyframeAnimationTests covers keyframe animation: KeyframeAnimation, Keyframe with interpolation types (linear, ease, easeIn, easeOut), FadeIn/FadeOut with fade types (linear, easeIn, easeOut, easeInOut), FilterParameter integration. CMTime Codable handling for time values in animation curves.
-
-CMTimeCodableTests covers CMTime Codable extension: CMTime encoding/decoding as FCPXML time strings ("value/timescale"s format). Direct Codable conformance, round-trip validation, edge cases (zero, invalid strings), and integration with animation models.
-
-CollectionTests covers collection organization: CollectionFolder and KeywordCollection models for organizing clips and media. Nested folder structures, collection properties, Codable conformance, recursive folder handling, and library structure management.
-
-FCPXMLFileLoader async load(from:): testFCPXMLFileLoaderAsyncLoadFromURL writes a minimal fcpxml to a temp file and calls loader.load(from:) async, asserting root element and name. testFCPXMLFileLoaderAsyncLoadThrowsForMissingFile calls load(from:) with a nonexistent URL and asserts FCPXMLLoadError (notAFile, readFailed, or parseFailed).
-
-PipelineLogger injection: testFCPXMLServiceWithNoOpLoggerParsesSuccessfully creates FCPXMLService(logger: NoOpPipelineLogger()) and parses minimal XML successfully. testFCPXMLServiceWithPrintLoggerParsesSuccessfully does the same with PrintPipelineLogger. testCreateCustomPipelineWithLogger creates a pipeline via ModularUtilities.createCustomPipeline with a NoOpPipelineLogger and parses minimal XML. PipelineLogLevel tests: testPipelineLogLevelComparable (ordering and allCases count), testPipelineLogLevelFromStringAndLabel (from(string:), label).
-
-Edge cases: testParseEmptyDataThrows, testParseInvalidXMLThrows, testParseMalformedXMLThrows assert that FCPXMLService.parseFCPXML(from: Data) throws for empty data, non-XML text, and malformed XML. testLoadDocumentFromInvalidPathThrowsCorrectError and testResolveFCPXMLFileURLForNonexistentPathThrows assert FCPXMLFileLoader throws FCPXMLLoadError for a nonexistent path and that resolveFCPXMLFileURL(from:) throws notAFile.
-
-FCPXML creation: testCreateFCPXMLDocumentAllVersions creates documents with versions "1.5", "1.10", "1.14" and asserts fcpxmlVersion and root element.
-
-Validation types: testValidationResultWithErrors builds a ValidationResult with one ValidationError (missingAssetReference) and asserts isValid false and error message. testValidationWarning builds a ValidationWarning and asserts non-empty message.
+**Validation** — ValidationResult with ValidationError (missingAssetReference); ValidationWarning message.
 
 ---
 
 ## 8. Performance tests
 
-Performance is measured with measure { } (XCTest); results show duration and relative standard deviation.
+Performance is measured with **measure { }** (XCTest); results show duration and relative standard deviation.
 
-In PipelineNeoTests.swift: testPerformanceFilterElements measures filtering elements by type over repeated runs. testPerformanceTimecodeConversion measures timecode conversion for a single frame rate. testPerformanceTimecodeConversionAllFrameRates measures timecode conversion across all eight frame rates per iteration. testPerformanceDocumentCreation measures creating FCPXML documents and adding a resource in a loop. testPerformanceElementFilteringLargeDataset measures filtering a large set of elements by type.
+**PipelineNeoTests.swift** — testPerformanceFilterElements; testPerformanceTimecodeConversion; testPerformanceTimecodeConversionAllFrameRates; testPerformanceDocumentCreation; testPerformanceElementFilteringLargeDataset.
 
-In FCPXMLPerformanceTests: testPerformanceParseFCPXMLDataRepeatedly parses an in-memory FCPXML document 50 times per iteration. testPerformanceLoadSampleFileWhenAvailable loads Structure.fcpxml from disk 20 times per iteration (skips if the sample is missing).
+**FCPXMLPerformanceTests** — testPerformanceParseFCPXMLDataRepeatedly (50× per iteration); testPerformanceLoadSampleFileWhenAvailable (Structure.fcpxml 20×; skips if missing).
 
-Guidelines: keep each test fast where possible; avoid heavy I/O or very large documents unless the test is explicitly for that; use the same dependency injection as the rest of the suite.
+**Guidelines** — Keep tests fast; avoid heavy I/O or very large documents unless the test is for that; use the same dependency injection as the rest of the suite.
 
 ---
 
 ## 9. Supported frame rates
 
-Pipeline Neo targets the eight frame rates supported by Final Cut Pro for timeline and export: 23.976 (.fps23_976), 24 (.fps24), 25 (.fps25), 29.97 (.fps29_97, drop-frame tested), 30 (.fps30), 50 (.fps50), 59.94 (.fps59_94, drop-frame tested), 60 (.fps60). They are collected in the test constant fcpSupportedFrameRates and used in testAllSupportedFrameRates, testCMTimeModularExtensionsWithAllFrameRates, testTimeConformingWithDifferentFrameDurations, and testPerformanceTimecodeConversionAllFrameRates. The FCPXML DTDs mention other values (e.g. conform-rate); the suite focuses on these eight.
+Eight frame rates supported by Final Cut Pro: **23.976** (`.fps23_976`), **24** (`.fps24`), **25** (`.fps25`), **29.97** (`.fps29_97`, drop-frame), **30** (`.fps30`), **50** (`.fps50`), **59.94** (`.fps59_94`, drop-frame), **60** (`.fps60`). Collected in **fcpSupportedFrameRates**; used in testAllSupportedFrameRates, testCMTimeModularExtensionsWithAllFrameRates, testTimeConformingWithDifferentFrameDurations, testPerformanceTimecodeConversionAllFrameRates. Suite focuses on these eight.
 
 ---
 
 ## 10. FCPXML versions
 
-Document manager tests create documents for FCPXML 1.5 through 1.14 and assert valid structure and resource/sequence handling. Parsing and validation use samples valid for their declared version; invalid XML is covered in testParserWithInvalidXML. DTDs live under Sources/PipelineNeo/FCPXML DTDs/; the suite does not exhaustively test every version-specific DTD attribute.
+Document manager tests create documents for **FCPXML 1.5 through 1.14** and assert valid structure and resource/sequence handling. Parsing and validation use samples valid for their declared version; invalid XML is covered in testParserWithInvalidXML. DTDs live under **Sources/PipelineNeo/FCPXML DTDs/**; the suite does not exhaustively test every version-specific DTD attribute.
 
 ---
 
 ## 11. Sample files
 
-Sample FCPXML files live at Tests/FCPXML Samples/FCPXML/ (sibling of PipelineNeoTests). Paths are resolved at runtime via packageRoot(relativeToFile: #file), so tests work from Xcode and swift test without adding bundle resources. TestResources.swift provides packageRoot, fcpxmlSamplesDirectory(), and urlForFCPXMLSample(named:). FCPXMLTestUtilities provides loadFCPXMLSampleData(named:) and loadFCPXMLSample(named:), which throw XCTSkip when the file is missing so the suite can run with a subset of samples.
+- **Location:** `Tests/FCPXML Samples/FCPXML/` (sibling of PipelineNeoTests).
+- **Path resolution:** At runtime via **packageRoot(relativeToFile: #file)** so tests work from Xcode and `swift test` without bundle resources.
+- **TestResources.swift** — `packageRoot`, `fcpxmlSamplesDirectory()`, `urlForFCPXMLSample(named:)`.
+- **FCPXMLTestUtilities** — `loadFCPXMLSampleData(named:)`, `loadFCPXMLSample(named:)`; throw **XCTSkip** when the file is missing.
 
 ---
 
 ## 12. Writing and organising tests
 
-Naming: use test<FeatureOrBehaviour> (e.g. testAllSupportedFrameRates, testParserWithInvalidXML). Place new tests under the appropriate MARK section in the relevant file and keep this README updated.
+**Naming** — Use `test<FeatureOrBehaviour>` (e.g. testAllSupportedFrameRates, testParserWithInvalidXML). Put new tests under the right MARK section and keep this README updated.
 
-Structure: use arrange–act–assert. In async tests use async throws and await. In performance tests use measure { } and avoid blocking or heavy I/O unless the test is for that. Concurrency: the main test class is @unchecked Sendable; shared properties are set in setUpWithError and cleared in tearDownWithError. Prefer async tests and await; for concurrent behaviour use withTaskGroup or async lets as in testSwift6ConcurrencySendableServiceInTaskGroup.
+**Structure** — Arrange–act–assert. Async tests: `async throws` and `await`. Performance: `measure { }`; avoid blocking/heavy I/O unless the test is for that. Concurrency: main test class is @unchecked Sendable; shared properties in setUpWithError/tearDownWithError; prefer async/await; use withTaskGroup or async let where appropriate.
 
-Adding a file test: add a new class under FileTests/ (e.g. FCPXMLFileTest_<Name>.swift). Use loadFCPXMLSample(named:) when the sample must exist, or urlForFCPXMLSample(named:) with FileManager.default.fileExists and XCTSkip when optional. Assert on fcpxml.root.element, fcpxml.version, fcpxml.allEvents(), fcpxml.allProjects(), resources, etc. as appropriate.
+**Adding a file test** — New class under FileTests/ (e.g. FCPXMLFileTest_<Name>.swift). Use loadFCPXMLSample(named:) when the sample must exist, or urlForFCPXMLSample(named:) with FileManager.fileExists and XCTSkip when optional. Assert on root, version, allEvents(), allProjects(), resources, etc.
 
-Adding logic/parsing tests: add under LogicAndParsing/ for model types (Version, structure, parsing rules) rather than a single sample file.
+**Adding logic/parsing tests** — Under LogicAndParsing/ for model types (Version, structure, parsing rules).
 
-Adding feature tests: add new test files for major features (e.g. TimelineManipulationTests, MIMETypeDetectionTests, AssetValidationTests). Group related tests together and use descriptive test method names. Include both sync and async tests when applicable. Test edge cases, error conditions, and protocol conformance. For protocol-based features, test both the protocol interface and default implementations.
+**Adding feature tests** — New file for major features (e.g. TimelineManipulationTests). Group related tests; descriptive names; sync and async where applicable; edge cases, errors, protocol conformance.
 
 ---
 
 ## 13. Continuous integration
 
-GitHub Actions (e.g. .github/workflows/build.yml) run on push and pull requests. Jobs typically build and run unit tests (Xcode workspace, xcodebuild), with Swift 6 and strict concurrency where applicable. All tests must pass with no regressions.
+GitHub Actions (e.g. `.github/workflows/build.yml`) run on push and pull requests: build and unit tests (Xcode workspace, xcodebuild), Swift 6 and strict concurrency where applicable. All tests must pass with no regressions.
 
 ---
 
 ## 14. Debugging tests
 
-Run a single test with `swift test --filter testMethodName` or run the test in Xcode (diamond next to the method). Use print or breakpoints as needed; avoid leaving noisy prints in committed code. For async tests that hang, check for missing await or blocking work on the main actor. Prefer deterministic data and injected dependencies to avoid flakiness.
+- Run a single test: `swift test --filter testMethodName` or run in Xcode (diamond next to the method).
+- Use print or breakpoints as needed; avoid leaving noisy prints in committed code.
+- Async tests that hang: check for missing await or blocking work on the main actor.
+- Prefer deterministic data and injected dependencies to avoid flakiness.
 
 ---
 
 ## 15. Contributing to tests
 
-Add tests for new behaviour or edge cases; place them in the right file and MARK section and keep names descriptive. Update this README when adding a category or changing what a section covers. For "all FCP frame rates" use fcpSupportedFrameRates. Prefer minimal in-memory FCPXML or small fixtures; document assumptions (e.g. temp URL) in a comment or here.
+Add tests for new behaviour or edge cases; place them in the right file and MARK section; keep names descriptive. Update this README when adding a category or changing what a section covers. For “all FCP frame rates” use **fcpSupportedFrameRates**. Prefer minimal in-memory FCPXML or small fixtures; document assumptions (e.g. temp URL) in a comment or here.
 
 ---
 
 ## 16. Resources
 
-XCTest (Apple documentation). Testing in Xcode (Apple documentation). Pipeline Neo README (project root) for overview and API usage. Final Cut Pro XML (FCPXML) at fcp.cafe for format reference. SwiftTimecode (GitHub) for timecode and frame rate types used by Pipeline Neo.
+- **XCTest** (Apple documentation)
+- **Testing in Xcode** (Apple documentation)
+- **Pipeline Neo README** (project root) — overview and API usage
+- **Final Cut Pro XML (FCPXML)** — [fcp.cafe](https://fcp.cafe) for format reference
+- **SwiftTimecode** (GitHub) — timecode and frame rate types
 
 ---
 
 ## 17. Resolving common test/build messages
 
-Swift PM cache warnings: Messages like "configuration is not accessible or not writable" and "Caches is not accessible or not writable" mean Swift Package Manager cannot write to `~/Library/org.swift.swiftpm/` or `~/Library/Caches/org.swift.swiftpm/`. To resolve: ensure those directories exist and your user has write permission (e.g. `mkdir -p ~/Library/org.swift.swiftpm ~/Library/Caches/org.swift.swiftpm` and correct ownership). When running in a restricted environment (e.g. CI or sandbox), the warnings are harmless; Swift PM falls back to process-local cache.
+**Swift PM cache warnings** — “configuration is not accessible or not writable” / “Caches is not accessible or not writable”: Swift PM cannot write to `~/Library/org.swift.swiftpm/` or `~/Library/Caches/org.swift.swiftpm/`. Fix: ensure directories exist and your user has write permission (e.g. `mkdir -p ~/Library/org.swift.swiftpm ~/Library/Caches/org.swift.swiftpm`). In CI/sandbox these warnings are harmless; Swift PM falls back to process-local cache.
 
-Invalid connection: com.apple.coresymbolicationd: This is a macOS system message from the symbolication daemon. It is not from Pipeline Neo and does not affect test results. It can be ignored. There is no project-level fix.
+**Invalid connection: com.apple.coresymbolicationd** — macOS symbolication daemon message; not from Pipeline Neo; does not affect test results. Can be ignored.
 
-Couldn't find the DTD file / Error setting the DTD: The DTD validator looks for FCPXML DTDs in (1) the PipelineNeo module bundle (root and "FCPXML DTDs" subdirectory), (2) all loaded bundles, (3) all frameworks with a "DTDs" subdirectory. DTDs live in `Sources/PipelineNeo/FCPXML DTDs/` and are declared in Package.swift with `.process("FCPXML DTDs")`. If you still see these messages when running tests, ensure you build and run from the package root (`swift build && swift test`). When the DTD is not found, the validator returns a result with a dtdValidation error; the test is written to accept either success or that error. To eliminate the messages, the lookup must find the DTD (correct Package.swift resources and running from package root).
+**Couldn't find the DTD file / Error setting the DTD** — Validator looks for DTDs in (1) PipelineNeo module bundle (root and “FCPXML DTDs”), (2) all loaded bundles, (3) frameworks with “DTDs” subdirectory. DTDs are in `Sources/PipelineNeo/FCPXML DTDs/` and declared in Package.swift with `.process("FCPXML DTDs")`. If messages persist, build and run from package root (`swift build && swift test`). When the DTD is not found, the validator returns a result with a dtdValidation error; tests accept either success or that error.
 
-Performance test relative standard deviation: XCTest prints measured average and relative standard deviation (RSD) for each `measure { }` run. These lines are informational; the tests pass as long as the run completes. High RSD is common for very fast operations (e.g. timecode conversion). To reduce variation you can record a baseline in Xcode (Editor → Add Baseline) or increase the number of iterations in the measure block. The suite does not fail on RSD unless a baseline is set and exceeded.
+**Performance test relative standard deviation** — XCTest prints average and RSD for each `measure { }` run; informational. High RSD is common for very fast ops. To reduce variation: record a baseline in Xcode (Editor → Add Baseline) or increase iterations. The suite does not fail on RSD unless a baseline is set and exceeded.
 
 ---
 

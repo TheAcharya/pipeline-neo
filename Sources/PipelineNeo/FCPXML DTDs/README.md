@@ -27,6 +27,10 @@ The DTD files are included as resources in the PipelineNeo package and can be us
 - Element and attribute validation
 - Cross-version compatibility testing
 
+## Version History
+
+For a detailed comparison of DTD changes from version 1.5 to 1.14 (document structure, resources, asset model, new elements/attributes, intrinsic params, smart collections, and version conversion notes), see **[VERSION_HISTORY.md](VERSION_HISTORY.md)**.
+
 ## File Naming Convention
 
 DTD files follow the naming convention: `Final_Cut_Pro_XML_DTD_version_{version}.dtd`

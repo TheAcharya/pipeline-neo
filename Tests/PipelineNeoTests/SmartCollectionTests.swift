@@ -361,7 +361,119 @@ final class SmartCollectionTests: XCTestCase {
         let matchMediaElements = smartCollection.element.childElements.filter { $0.name == "match-media" }
         XCTAssertEqual(matchMediaElements.count, 2)
     }
-    
+
+    // MARK: - MatchUsage (FCPXML 1.9+)
+
+    func testMatchUsageInitialization() {
+        let matchUsage = FinalCutPro.FCPXML.MatchUsage(rule: .unused, isEnabled: true)
+        XCTAssertEqual(matchUsage.rule, .unused)
+        XCTAssertTrue(matchUsage.isEnabled)
+    }
+
+    func testMatchUsageCodable() throws {
+        let matchUsage = FinalCutPro.FCPXML.MatchUsage(rule: .used)
+        let data = try JSONEncoder().encode(matchUsage)
+        let decoded = try JSONDecoder().decode(FinalCutPro.FCPXML.MatchUsage.self, from: data)
+        XCTAssertEqual(decoded.rule, .used)
+    }
+
+    // MARK: - MatchRepresentation (FCPXML 1.10+)
+
+    func testMatchRepresentationInitialization() {
+        let matchRep = FinalCutPro.FCPXML.MatchRepresentation(type: .proxy, rule: .isMissing, isEnabled: true)
+        XCTAssertEqual(matchRep.type, .proxy)
+        XCTAssertEqual(matchRep.rule, .isMissing)
+    }
+
+    func testMatchRepresentationCodable() throws {
+        let matchRep = FinalCutPro.FCPXML.MatchRepresentation(type: .optimized, rule: .isAvailable)
+        let data = try JSONEncoder().encode(matchRep)
+        let decoded = try JSONDecoder().decode(FinalCutPro.FCPXML.MatchRepresentation.self, from: data)
+        XCTAssertEqual(decoded.type, .optimized)
+    }
+
+    // MARK: - MatchMarkers (FCPXML 1.10+)
+
+    func testMatchMarkersInitialization() {
+        let matchMarkers = FinalCutPro.FCPXML.MatchMarkers(type: .incomplete, isEnabled: true)
+        XCTAssertEqual(matchMarkers.type, .incomplete)
+    }
+
+    func testMatchMarkersCodable() throws {
+        let matchMarkers = FinalCutPro.FCPXML.MatchMarkers(type: .allTodo)
+        let data = try JSONEncoder().encode(matchMarkers)
+        let decoded = try JSONDecoder().decode(FinalCutPro.FCPXML.MatchMarkers.self, from: data)
+        XCTAssertEqual(decoded.type, .allTodo)
+    }
+
+    // MARK: - MatchAnalysisType (FCPXML 1.14)
+
+    func testMatchAnalysisTypeInitialization() {
+        let matchAnalysis = FinalCutPro.FCPXML.MatchAnalysisType(rule: .isAvailable, value: .transcript, isEnabled: true)
+        XCTAssertEqual(matchAnalysis.rule, .isAvailable)
+        XCTAssertEqual(matchAnalysis.value, .transcript)
+    }
+
+    func testMatchAnalysisTypeCodable() throws {
+        let matchAnalysis = FinalCutPro.FCPXML.MatchAnalysisType(rule: .isMissing, value: .visual)
+        let data = try JSONEncoder().encode(matchAnalysis)
+        let decoded = try JSONDecoder().decode(FinalCutPro.FCPXML.MatchAnalysisType.self, from: data)
+        XCTAssertEqual(decoded.value, .visual)
+    }
+
+    // MARK: - SmartCollection with MatchUsage, MatchRepresentation, MatchMarkers, MatchAnalysisType
+
+    func testSmartCollectionMatchUsageRoundTrip() throws {
+        let smartCollection = FinalCutPro.FCPXML.SmartCollection(name: "Unused", match: .all)
+        smartCollection.matchUsages = [FinalCutPro.FCPXML.MatchUsage(rule: .unused)]
+        XCTAssertEqual(smartCollection.matchUsages.count, 1)
+        XCTAssertEqual(smartCollection.matchUsages[0].rule, .unused)
+        let elements = smartCollection.element.childElements.filter { $0.name == "match-usage" }
+        XCTAssertEqual(elements.count, 1)
+        XCTAssertEqual(elements[0].stringValue(forAttributeNamed: "rule"), "unused")
+    }
+
+    func testSmartCollectionMatchRepresentationRoundTrip() throws {
+        let smartCollection = FinalCutPro.FCPXML.SmartCollection(name: "Proxy", match: .all)
+        smartCollection.matchRepresentations = [
+            FinalCutPro.FCPXML.MatchRepresentation(type: .proxy, rule: .isMissing)
+        ]
+        XCTAssertEqual(smartCollection.matchRepresentations.count, 1)
+        XCTAssertEqual(smartCollection.matchRepresentations[0].type, .proxy)
+    }
+
+    func testSmartCollectionMatchMarkersRoundTrip() throws {
+        let smartCollection = FinalCutPro.FCPXML.SmartCollection(name: "Todo", match: .all)
+        smartCollection.matchMarkers = [FinalCutPro.FCPXML.MatchMarkers(type: .complete)]
+        XCTAssertEqual(smartCollection.matchMarkers.count, 1)
+        XCTAssertEqual(smartCollection.matchMarkers[0].type, .complete)
+    }
+
+    func testSmartCollectionMatchAnalysisTypeRoundTrip() throws {
+        let smartCollection = FinalCutPro.FCPXML.SmartCollection(name: "Transcript", match: .all)
+        smartCollection.matchAnalysisTypes = [
+            FinalCutPro.FCPXML.MatchAnalysisType(rule: .isAvailable, value: .transcript)
+        ]
+        XCTAssertEqual(smartCollection.matchAnalysisTypes.count, 1)
+        XCTAssertEqual(smartCollection.matchAnalysisTypes[0].value, .transcript)
+    }
+
+    func testSmartCollectionFromXMLWithMatchUsageAndMatchMarkers() throws {
+        let xmlString = """
+        <smart-collection name="Mixed" match="all">
+            <match-usage enabled="1" rule="used"/>
+            <match-markers enabled="1" type="allTodo"/>
+        </smart-collection>
+        """
+        let xmlDoc = try XMLDocument(xmlString: xmlString)
+        guard let el = xmlDoc.rootElement() else { XCTFail("No root"); return }
+        guard let sc = FinalCutPro.FCPXML.SmartCollection(element: el) else { XCTFail("No SmartCollection"); return }
+        XCTAssertEqual(sc.matchUsages.count, 1)
+        XCTAssertEqual(sc.matchUsages[0].rule, .used)
+        XCTAssertEqual(sc.matchMarkers.count, 1)
+        XCTAssertEqual(sc.matchMarkers[0].type, .allTodo)
+    }
+
     // MARK: - Library Integration Tests
     
     func testLibrarySmartCollections() throws {

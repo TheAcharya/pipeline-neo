@@ -9,6 +9,7 @@
 //
 
 import XCTest
+import SwiftTimecode
 @testable import PipelineNeo
 
 @available(macOS 12.0, *)
@@ -151,5 +152,70 @@ final class APIAndEdgeCaseTests: XCTestCase {
     func testValidationWarning() {
         let warning = ValidationWarning(type: .missingMetadata, message: "Deprecated attribute")
         XCTAssertFalse(warning.message.isEmpty)
+    }
+
+    // MARK: - HiddenClipMarker (1.13+, marker_item)
+
+    func testHiddenClipMarkerModelAndAnnotationElements() {
+        let clip = XMLElement(name: "clip")
+        clip.setAttributesWith(["ref": "r1", "offset": "0s", "start": "0s", "duration": "1s"])
+        let video = XMLElement(name: "video")
+        video.setAttributesWith(["ref": "r1"])
+        clip.addChild(video)
+        let hiddenEl = XMLElement(name: "hidden-clip-marker")
+        clip.addChild(hiddenEl)
+        let marker = FinalCutPro.FCPXML.HiddenClipMarker(element: hiddenEl)
+        XCTAssertNotNil(marker)
+        XCTAssertEqual(marker?.element.name, "hidden-clip-marker")
+        let annotations = clip.fcpxAnnotations
+        XCTAssertTrue(annotations.contains { $0.name == "hidden-clip-marker" })
+        let created = FinalCutPro.FCPXML.HiddenClipMarker()
+        XCTAssertEqual(created.element.name, "hidden-clip-marker")
+    }
+
+    // MARK: - LiveDrawing (1.11+, live-drawing story element)
+
+    func testLiveDrawingModelInitAndAttributes() {
+        let ld = FinalCutPro.FCPXML.LiveDrawing(
+            role: "video",
+            dataLocator: "r1",
+            animationType: "draw",
+            lane: 1,
+            offset: nil,
+            name: "Sketch",
+            start: Fraction(0, 1),
+            duration: Fraction(5, 1),
+            enabled: true,
+            note: nil
+        )
+        XCTAssertEqual(ld.element.name, "live-drawing")
+        XCTAssertEqual(ld.role, "video")
+        XCTAssertEqual(ld.dataLocator, "r1")
+        XCTAssertEqual(ld.animationType, "draw")
+        XCTAssertEqual(ld.name, "Sketch")
+        XCTAssertEqual(ld.duration, Fraction(5, 1))
+    }
+
+    func testLiveDrawingFromElementAndAnyTimelineRoundTrip() {
+        let el = XMLElement(name: "live-drawing")
+        el.addAttribute(withName: "name", value: "Draw")
+        el.addAttribute(withName: "duration", value: "3s")
+        el.addAttribute(withName: "role", value: "video")
+        guard let ld = FinalCutPro.FCPXML.LiveDrawing(element: el) else {
+            XCTFail("LiveDrawing(element:) should succeed for live-drawing element")
+            return
+        }
+        XCTAssertEqual(ld.name, "Draw")
+        XCTAssertEqual(ld.role, "video")
+        guard let anyTimeline = FinalCutPro.FCPXML.AnyTimeline(element: el) else {
+            XCTFail("AnyTimeline should accept live-drawing element")
+            return
+        }
+        if case .liveDrawing(let model) = anyTimeline {
+            XCTAssertEqual(model.name, "Draw")
+            XCTAssertEqual(model.element, ld.element)
+        } else {
+            XCTFail("Expected AnyTimeline.liveDrawing, got \(anyTimeline)")
+        }
     }
 }

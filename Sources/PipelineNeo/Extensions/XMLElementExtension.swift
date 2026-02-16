@@ -1757,6 +1757,7 @@ extension XMLElement {
 						subElement.fcpxType == .marker ||
 						subElement.fcpxType == .chapterMarker ||
 						subElement.fcpxType == .analysisMarker ||
+						subElement.fcpxType == .hiddenClipMarker ||
 						subElement.fcpxType == .note {
 						
 						annotationElements.append(subElement)
@@ -2328,7 +2329,7 @@ extension XMLElement {
 			
 			for element in elements {
 				
-				guard element.fcpxType == .note || element.fcpxType == .marker || element.fcpxType == .chapterMarker || element.fcpxType == .rating || element.fcpxType == .keyword || element.fcpxType == .analysisMarker else {
+				guard element.fcpxType == .note || element.fcpxType == .marker || element.fcpxType == .chapterMarker || element.fcpxType == .rating || element.fcpxType == .keyword || element.fcpxType == .analysisMarker || element.fcpxType == .hiddenClipMarker else {
 					throw FCPXMLElementError.notAnAnnotation(elementName: element.name ?? "unnamed")
 				}
 				
@@ -2341,7 +2342,7 @@ extension XMLElement {
 		} else { // No children so just add to the clips.
 			for element in elements {
 				
-				guard element.fcpxType == .note || element.fcpxType == .marker || element.fcpxType == .chapterMarker || element.fcpxType == .rating || element.fcpxType == .keyword || element.fcpxType == .analysisMarker else {
+				guard element.fcpxType == .note || element.fcpxType == .marker || element.fcpxType == .chapterMarker || element.fcpxType == .rating || element.fcpxType == .keyword || element.fcpxType == .analysisMarker || element.fcpxType == .hiddenClipMarker else {
 					throw FCPXMLElementError.notAnAnnotation(elementName: element.name ?? "unnamed")
 				}
 				

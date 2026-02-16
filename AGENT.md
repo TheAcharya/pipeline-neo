@@ -21,6 +21,7 @@ Keep this file in sync with `.cursorrules`. Both should describe the same overvi
 - [Error Handling](#error-handling)
 - [Performance](#performance)
 - [Documentation](#documentation)
+- [Changelog](#changelog)
 - [Git Workflow](#git-workflow)
 - [Documentation Sync](#documentation-sync)
 - [References](#references)
@@ -30,6 +31,8 @@ Keep this file in sync with `.cursorrules`. Both should describe the same overvi
 ## Project Overview
 
 Pipeline Neo targets macOS 12+, Xcode 16+, and Swift 6.0 with full concurrency support. It provides FCPXML parsing, creation, and manipulation with timecode operations via SwiftTimecode. All core behaviour is behind protocols with both synchronous and async/await APIs; default implementations exist but any component can be swapped or extended via dependency injection.
+
+**Backward compatibility:** The entire codebase must remain backward compatible with FCPXML 1.5. Optional attributes and elements introduced in later versions (e.g. 1.11, 1.13) must be omitted or ignored when reading/writing or converting to 1.5; mark such features in code comments with the minimum FCPXML version (e.g. `FCPXML 1.13+`).
 
 Current status: all 340 tests passing; FCPXML versions 1.5–1.14 supported (DTDs included, full parsing, typed element-type coverage for all DTD elements via FCPXMLElementType); Final Cut Pro frame rates (23.976, 24, 25, 29.97, 30, 50, 59.94, 60); thread-safe and concurrency-compliant with comprehensive async/await support; no known security vulnerabilities. Version conversion (FCPXMLVersionConverter) automatically strips elements not in the target version’s DTD (e.g. adjust-colorConform, adjust-stereo-3D); per-version DTD validation via FCPXMLService.validateDocumentAgainstDTD(_:version:) and validateDocumentAgainstDeclaredVersion(_:); CLI convert runs DTD validation after conversion. FCPXMLVersion.supportsBundleFormat is true for 1.10+ (.fcpxmld bundle); 1.5–1.9 support only single-file .fcpxml. Timeline manipulation: ripple insert (shifts subsequent clips), auto lane assignment, clip queries (by lane, time range, asset ID), lane range computation. Timeline metadata: markers, chapter markers, keywords, ratings, custom metadata, timestamps (createdAt, modifiedAt). FCPXMLTimecode: custom timecode type (arithmetic, frame alignment, CMTime conversion, FCPXML string parsing). MIME type detection, asset validation, silence detection, asset duration measurement, parallel file I/O. TimelineFormat enhancements: presets (hd720p, dci4K, hd1080i, hd720i), computed properties (aspectRatio, isHD, isUHD, interlaced). Experimental CLI (pipeline-neo): single binary with embedded DTDs; --check-version, --convert-version (stripping + DTD validation), --extension-type (fcpxmld | fcpxml; default fcpxmld; 1.5–1.9 always .fcpxml), --validate, --media-copy; --log writes user-visible output for all commands to the log file; see Sources/PipelineNeoCLI/README.md.
 
@@ -51,7 +54,7 @@ Foundation XML types (XMLDocument, XMLElement) and SwiftTimecode types are not S
 ## Architecture
 
 - Protocols: Core operations are defined as protocols with both sync and async/await methods. Default implementations are provided; components can be swapped via dependency injection. Protocols include: FCPXMLParsing, TimecodeConversion, XMLDocumentOperations, ErrorHandling (sync-only, pure formatting), MIMETypeDetection, AssetValidation, SilenceDetection, AssetDurationMeasurement, ParallelFileIO, CutDetection, FCPXMLVersionConverting, MediaExtraction.
-- Implementations: FCPXMLParser, TimecodeConverter, XMLDocumentManager, ErrorHandler, CutDetector, FCPXMLVersionConverter, MediaExtractor, MIMETypeDetector, AssetValidator, SilenceDetector, AssetDurationMeasurer, ParallelFileIOHandler implement the protocols.
+- Implementations: FCPXMLParser, TimecodeConverter, XMLDocumentManager, ErrorHandler, CutDetector, FCPXMLVersionConverter, MediaExtractor, MIMETypeDetector, AssetValidator, SilenceDetector, AssetDurationMeasurer, ParallelFileIOExecutor implement the protocols.
 - Analysis: Cut detection (CutDetection protocol, CutDetector implementation) produces EditPoint and CutDetectionResult; classifies edit points by boundary type (hard cut, transition, gap) and source relationship (same-clip vs different-clips). FCPXMLService and FCPXMLUtility expose detectCuts(in:) and detectCuts(inSpine:) (sync and async).
 - Version conversion: FCPXMLVersionConverting protocol and FCPXMLVersionConverter; convertToVersion(_:targetVersion:) sets root version, strips elements not in the target version’s DTD (e.g. adjust-colorConform, adjust-stereo-3D), and returns a copy; saveAsFCPXML(_:to:) saves as .fcpxml; saveAsBundle(_:to:bundleName:) saves as .fcpxmld (FCPXMLBundleExporter.saveDocumentAsBundle; only for document version 1.10 or higher; FCPXMLVersion.supportsBundleFormat is true for 1.10+). DTD validation: FCPXMLService.validateDocumentAgainstDTD(_:version:) and validateDocumentAgainstDeclaredVersion(_:); FCPXMLDTDValidator injectable; CLI convert runs validation after conversion and fails if invalid. CLI --extension-type (fcpxmld | fcpxml; default fcpxmld) controls convert output format; 1.5–1.9 always output .fcpxml. Async methods are concurrency-safe; Task-based concurrency is avoided for non-Sendable types. FCPXMLParser delegates URL loading to FCPXMLFileLoader for unified file/bundle handling and consistent parse options. TimecodeConverter guards against invalid/non-finite CMTime inputs.
 - Media extraction: MediaExtraction protocol and MediaExtractor; extractMediaReferences(from:baseURL:) returns MediaExtractionResult (references from asset media-rep and locator resources; fileReferences for file URLs); copyReferencedMedia(from:to:baseURL:) copies file references to a directory with deduplication and unique filenames, returning MediaCopyResult (copied, skipped, failed). FCPXMLService and FCPXMLUtility expose both (sync and async).
@@ -114,14 +117,14 @@ Rules:
 Source layout under Sources/PipelineNeo/:
 
 - Analysis: EditPoint (edit type, source relationship), CutDetectionResult (edit points and counts).
-- Classes: FinalCutPro (namespace enum), FCPXML (core struct, init, properties), FCPXML Root, FCPXML Root Version, FCPXMLElementType, FCPXMLUtility, FCPXMLVersion.
+- Classes: FinalCutPro (namespace enum), FCPXML (core struct, init, properties), FCPXMLRoot, FCPXMLRootVersion, FCPXMLElementType, FCPXMLUtility, FCPXMLVersion.
 - Delegates: AttributeParserDelegate (property: `values`), FCPXMLParserDelegate (properties: `roles`, `resourceIDs`, `textStyleIDs`; O(1) deduplication via Set).
-- Errors: FCPXMLError, FCPXML ParseError, TimelineError.
+- Errors: FCPXMLError, FCPXMLParseError, TimelineError.
 - Extensions: CMTime+Modular, CMTimeExtension, CMTime+Codable, XMLDocument+Modular, XMLDocumentExtension, XMLElement+Modular, XMLElementExtension.
-- Implementations: FCPXMLParser, TimecodeConverter, XMLDocumentManager, ErrorHandler, CutDetector, FCPXMLVersionConverter, MediaExtractor, MIMETypeDetector, AssetValidator, SilenceDetector, AssetDurationMeasurer, ParallelFileIOHandler.
+- Implementations: FCPXMLParser, TimecodeConverter, XMLDocumentManager, ErrorHandler, CutDetector, FCPXMLVersionConverter, MediaExtractor, MIMETypeDetector, AssetValidator, SilenceDetector, AssetDurationMeasurer, ParallelFileIOExecutor.
 - Protocols: FCPXMLParsing, TimecodeConversion, XMLDocumentOperations, ErrorHandling, CutDetection, FCPXMLVersionConverting, MediaExtraction, MIMETypeDetection, AssetValidation, SilenceDetection, AssetDurationMeasurement, ParallelFileIO.
 - Services: FCPXMLService.
-- Utilities: ModularUtilities, FCPXML Time Utilities, SequencePlusAnySequence, XMLElementAncestorWalking, XMLElementSequenceAttributes.
+- Utilities: ModularUtilities, FCPXMLTimeUtilities, SequencePlusAnySequence, XMLElementAncestorWalking, XMLElementSequenceAttributes.
 - Annotations: ChapterMarker, Keyword, Marker, Metadata, Rating (creation-oriented value types; for parsing models see Model/).
 - Export: FCPXMLExporter, FCPXMLBundleExporter, FCPXMLExportAsset.
 - Timeline: Timeline (with manipulation methods: ripple insert, auto lane assignment, clip queries, lane range, metadata, timestamps), TimelineClip (with asset validation methods), TimelineFormat (with presets and computed properties).
@@ -220,6 +223,17 @@ Public APIs: comprehensive header comments, ///, parameters/return values/except
 
 ---
 
+## Changelog
+
+CHANGELOG.md follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) with a consistent structure:
+
+- **Version heading:** `## [X.Y.Z](https://github.com/TheAcharya/pipeline-neo/releases/tag/X.Y.Z) - YYYY-MM-DD` — version number links to the GitHub release tag.
+- **Three sections per release:** **✨ New Features** (new functionality), **🔧 Improvements** (enhancements, refactors, docs, tests), **🐛 Bug Fixes** (fixes). Use these headings with emojis.
+- **Content:** Bullet lists under each section. For empty sections use: "None in this release."
+- **Adding a release:** Insert at the top below the intro; classify changes into New Features, Improvements, or Bug Fixes; keep bullets concise.
+
+---
+
 ## Git Workflow
 
 Branches: main (production-ready), dev, feature/*, bugfix/*. Commits: clear, descriptive, imperative; reference issues when applicable; separate subject and body with a blank line. Pull requests: descriptive title and description; ensure all tests pass.
@@ -228,7 +242,7 @@ Branches: main (production-ready), dev, feature/*, bugfix/*. Commits: clear, des
 
 ## Documentation Sync
 
-Keep AGENT.md and .cursorrules in sync. Both must reflect:
+Keep AGENT.md and .cursorrules in sync. Both must reflect: changelog styling (CHANGELOG.md: Keep a Changelog format, version links to release tags, ✨ New Features / 🔧 Improvements / 🐛 Bug Fixes).
 
 - Project overview and codebase rewrite/refactor.
 - Architecture (protocols, implementations, extensions, service, utilities) and single injection point (FCPXMLUtility.defaultForExtensions).
