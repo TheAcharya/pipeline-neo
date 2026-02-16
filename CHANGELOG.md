@@ -9,18 +9,18 @@ Pipeline Neo uses **New Features**, **Improvements**, and **Bug Fixes** for each
 
 ## [2.3.0](https://github.com/TheAcharya/pipeline-neo/releases/tag/2.3.0) - 2026-02-16
 
-### New Features
+### ✨ New Features
 
 - **Live Drawing (FCPXML 1.11+):** Typed `LiveDrawing` model for the `live-drawing` story element (drawn/sketch content). Attributes: `role`, `dataLocator`, `animationType`; conforms to `FCPXMLElementClipAttributes` and `FCPXMLElementMetaTimeline`. Wired into `allTimelineCases`, `FCPXMLAnyTimeline` (`.liveDrawing(LiveDrawing)`), and `ElementModelType` / `AnyElementModelType`. Tests in APIAndEdgeCaseTests (init, attributes, AnyTimeline round-trip).
 
-### Improvements
+### 🔧 Improvements
 
 - **Documentation:** Manual restructured into chapter-based layout. New `Documentation/Manual/` with 18 files: 00-Index (table of contents), 01–17 covering Overview, Loading & Parsing, Timecode, Pipeline & Logging, Validation & Cut Detection, Version Conversion & Export, Timeline & Export, Timeline Manipulation, Timeline Metadata, Extraction & Media, Media Processing, Typed Models, XML Extensions, High-Level Model, Errors & Utilities, CLI, and Examples. `Documentation/README.md` updated with manual index and chapter links. Root `Documentation/Manual.md` now redirects to the structured manual.
 - **Documentation:** Typed Models chapter (12) documents Live Drawing, HiddenClipMarker, Format/Asset 1.13+, SmartCollection match rules, and all adjustment/filter/caption/keyframe/collection models with examples.
 - **Tests:** `Tests/README.md` reorganized with clear sections: table of contents by category (Structure & running, Coverage, Reference, Contributing & troubleshooting), test structure tree, shared utilities summary, tables for PipelineNeoTests MARK categories and for file tests (class | sample | asserts), and dedicated test files grouped by theme. Test count updated to **587 tests**.
 - **Audit:** `Documentation/FCPXML_1.14_SUPPORT_AUDIT.md` section 3.5 (live-drawing) updated to reflect implemented LiveDrawing model and wiring.
 
-### Bug Fixes
+### 🐛 Bug Fixes
 
 - None in this release.
 
@@ -28,7 +28,7 @@ Pipeline Neo uses **New Features**, **Improvements**, and **Bug Fixes** for each
 
 ## [2.2.0](https://github.com/TheAcharya/pipeline-neo/releases/tag/2.2.0) - 2026-02-14
 
-### New Features
+### ✨ New Features
 
 - **Typed adjustment models:** `CropAdjustment`, `TransformAdjustment`, `BlendAdjustment`, `StabilizationAdjustment`, `VolumeAdjustment`, `LoudnessAdjustment` with full `Clip` integration via computed properties.
 - **Audio enhancement adjustments:** `NoiseReductionAdjustment`, `HumReductionAdjustment`, `EqualizationAdjustment`, `MatchEqualizationAdjustment` with parameter validation and `Clip` integration.
@@ -39,7 +39,7 @@ Pipeline Neo uses **New Features**, **Improvements**, and **Bug Fixes** for each
 - **CMTime Codable:** Direct `CMTime` encoding/decoding as FCPXML time strings (`"value/timescale"s` format).
 - **Collection organization:** `CollectionFolder` and `KeywordCollection` models for organizing clips and media with nested folder structures.
 
-### Improvements
+### 🔧 Improvements
 
 - **CutDetector:** Edit type classification for non-adjacent clips now prioritizes transitions over gaps when multiple elements exist between clips.
 - **XMLElementExtension:** Synchronized clip matching fixed to prevent duplicate entries when multiple nested children match the same resource.
@@ -57,7 +57,7 @@ Pipeline Neo uses **New Features**, **Improvements**, and **Bug Fixes** for each
 - **Test suite:** Expanded to 535 tests; added AdjustmentTests, AudioEnhancementTests, Transform360Tests, CaptionTitleTests, KeyframeAnimationTests, CMTimeCodableTests, CollectionTests, FilterTests, CodableTests, ImportOptionsTests, SmartCollectionTests.
 - **Documentation:** AGENT.md, .cursorrules, Tests/README.md, README.md, Documentation/Manual.md, and Documentation/README.md updated for new features and test count.
 
-### Bug Fixes
+### 🐛 Bug Fixes
 
 - None explicitly called out in this release (improvements above include behavioral fixes in CutDetector and XMLElementExtension).
 
@@ -65,7 +65,7 @@ Pipeline Neo uses **New Features**, **Improvements**, and **Bug Fixes** for each
 
 ## [2.1.0](https://github.com/TheAcharya/pipeline-neo/releases/tag/2.1.0) - 2026-02-13
 
-### New Features
+### ✨ New Features
 
 - **Timeline manipulation:** Ripple insert (shifts subsequent clips), auto lane assignment, clip queries (by lane, time range, asset ID), lane range computation.
 - **Timeline metadata:** Markers, chapter markers, keywords, ratings, custom metadata on timeline and clips.
@@ -77,7 +77,7 @@ Pipeline Neo uses **New Features**, **Improvements**, and **Bug Fixes** for each
 - **Asset duration measurement:** `AssetDurationMeasurement` protocol (actual duration from AVFoundation for audio/video/images).
 - **Parallel file I/O:** `ParallelFileIO` protocol for concurrent read/write operations.
 
-### Improvements
+### 🔧 Improvements
 
 - **TimelineFormat:** Presets (hd720p, dci4K, hd1080i, hd720i); computed properties (aspectRatio, isHD, isUHD, isDCI4K, isStandard4K, is1080p, is720p, interlaced).
 - **TimelineError:** New cases `assetNotFound`, `invalidFormat`, `invalidAssetReference`.
@@ -85,7 +85,7 @@ Pipeline Neo uses **New Features**, **Improvements**, and **Bug Fixes** for each
 - **CI:** Added CodeQL workflow.
 - **Documentation:** Manual.md and Tests README updated with new APIs and examples.
 
-### Bug Fixes
+### 🐛 Bug Fixes
 
 - None documented in this release.
 
@@ -93,13 +93,13 @@ Pipeline Neo uses **New Features**, **Improvements**, and **Bug Fixes** for each
 
 ## [2.0.1](https://github.com/TheAcharya/pipeline-neo/releases/tag/2.0.1) - 2026-02-11
 
-### New Features
+### ✨ New Features
 
 - **CLI:** `--log`, `--log-level`, `--quiet`; `--extension-type` for convert (fcpxmld | fcpxml; default fcpxmld; 1.5–1.9 always .fcpxml); `--extract-media` renamed to `--media-copy` under EXTRACTION; `--validate` (semantic + DTD; progress when not quiet). Single binary with embedded DTDs.
 - **Progress bar:** TQDM-style progress for `--media-copy` and `--validate`.
 - **Logging:** When `--log` is set, all CLI commands write user-visible output to the log file.
 
-### Improvements
+### 🔧 Improvements
 
 - **Logging:** Seven levels (trace–critical); optional file + console; quiet mode.
 - **Semantic validation:** Refs resolved against all element IDs (e.g. text-style-def in titles), not only top-level resources.
@@ -109,7 +109,7 @@ Pipeline Neo uses **New Features**, **Improvements**, and **Bug Fixes** for each
 - **Test suite:** 181 tests.
 - **Documentation:** README, Manual, CLI README, Documentation/, Scripts, .cursorrules, AGENT.md updated.
 
-### Bug Fixes
+### 🐛 Bug Fixes
 
 - None documented in this release.
 
@@ -117,7 +117,7 @@ Pipeline Neo uses **New Features**, **Improvements**, and **Bug Fixes** for each
 
 ## [2.0.0](https://github.com/TheAcharya/pipeline-neo/releases/tag/2.0.0) - 2026-02-09
 
-### New Features
+### ✨ New Features
 
 - **Cut detection:** Find edit points on a timeline (hard cut, transition, gap); same-clip vs different-clips.
 - **Version conversion:** Convert FCPXML to another version (e.g. 1.14 → 1.10) with automatic cleanup; save as single file or bundle.
@@ -125,13 +125,13 @@ Pipeline Neo uses **New Features**, **Improvements**, and **Bug Fixes** for each
 - **Media extraction and copy:** Find all referenced media and copy to a folder (deduplicated).
 - **Experimental CLI (`pipeline-neo`):** Check document version, convert to target version, extract media to folder.
 
-### Improvements
+### 🔧 Improvements
 
 - **Architecture:** Full codebase rewrite with protocol-oriented design.
 - **Test suite:** Expanded to 177 tests.
 - **Documentation:** Manual, README, and project docs updated.
 
-### Bug Fixes
+### 🐛 Bug Fixes
 
 - None documented in this release.
 
@@ -139,20 +139,20 @@ Pipeline Neo uses **New Features**, **Improvements**, and **Bug Fixes** for each
 
 ## [1.1.0](https://github.com/TheAcharya/pipeline-neo/releases/tag/1.1.0) - 2026-02-06
 
-### New Features
+### ✨ New Features
 
 - **FCPXML 1.14:** DTD and version support for 1.14; documentation, tests, and CI cover 1.5 through 1.14.
 - **Element-type coverage:** Full DTD element-type coverage via `FCPXMLElementType` (tag names, inferred types, filtering across parser and utility).
 - **Single injection point:** Extension APIs use `FCPXMLUtility.defaultForExtensions`; custom pipelines use modular API with dependency injection.
 
-### Improvements
+### 🔧 Improvements
 
 - **Dependencies:** Integrated [swift-extensions](https://github.com/orchetect/swift-extensions).
 - **Concurrency:** Sendable compliance across protocols and implementations; async/await APIs throughout.
 - **Test suite:** Expanded to 66 tests; FCPXML time strings (valid/invalid).
 - **Errors:** `FCPXMLError` and public option enums marked `Sendable`; error descriptions verified for all cases.
 
-### Bug Fixes
+### 🐛 Bug Fixes
 
 - None documented in this release.
 
@@ -160,15 +160,15 @@ Pipeline Neo uses **New Features**, **Improvements**, and **Bug Fixes** for each
 
 ## [1.0.2](https://github.com/TheAcharya/pipeline-neo/releases/tag/1.0.2) - 2025-11-30
 
-### New Features
+### ✨ New Features
 
 - None in this release.
 
-### Improvements
+### 🔧 Improvements
 
 - **Dependencies:** Migrated from TimecodeKit to SwiftTimecode 3.0.0. Package dependency updated to `https://github.com/orchetect/swift-timecode`. All imports updated; Timecode initializer updated to `Timecode(.realTime(seconds:), at: frameRate)`; frame rate cases updated to `.fps24`, `.fps25`, `.fps29_97`, `.fps30`, `.fps50`, `.fps59_94`, `.fps60`, `.fps23_976`. Documentation and version references updated. Task-based concurrency avoided for Foundation XML and SwiftTimecode types (Sendable limitations).
 
-### Bug Fixes
+### 🐛 Bug Fixes
 
 - None documented in this release.
 
@@ -176,18 +176,18 @@ Pipeline Neo uses **New Features**, **Improvements**, and **Bug Fixes** for each
 
 ## [1.0.1](https://github.com/TheAcharya/pipeline-neo/releases/tag/1.0.1) - 2025-07-11
 
-### New Features
+### ✨ New Features
 
 - **Async/await:** Comprehensive async/await support across all major operations. All protocols, implementations, services, and utilities have async methods.
 
-### Improvements
+### 🔧 Improvements
 
 - **Concurrency:** Enhanced concurrency safety with Sendable compliance; async error propagation; thread-safe implementation and resource management.
 - **Test suite:** Updated to 66 comprehensive tests with async/await coverage.
 - **Documentation:** Async/await usage examples added.
 - **Architecture:** Protocol-oriented design with both sync and async APIs; task-based concurrency avoided for Foundation XML and TimecodeKit types; performance optimizations for async operations.
 
-### Bug Fixes
+### 🐛 Bug Fixes
 
 - None documented in this release.
 
@@ -195,14 +195,14 @@ Pipeline Neo uses **New Features**, **Improvements**, and **Bug Fixes** for each
 
 ## [1.0.0](https://github.com/TheAcharya/pipeline-neo/releases/tag/1.0.0) - 2025-07-10
 
-### New Features
+### ✨ New Features
 
 - First public release of **Pipeline Neo**.
 
-### Improvements
+### 🔧 Improvements
 
 - N/A
 
-### Bug Fixes
+### 🐛 Bug Fixes
 
 - N/A
