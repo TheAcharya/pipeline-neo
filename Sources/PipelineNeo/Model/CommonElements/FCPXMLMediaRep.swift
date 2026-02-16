@@ -15,6 +15,10 @@ import SwiftExtensions
 extension FinalCutPro.FCPXML {
     /// Media representation.
     ///
+    /// Conforms to `Sendable` via `@unchecked Sendable` because it wraps ``XMLElement``, which is
+    /// not `Sendable`. Safe to use across concurrency boundaries when the owning document is not
+    /// shared across isolation domains (same pattern as other FCPXML element wrappers in this module).
+    ///
     /// > Final Cut Pro FCPXML 1.11 Reference:
     /// >
     /// > References a media representation, that is either the original or a proxy media managed by
@@ -73,8 +77,8 @@ extension FinalCutPro.FCPXML.MediaRep {
         self.sig = sig
         self.src = src
         self.suggestedFilename = suggestedFilename
-        // Use lossy UTF-8 encoding so this conversion cannot fail silently by returning nil.
-        self.bookmarkData = bookmark.data(using: .utf8, allowLossyConversion: true)!
+        // Use lossy UTF-8 encoding and fall back to empty data if conversion unexpectedly fails.
+        self.bookmarkData = bookmark.data(using: .utf8, allowLossyConversion: true) ?? Data()
     }
 }
 
