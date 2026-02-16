@@ -25,10 +25,13 @@ Pipeline Neo uses **New Features**, **Improvements**, and **Bug Fixes** for each
 - **Documentation:** Typed Models chapter (12) documents Live Drawing, HiddenClipMarker, Format/Asset 1.13+, SmartCollection match rules, and all adjustment/filter/caption/keyframe/collection models with examples.
 - **Tests:** `Tests/README.md` reorganized with clear sections: table of contents by category (Structure & running, Coverage, Reference, Contributing & troubleshooting), test structure tree, shared utilities summary, tables for PipelineNeoTests MARK categories and for file tests (class | sample | asserts), and dedicated test files grouped by theme. Test count updated to **587 tests**. Added FCPXMLFormatAssetTests (LogicAndParsing).
 - **Project rules:** `.cursorrules` and `AGENT.md` updated (backward compatibility note, Changelog section with styling: version links to release tags, ✨ New Features / 🔧 Improvements / 🐛 Bug Fixes).
+- **FCPXMLClip+Adjustments:** Attribute names (e.g. `amount`, `enabled`, `type`) centralized in a private `AttributeName` enum to avoid typos and improve maintainability.
+- **FCPXMLTitle+Typed:** Simplified optional-bold/italic/underline assignment from `condition ? true : nil` to `if condition { textStyle.property = true }` for clarity.
 
 ### 🐛 Bug Fixes
 
-- None in this release.
+- **Gap `lane` setter:** Replaced `assertionFailure` with a no-op so setting `lane` on a gap clip no longer risks a crash in production.
+- **MediaRep:** Added `FCPXMLElement` conformance so `_isElementTypeSupported` is correctly available and the type is consistent with other element models.
 
 ---
 

@@ -115,6 +115,8 @@ if let laneRange = timeline.laneRange {
 }
 ```
 
+**Note:** Gap clips do not support the lane attribute; setting `lane` on a gap has no effect (the property is deprecated on ``FinalCutPro/FCPXML/Gap``).
+
 ---
 
 ## Next

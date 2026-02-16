@@ -157,7 +157,7 @@ let marker = FinalCutPro.FCPXML.HiddenClipMarker()
 ## Format and Asset (1.13+)
 
 - **Format:** **heroEye** (left | right) for stereoscopic
-- **Asset:** **heroEyeOverride** (left | right), **mediaReps** (multiple media-rep)
+- **Asset:** **heroEyeOverride** (left | right), **mediaReps** (multiple **MediaRep**, each conforming to FCPXMLElement)
 
 Version converter strips heroEye/heroEyeOverride when converting to &lt; 1.13.
 
