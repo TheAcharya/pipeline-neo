@@ -76,7 +76,9 @@ extension FinalCutPro.FCPXML.MediaRep {
         self.sig = sig
         self.src = src
         self.suggestedFilename = suggestedFilename
-        // Use lossy UTF-8 encoding and fall back to empty data if conversion unexpectedly fails.
+        // Use lossy UTF-8 encoding for the bookmark string. In the extremely unlikely event that
+        // conversion fails, fall back to empty `Data` to represent the absence of a bookmark while
+        // preserving the existing behavior of this initializer.
         self.bookmarkData = bookmark.data(using: .utf8, allowLossyConversion: true) ?? Data()
     }
 }
@@ -164,7 +166,7 @@ extension FinalCutPro.FCPXML.MediaRep: FCPXMLElementBookmarkChild { }
 // MARK: - Properties
 
 extension FinalCutPro.FCPXML.MediaRep {
-    /// Convenience to returns the `src` filename.
+    /// Convenience method that returns the `src` filename.
     public func srcFilename() -> String? {
         src?.lastPathComponent
     }
