@@ -21,6 +21,7 @@ Keep this file in sync with `.cursorrules`. Both should describe the same overvi
 - [Error Handling](#error-handling)
 - [Performance](#performance)
 - [Documentation](#documentation)
+- [Changelog](#changelog)
 - [Git Workflow](#git-workflow)
 - [Documentation Sync](#documentation-sync)
 - [References](#references)
@@ -222,6 +223,17 @@ Public APIs: comprehensive header comments, ///, parameters/return values/except
 
 ---
 
+## Changelog
+
+CHANGELOG.md follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) with a consistent structure:
+
+- **Version heading:** `## [X.Y.Z](https://github.com/TheAcharya/pipeline-neo/releases/tag/X.Y.Z) - YYYY-MM-DD` — version number links to the GitHub release tag.
+- **Three sections per release:** **✨ New Features** (new functionality), **🔧 Improvements** (enhancements, refactors, docs, tests), **🐛 Bug Fixes** (fixes). Use these headings with emojis.
+- **Content:** Bullet lists under each section. For empty sections use: "None in this release."
+- **Adding a release:** Insert at the top below the intro; classify changes into New Features, Improvements, or Bug Fixes; keep bullets concise.
+
+---
+
 ## Git Workflow
 
 Branches: main (production-ready), dev, feature/*, bugfix/*. Commits: clear, descriptive, imperative; reference issues when applicable; separate subject and body with a blank line. Pull requests: descriptive title and description; ensure all tests pass.
@@ -230,7 +242,7 @@ Branches: main (production-ready), dev, feature/*, bugfix/*. Commits: clear, des
 
 ## Documentation Sync
 
-Keep AGENT.md and .cursorrules in sync. Both must reflect:
+Keep AGENT.md and .cursorrules in sync. Both must reflect: changelog styling (CHANGELOG.md: Keep a Changelog format, version links to release tags, ✨ New Features / 🔧 Improvements / 🐛 Bug Fixes).
 
 - Project overview and codebase rewrite/refactor.
 - Architecture (protocols, implementations, extensions, service, utilities) and single injection point (FCPXMLUtility.defaultForExtensions).
