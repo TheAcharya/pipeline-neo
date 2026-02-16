@@ -100,8 +100,8 @@ extension FinalCutPro.FCPXML.Title {
         textStyle.fontFace = fontFace
         textStyle.fontColor = fontColor
         textStyle.backgroundColor = backgroundColor
-        textStyle.isBold = isBold ? true : nil
-        textStyle.isItalic = isItalic ? true : nil
+        if isBold { textStyle.isBold = true }
+        if isItalic { textStyle.isItalic = true }
         textStyle.strokeColor = strokeColor
         textStyle.strokeWidth = strokeWidth
         textStyle.baseline = baseline
@@ -113,8 +113,8 @@ extension FinalCutPro.FCPXML.Title {
         textStyle.lineSpacing = lineSpacing
         textStyle.tabStops = tabStops
         textStyle.baselineOffset = baselineOffset
-        textStyle.isUnderlined = isUnderlined ? true : nil
-        
+        if isUnderlined { textStyle.isUnderlined = true }
+
         return textStyle
     }
     

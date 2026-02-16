@@ -99,7 +99,9 @@ extension FinalCutPro.FCPXML.Gap: FCPXMLElementClipAttributes {
     @available(*, deprecated, message: "Can't set lane attribute on gap clip.")
     public var lane: Int? {
         get { nil }
-        nonmutating set { assertionFailure("Can't set lane attribute on gap clip.") }
+        nonmutating set {
+            // Intentionally ignored: gaps do not support a lane attribute.
+        }
     }
 }
 

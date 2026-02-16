@@ -23,7 +23,7 @@ extension FinalCutPro.FCPXML {
     /// > A media that Final Cut Pro manages in its library can have a proxy media representation,
     /// > in addition to the original media representation. Use the media-rep element to describe a
     /// > media representation, as a child element of the asset element.
-    public struct MediaRep: Equatable, Hashable {
+    public struct MediaRep: FCPXMLElement, Equatable, Hashable {
         public let element: XMLElement
         
         public let elementType: ElementType = .mediaRep
