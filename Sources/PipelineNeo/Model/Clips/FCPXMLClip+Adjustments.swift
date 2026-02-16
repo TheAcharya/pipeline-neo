@@ -11,6 +11,55 @@
 import Foundation
 
 extension FinalCutPro.FCPXML.Clip {
+    /// Attribute names used when reading/writing adjustment XML (avoids typos and centralizes strings).
+    private enum AttributeName {
+        static let amount = "amount"
+        static let anchor = "anchor"
+        static let aperture = "aperture"
+        static let autoOrient = "autoOrient"
+        static let autoOrManual = "autoOrManual"
+        static let autoScale = "autoScale"
+        static let auxValue = "auxValue"
+        static let bottom = "bottom"
+        static let conformType = "conformType"
+        static let convergence = "convergence"
+        static let coordinates = "coordinates"
+        static let dataLocator = "dataLocator"
+        static let depth = "depth"
+        static let distance = "distance"
+        static let enabled = "enabled"
+        static let fieldOfView = "fieldOfView"
+        static let frequency = "frequency"
+        static let interaxial = "interaxial"
+        static let key = "key"
+        static let latitude = "latitude"
+        static let left = "left"
+        static let longitude = "longitude"
+        static let mapping = "mapping"
+        static let mode = "mode"
+        static let name = "name"
+        static let pan = "pan"
+        static let peakNitsOfPQSource = "peakNitsOfPQSource"
+        static let peakNitsOfSDRToPQSource = "peakNitsOfSDRToPQSource"
+        static let position = "position"
+        static let right = "right"
+        static let roll = "roll"
+        static let rotation = "rotation"
+        static let scale = "scale"
+        static let swapEyes = "swapEyes"
+        static let tilt = "tilt"
+        static let top = "top"
+        static let type = "type"
+        static let uniformity = "uniformity"
+        static let value = "value"
+        static let xOrientation = "xOrientation"
+        static let xPosition = "xPosition"
+        static let yOrientation = "yOrientation"
+        static let yPosition = "yPosition"
+        static let zOrientation = "zOrientation"
+        static let zPosition = "zPosition"
+    }
+
     /// The crop adjustment applied to the clip.
     public var cropAdjustment: FinalCutPro.FCPXML.CropAdjustment? {
         get {
@@ -18,31 +67,31 @@ extension FinalCutPro.FCPXML.Clip {
                 return nil
             }
             
-            guard let modeString = adjustElement.stringValue(forAttributeNamed: "mode"),
+            guard let modeString = adjustElement.stringValue(forAttributeNamed: AttributeName.mode),
                   let mode = FinalCutPro.FCPXML.CropAdjustment.Mode(rawValue: modeString) else {
                 return nil
             }
             
-            let enabledString = adjustElement.stringValue(forAttributeNamed: "enabled") ?? "1"
+            let enabledString = adjustElement.stringValue(forAttributeNamed: AttributeName.enabled) ?? "1"
             let isEnabled = enabledString == "1"
             
             var crop = FinalCutPro.FCPXML.CropAdjustment(mode: mode, isEnabled: isEnabled)
             
             // Parse crop-rect
             if let cropRectElement = adjustElement.firstChildElement(named: "crop-rect"),
-               let left = Double(cropRectElement.stringValue(forAttributeNamed: "left") ?? "0"),
-               let top = Double(cropRectElement.stringValue(forAttributeNamed: "top") ?? "0"),
-               let right = Double(cropRectElement.stringValue(forAttributeNamed: "right") ?? "0"),
-               let bottom = Double(cropRectElement.stringValue(forAttributeNamed: "bottom") ?? "0") {
+               let left = Double(cropRectElement.stringValue(forAttributeNamed: AttributeName.left) ?? "0"),
+               let top = Double(cropRectElement.stringValue(forAttributeNamed: AttributeName.top) ?? "0"),
+               let right = Double(cropRectElement.stringValue(forAttributeNamed: AttributeName.right) ?? "0"),
+               let bottom = Double(cropRectElement.stringValue(forAttributeNamed: AttributeName.bottom) ?? "0") {
                 crop.cropRect = FinalCutPro.FCPXML.CropAdjustment.CropRect(left: left, top: top, right: right, bottom: bottom)
             }
             
             // Parse trim-rect
             if let trimRectElement = adjustElement.firstChildElement(named: "trim-rect"),
-               let left = Double(trimRectElement.stringValue(forAttributeNamed: "left") ?? "0"),
-               let top = Double(trimRectElement.stringValue(forAttributeNamed: "top") ?? "0"),
-               let right = Double(trimRectElement.stringValue(forAttributeNamed: "right") ?? "0"),
-               let bottom = Double(trimRectElement.stringValue(forAttributeNamed: "bottom") ?? "0") {
+               let left = Double(trimRectElement.stringValue(forAttributeNamed: AttributeName.left) ?? "0"),
+               let top = Double(trimRectElement.stringValue(forAttributeNamed: AttributeName.top) ?? "0"),
+               let right = Double(trimRectElement.stringValue(forAttributeNamed: AttributeName.right) ?? "0"),
+               let bottom = Double(trimRectElement.stringValue(forAttributeNamed: AttributeName.bottom) ?? "0") {
                 crop.trimRect = FinalCutPro.FCPXML.CropAdjustment.TrimRect(left: left, top: top, right: right, bottom: bottom)
             }
             
@@ -50,10 +99,10 @@ extension FinalCutPro.FCPXML.Clip {
             let panRectElements = adjustElement.childElements.filter { $0.name == "pan-rect" }
             if !panRectElements.isEmpty {
                 crop.panRects = panRectElements.compactMap { panElement -> FinalCutPro.FCPXML.CropAdjustment.PanRect? in
-                    guard let left = Double(panElement.stringValue(forAttributeNamed: "left") ?? "0"),
-                          let top = Double(panElement.stringValue(forAttributeNamed: "top") ?? "0"),
-                          let right = Double(panElement.stringValue(forAttributeNamed: "right") ?? "0"),
-                          let bottom = Double(panElement.stringValue(forAttributeNamed: "bottom") ?? "0") else {
+                    guard let left = Double(panElement.stringValue(forAttributeNamed: AttributeName.left) ?? "0"),
+                          let top = Double(panElement.stringValue(forAttributeNamed: AttributeName.top) ?? "0"),
+                          let right = Double(panElement.stringValue(forAttributeNamed: AttributeName.right) ?? "0"),
+                          let bottom = Double(panElement.stringValue(forAttributeNamed: AttributeName.bottom) ?? "0") else {
                         return nil
                     }
                     return FinalCutPro.FCPXML.CropAdjustment.PanRect(left: left, top: top, right: right, bottom: bottom)
@@ -72,28 +121,28 @@ extension FinalCutPro.FCPXML.Clip {
             
             // Create new adjust-crop element
             let adjustElement = XMLElement(name: "adjust-crop")
-            adjustElement.addAttribute(withName: "mode", value: adjustment.mode.rawValue)
+            adjustElement.addAttribute(withName: AttributeName.mode, value: adjustment.mode.rawValue)
             if !adjustment.isEnabled {
-                adjustElement.addAttribute(withName: "enabled", value: "0")
+                adjustElement.addAttribute(withName: AttributeName.enabled, value: "0")
             }
             
             // Add crop-rect if present
             if let cropRect = adjustment.cropRect {
                 let cropRectElement = XMLElement(name: "crop-rect")
-                cropRectElement.addAttribute(withName: "left", value: String(cropRect.left))
-                cropRectElement.addAttribute(withName: "top", value: String(cropRect.top))
-                cropRectElement.addAttribute(withName: "right", value: String(cropRect.right))
-                cropRectElement.addAttribute(withName: "bottom", value: String(cropRect.bottom))
+                cropRectElement.addAttribute(withName: AttributeName.left, value: String(cropRect.left))
+                cropRectElement.addAttribute(withName: AttributeName.top, value: String(cropRect.top))
+                cropRectElement.addAttribute(withName: AttributeName.right, value: String(cropRect.right))
+                cropRectElement.addAttribute(withName: AttributeName.bottom, value: String(cropRect.bottom))
                 adjustElement.addChild(cropRectElement)
             }
             
             // Add trim-rect if present
             if let trimRect = adjustment.trimRect {
                 let trimRectElement = XMLElement(name: "trim-rect")
-                trimRectElement.addAttribute(withName: "left", value: String(trimRect.left))
-                trimRectElement.addAttribute(withName: "top", value: String(trimRect.top))
-                trimRectElement.addAttribute(withName: "right", value: String(trimRect.right))
-                trimRectElement.addAttribute(withName: "bottom", value: String(trimRect.bottom))
+                trimRectElement.addAttribute(withName: AttributeName.left, value: String(trimRect.left))
+                trimRectElement.addAttribute(withName: AttributeName.top, value: String(trimRect.top))
+                trimRectElement.addAttribute(withName: AttributeName.right, value: String(trimRect.right))
+                trimRectElement.addAttribute(withName: AttributeName.bottom, value: String(trimRect.bottom))
                 adjustElement.addChild(trimRectElement)
             }
             
@@ -101,10 +150,10 @@ extension FinalCutPro.FCPXML.Clip {
             if let panRects = adjustment.panRects {
                 for panRect in panRects {
                     let panRectElement = XMLElement(name: "pan-rect")
-                    panRectElement.addAttribute(withName: "left", value: String(panRect.left))
-                    panRectElement.addAttribute(withName: "top", value: String(panRect.top))
-                    panRectElement.addAttribute(withName: "right", value: String(panRect.right))
-                    panRectElement.addAttribute(withName: "bottom", value: String(panRect.bottom))
+                    panRectElement.addAttribute(withName: AttributeName.left, value: String(panRect.left))
+                    panRectElement.addAttribute(withName: AttributeName.top, value: String(panRect.top))
+                    panRectElement.addAttribute(withName: AttributeName.right, value: String(panRect.right))
+                    panRectElement.addAttribute(withName: AttributeName.bottom, value: String(panRect.bottom))
                     adjustElement.addChild(panRectElement)
                 }
             }
@@ -120,19 +169,19 @@ extension FinalCutPro.FCPXML.Clip {
                 return nil
             }
             
-            let enabledString = adjustElement.stringValue(forAttributeNamed: "enabled") ?? "1"
+            let enabledString = adjustElement.stringValue(forAttributeNamed: AttributeName.enabled) ?? "1"
             let isEnabled = enabledString == "1"
             
-            let positionString = adjustElement.stringValue(forAttributeNamed: "position") ?? "0 0"
+            let positionString = adjustElement.stringValue(forAttributeNamed: AttributeName.position) ?? "0 0"
             let position = FinalCutPro.FCPXML.Point(fromString: positionString) ?? .zero
             
-            let scaleString = adjustElement.stringValue(forAttributeNamed: "scale") ?? "1 1"
+            let scaleString = adjustElement.stringValue(forAttributeNamed: AttributeName.scale) ?? "1 1"
             let scale = FinalCutPro.FCPXML.Point(fromString: scaleString) ?? FinalCutPro.FCPXML.Point(x: 1, y: 1)
             
-            let rotationString = adjustElement.stringValue(forAttributeNamed: "rotation") ?? "0"
+            let rotationString = adjustElement.stringValue(forAttributeNamed: AttributeName.rotation) ?? "0"
             let rotation = Double(rotationString) ?? 0
             
-            let anchorString = adjustElement.stringValue(forAttributeNamed: "anchor") ?? "0 0"
+            let anchorString = adjustElement.stringValue(forAttributeNamed: AttributeName.anchor) ?? "0 0"
             let anchor = FinalCutPro.FCPXML.Point(fromString: anchorString) ?? .zero
             
             return FinalCutPro.FCPXML.TransformAdjustment(
@@ -154,12 +203,12 @@ extension FinalCutPro.FCPXML.Clip {
             // Create new adjust-transform element
             let adjustElement = XMLElement(name: "adjust-transform")
             if !adjustment.isEnabled {
-                adjustElement.addAttribute(withName: "enabled", value: "0")
+                adjustElement.addAttribute(withName: AttributeName.enabled, value: "0")
             }
-            adjustElement.addAttribute(withName: "position", value: adjustment.position.stringValue)
-            adjustElement.addAttribute(withName: "scale", value: adjustment.scale.stringValue)
-            adjustElement.addAttribute(withName: "rotation", value: String(adjustment.rotation))
-            adjustElement.addAttribute(withName: "anchor", value: adjustment.anchor.stringValue)
+            adjustElement.addAttribute(withName: AttributeName.position, value: adjustment.position.stringValue)
+            adjustElement.addAttribute(withName: AttributeName.scale, value: adjustment.scale.stringValue)
+            adjustElement.addAttribute(withName: AttributeName.rotation, value: String(adjustment.rotation))
+            adjustElement.addAttribute(withName: AttributeName.anchor, value: adjustment.anchor.stringValue)
             
             element.addChild(adjustElement)
         }
@@ -172,10 +221,10 @@ extension FinalCutPro.FCPXML.Clip {
                 return nil
             }
             
-            let amountString = adjustElement.stringValue(forAttributeNamed: "amount") ?? "1"
+            let amountString = adjustElement.stringValue(forAttributeNamed: AttributeName.amount) ?? "1"
             let amount = Double(amountString) ?? 1.0
             
-            let mode = adjustElement.stringValue(forAttributeNamed: "mode")
+            let mode = adjustElement.stringValue(forAttributeNamed: AttributeName.mode)
             
             return FinalCutPro.FCPXML.BlendAdjustment(mode: mode, amount: amount)
         }
@@ -189,9 +238,9 @@ extension FinalCutPro.FCPXML.Clip {
             
             // Create new adjust-blend element
             let adjustElement = XMLElement(name: "adjust-blend")
-            adjustElement.addAttribute(withName: "amount", value: String(adjustment.amount))
+            adjustElement.addAttribute(withName: AttributeName.amount, value: String(adjustment.amount))
             if let mode = adjustment.mode {
-                adjustElement.addAttribute(withName: "mode", value: mode)
+                adjustElement.addAttribute(withName: AttributeName.mode, value: mode)
             }
             
             element.addChild(adjustElement)
@@ -205,7 +254,7 @@ extension FinalCutPro.FCPXML.Clip {
                 return nil
             }
             
-            let typeString = adjustElement.stringValue(forAttributeNamed: "type") ?? "automatic"
+            let typeString = adjustElement.stringValue(forAttributeNamed: AttributeName.type) ?? "automatic"
             guard let type = FinalCutPro.FCPXML.StabilizationAdjustment.Mode(rawValue: typeString) else {
                 return FinalCutPro.FCPXML.StabilizationAdjustment()
             }
@@ -222,7 +271,7 @@ extension FinalCutPro.FCPXML.Clip {
             
             // Create new adjust-stabilization element
             let adjustElement = XMLElement(name: "adjust-stabilization")
-            adjustElement.addAttribute(withName: "type", value: adjustment.type.rawValue)
+            adjustElement.addAttribute(withName: AttributeName.type, value: adjustment.type.rawValue)
             
             element.addChild(adjustElement)
         }
@@ -234,8 +283,8 @@ extension FinalCutPro.FCPXML.Clip {
             guard let adjustElement = element.firstChildElement(named: "adjust-rollingShutter") else {
                 return nil
             }
-            let enabledString = adjustElement.stringValue(forAttributeNamed: "enabled") ?? "1"
-            let amountString = adjustElement.stringValue(forAttributeNamed: "amount") ?? "none"
+            let enabledString = adjustElement.stringValue(forAttributeNamed: AttributeName.enabled) ?? "1"
+            let amountString = adjustElement.stringValue(forAttributeNamed: AttributeName.amount) ?? "none"
             return FinalCutPro.FCPXML.RollingShutterAdjustment(
                 isEnabled: enabledString == "1",
                 amount: FinalCutPro.FCPXML.RollingShutterAdjustment.Amount(rawValue: amountString) ?? .none
@@ -247,8 +296,8 @@ extension FinalCutPro.FCPXML.Clip {
             }
             guard let adjustment = newValue else { return }
             let adjustElement = XMLElement(name: "adjust-rollingShutter")
-            if !adjustment.isEnabled { adjustElement.addAttribute(withName: "enabled", value: "0") }
-            adjustElement.addAttribute(withName: "amount", value: adjustment.amount.rawValue)
+            if !adjustment.isEnabled { adjustElement.addAttribute(withName: AttributeName.enabled, value: "0") }
+            adjustElement.addAttribute(withName: AttributeName.amount, value: adjustment.amount.rawValue)
             element.addChild(adjustElement)
         }
     }
@@ -259,7 +308,7 @@ extension FinalCutPro.FCPXML.Clip {
             guard let adjustElement = element.firstChildElement(named: "adjust-conform") else {
                 return nil
             }
-            let typeString = adjustElement.stringValue(forAttributeNamed: "type") ?? "fit"
+            let typeString = adjustElement.stringValue(forAttributeNamed: AttributeName.type) ?? "fit"
             return FinalCutPro.FCPXML.ConformAdjustment(
                 type: FinalCutPro.FCPXML.ConformAdjustment.ConformType(rawValue: typeString) ?? .fit
             )
@@ -270,7 +319,7 @@ extension FinalCutPro.FCPXML.Clip {
             }
             guard let adjustment = newValue else { return }
             let adjustElement = XMLElement(name: "adjust-conform")
-            adjustElement.addAttribute(withName: "type", value: adjustment.type.rawValue)
+            adjustElement.addAttribute(withName: AttributeName.type, value: adjustment.type.rawValue)
             element.addChild(adjustElement)
         }
     }
@@ -282,7 +331,7 @@ extension FinalCutPro.FCPXML.Clip {
                 return nil
             }
             
-            let amountString = adjustElement.stringValue(forAttributeNamed: "amount") ?? "0dB"
+            let amountString = adjustElement.stringValue(forAttributeNamed: AttributeName.amount) ?? "0dB"
             if let volume = FinalCutPro.FCPXML.VolumeAdjustment(fromDecibelString: amountString) {
                 return volume
             }
@@ -304,7 +353,7 @@ extension FinalCutPro.FCPXML.Clip {
             
             // Create new adjust-volume element
             let adjustElement = XMLElement(name: "adjust-volume")
-            adjustElement.addAttribute(withName: "amount", value: adjustment.decibelString)
+            adjustElement.addAttribute(withName: AttributeName.amount, value: adjustment.decibelString)
             
             element.addChild(adjustElement)
         }
@@ -317,8 +366,8 @@ extension FinalCutPro.FCPXML.Clip {
                 return nil
             }
             
-            let amountString = adjustElement.stringValue(forAttributeNamed: "amount") ?? "0"
-            let uniformityString = adjustElement.stringValue(forAttributeNamed: "uniformity") ?? "0"
+            let amountString = adjustElement.stringValue(forAttributeNamed: AttributeName.amount) ?? "0"
+            let uniformityString = adjustElement.stringValue(forAttributeNamed: AttributeName.uniformity) ?? "0"
             
             guard let amount = Double(amountString),
                   let uniformity = Double(uniformityString) else {
@@ -337,8 +386,8 @@ extension FinalCutPro.FCPXML.Clip {
             
             // Create new adjust-loudness element
             let adjustElement = XMLElement(name: "adjust-loudness")
-            adjustElement.addAttribute(withName: "amount", value: String(adjustment.amount))
-            adjustElement.addAttribute(withName: "uniformity", value: String(adjustment.uniformity))
+            adjustElement.addAttribute(withName: AttributeName.amount, value: String(adjustment.amount))
+            adjustElement.addAttribute(withName: AttributeName.uniformity, value: String(adjustment.uniformity))
             
             element.addChild(adjustElement)
         }
@@ -351,7 +400,7 @@ extension FinalCutPro.FCPXML.Clip {
                 return nil
             }
             
-            let amountString = adjustElement.stringValue(forAttributeNamed: "amount") ?? "0"
+            let amountString = adjustElement.stringValue(forAttributeNamed: AttributeName.amount) ?? "0"
             guard let amount = Double(amountString) else {
                 return FinalCutPro.FCPXML.NoiseReductionAdjustment(amount: 0)
             }
@@ -366,7 +415,7 @@ extension FinalCutPro.FCPXML.Clip {
             
             // Create new adjust-noiseReduction element
             let adjustElement = XMLElement(name: "adjust-noiseReduction")
-            adjustElement.addAttribute(withName: "amount", value: String(adjustment.amount))
+            adjustElement.addAttribute(withName: AttributeName.amount, value: String(adjustment.amount))
             
             element.addChild(adjustElement)
         }
@@ -379,7 +428,7 @@ extension FinalCutPro.FCPXML.Clip {
                 return nil
             }
             
-            let frequencyString = adjustElement.stringValue(forAttributeNamed: "frequency") ?? "50"
+            let frequencyString = adjustElement.stringValue(forAttributeNamed: AttributeName.frequency) ?? "50"
             guard let frequency = FinalCutPro.FCPXML.HumReductionFrequency(rawValue: frequencyString) else {
                 return FinalCutPro.FCPXML.HumReductionAdjustment(frequency: .hz50)
             }
@@ -394,7 +443,7 @@ extension FinalCutPro.FCPXML.Clip {
             
             // Create new adjust-humReduction element
             let adjustElement = XMLElement(name: "adjust-humReduction")
-            adjustElement.addAttribute(withName: "frequency", value: adjustment.frequency.rawValue)
+            adjustElement.addAttribute(withName: AttributeName.frequency, value: adjustment.frequency.rawValue)
             
             element.addChild(adjustElement)
         }
@@ -407,7 +456,7 @@ extension FinalCutPro.FCPXML.Clip {
                 return nil
             }
             
-            let modeString = adjustElement.stringValue(forAttributeNamed: "mode") ?? "flat"
+            let modeString = adjustElement.stringValue(forAttributeNamed: AttributeName.mode) ?? "flat"
             guard let mode = FinalCutPro.FCPXML.EqualizationMode(rawValue: modeString) else {
                 return FinalCutPro.FCPXML.EqualizationAdjustment(mode: .flat)
             }
@@ -429,23 +478,23 @@ extension FinalCutPro.FCPXML.Clip {
             
             // Create new adjust-EQ element
             let adjustElement = XMLElement(name: "adjust-EQ")
-            adjustElement.addAttribute(withName: "mode", value: adjustment.mode.rawValue)
+            adjustElement.addAttribute(withName: AttributeName.mode, value: adjustment.mode.rawValue)
             
             // Add param elements
             for param in adjustment.parameters {
                 let paramElement = XMLElement(name: "param")
-                paramElement.addAttribute(withName: "name", value: param.name)
+                paramElement.addAttribute(withName: AttributeName.name, value: param.name)
                 if let key = param.key {
-                    paramElement.addAttribute(withName: "key", value: key)
+                    paramElement.addAttribute(withName: AttributeName.key, value: key)
                 }
                 if let value = param.value {
-                    paramElement.addAttribute(withName: "value", value: value)
+                    paramElement.addAttribute(withName: AttributeName.value, value: value)
                 }
                 if let auxValue = param.auxValue {
-                    paramElement.addAttribute(withName: "auxValue", value: auxValue)
+                    paramElement.addAttribute(withName: AttributeName.auxValue, value: auxValue)
                 }
                 if !param.isEnabled {
-                    paramElement.addAttribute(withName: "enabled", value: "0")
+                    paramElement.addAttribute(withName: AttributeName.enabled, value: "0")
                 }
                 adjustElement.addChild(paramElement)
             }
@@ -466,7 +515,7 @@ extension FinalCutPro.FCPXML.Clip {
                 return nil
             }
             
-            let key = dataElement.stringValue(forAttributeNamed: "key")
+            let key = dataElement.stringValue(forAttributeNamed: AttributeName.key)
             let value = dataElement.stringValue ?? ""
             let data = FinalCutPro.FCPXML.KeyedData(key: key, value: value)
             
@@ -484,7 +533,7 @@ extension FinalCutPro.FCPXML.Clip {
             // Add data element
             let dataElement = XMLElement(name: "data")
             if let key = adjustment.data.key {
-                dataElement.addAttribute(withName: "key", value: key)
+                dataElement.addAttribute(withName: AttributeName.key, value: key)
             }
             dataElement.stringValue = adjustment.data.value
             adjustElement.addChild(dataElement)
@@ -500,29 +549,29 @@ extension FinalCutPro.FCPXML.Clip {
                 return nil
             }
             
-            guard let coordinatesString = adjustElement.stringValue(forAttributeNamed: "coordinates"),
+            guard let coordinatesString = adjustElement.stringValue(forAttributeNamed: AttributeName.coordinates),
                   let coordinateType = FinalCutPro.FCPXML.Transform360CoordinateType(rawValue: coordinatesString) else {
                 return nil
             }
             
-            let enabledString = adjustElement.stringValue(forAttributeNamed: "enabled") ?? "1"
+            let enabledString = adjustElement.stringValue(forAttributeNamed: AttributeName.enabled) ?? "1"
             let isEnabled = enabledString == "1"
             
-            let autoOrientString = adjustElement.stringValue(forAttributeNamed: "autoOrient") ?? "1"
+            let autoOrientString = adjustElement.stringValue(forAttributeNamed: AttributeName.autoOrient) ?? "1"
             let autoOrient = autoOrientString == "1"
             
             // Parse coordinate-specific attributes
-            let latitude = adjustElement.stringValue(forAttributeNamed: "latitude").flatMap { Double($0) }
-            let longitude = adjustElement.stringValue(forAttributeNamed: "longitude").flatMap { Double($0) }
-            let distance = adjustElement.stringValue(forAttributeNamed: "distance").flatMap { Double($0) }
-            let xPosition = adjustElement.stringValue(forAttributeNamed: "xPosition").flatMap { Double($0) }
-            let yPosition = adjustElement.stringValue(forAttributeNamed: "yPosition").flatMap { Double($0) }
-            let zPosition = adjustElement.stringValue(forAttributeNamed: "zPosition").flatMap { Double($0) }
-            let xOrientation = adjustElement.stringValue(forAttributeNamed: "xOrientation").flatMap { Double($0) }
-            let yOrientation = adjustElement.stringValue(forAttributeNamed: "yOrientation").flatMap { Double($0) }
-            let zOrientation = adjustElement.stringValue(forAttributeNamed: "zOrientation").flatMap { Double($0) }
-            let convergence = adjustElement.stringValue(forAttributeNamed: "convergence").flatMap { Double($0) }
-            let interaxial = adjustElement.stringValue(forAttributeNamed: "interaxial").flatMap { Double($0) }
+            let latitude = adjustElement.stringValue(forAttributeNamed: AttributeName.latitude).flatMap { Double($0) }
+            let longitude = adjustElement.stringValue(forAttributeNamed: AttributeName.longitude).flatMap { Double($0) }
+            let distance = adjustElement.stringValue(forAttributeNamed: AttributeName.distance).flatMap { Double($0) }
+            let xPosition = adjustElement.stringValue(forAttributeNamed: AttributeName.xPosition).flatMap { Double($0) }
+            let yPosition = adjustElement.stringValue(forAttributeNamed: AttributeName.yPosition).flatMap { Double($0) }
+            let zPosition = adjustElement.stringValue(forAttributeNamed: AttributeName.zPosition).flatMap { Double($0) }
+            let xOrientation = adjustElement.stringValue(forAttributeNamed: AttributeName.xOrientation).flatMap { Double($0) }
+            let yOrientation = adjustElement.stringValue(forAttributeNamed: AttributeName.yOrientation).flatMap { Double($0) }
+            let zOrientation = adjustElement.stringValue(forAttributeNamed: AttributeName.zOrientation).flatMap { Double($0) }
+            let convergence = adjustElement.stringValue(forAttributeNamed: AttributeName.convergence).flatMap { Double($0) }
+            let interaxial = adjustElement.stringValue(forAttributeNamed: AttributeName.interaxial).flatMap { Double($0) }
             
             // Parse param elements
             let parameters = Array(adjustElement.childElements
@@ -560,64 +609,64 @@ extension FinalCutPro.FCPXML.Clip {
             
             // Create new adjust-360-transform element
             let adjustElement = XMLElement(name: "adjust-360-transform")
-            adjustElement.addAttribute(withName: "coordinates", value: adjustment.coordinateType.rawValue)
+            adjustElement.addAttribute(withName: AttributeName.coordinates, value: adjustment.coordinateType.rawValue)
             if !adjustment.isEnabled {
-                adjustElement.addAttribute(withName: "enabled", value: "0")
+                adjustElement.addAttribute(withName: AttributeName.enabled, value: "0")
             }
             if !adjustment.autoOrient {
-                adjustElement.addAttribute(withName: "autoOrient", value: "0")
+                adjustElement.addAttribute(withName: AttributeName.autoOrient, value: "0")
             }
             
             // Add coordinate-specific attributes
             if let latitude = adjustment.latitude {
-                adjustElement.addAttribute(withName: "latitude", value: String(latitude))
+                adjustElement.addAttribute(withName: AttributeName.latitude, value: String(latitude))
             }
             if let longitude = adjustment.longitude {
-                adjustElement.addAttribute(withName: "longitude", value: String(longitude))
+                adjustElement.addAttribute(withName: AttributeName.longitude, value: String(longitude))
             }
             if let distance = adjustment.distance {
-                adjustElement.addAttribute(withName: "distance", value: String(distance))
+                adjustElement.addAttribute(withName: AttributeName.distance, value: String(distance))
             }
             if let xPosition = adjustment.xPosition {
-                adjustElement.addAttribute(withName: "xPosition", value: String(xPosition))
+                adjustElement.addAttribute(withName: AttributeName.xPosition, value: String(xPosition))
             }
             if let yPosition = adjustment.yPosition {
-                adjustElement.addAttribute(withName: "yPosition", value: String(yPosition))
+                adjustElement.addAttribute(withName: AttributeName.yPosition, value: String(yPosition))
             }
             if let zPosition = adjustment.zPosition {
-                adjustElement.addAttribute(withName: "zPosition", value: String(zPosition))
+                adjustElement.addAttribute(withName: AttributeName.zPosition, value: String(zPosition))
             }
             if let xOrientation = adjustment.xOrientation {
-                adjustElement.addAttribute(withName: "xOrientation", value: String(xOrientation))
+                adjustElement.addAttribute(withName: AttributeName.xOrientation, value: String(xOrientation))
             }
             if let yOrientation = adjustment.yOrientation {
-                adjustElement.addAttribute(withName: "yOrientation", value: String(yOrientation))
+                adjustElement.addAttribute(withName: AttributeName.yOrientation, value: String(yOrientation))
             }
             if let zOrientation = adjustment.zOrientation {
-                adjustElement.addAttribute(withName: "zOrientation", value: String(zOrientation))
+                adjustElement.addAttribute(withName: AttributeName.zOrientation, value: String(zOrientation))
             }
             if let convergence = adjustment.convergence {
-                adjustElement.addAttribute(withName: "convergence", value: String(convergence))
+                adjustElement.addAttribute(withName: AttributeName.convergence, value: String(convergence))
             }
             if let interaxial = adjustment.interaxial {
-                adjustElement.addAttribute(withName: "interaxial", value: String(interaxial))
+                adjustElement.addAttribute(withName: AttributeName.interaxial, value: String(interaxial))
             }
             
             // Add param elements
             for param in adjustment.parameters {
                 let paramElement = XMLElement(name: "param")
-                paramElement.addAttribute(withName: "name", value: param.name)
+                paramElement.addAttribute(withName: AttributeName.name, value: param.name)
                 if let key = param.key {
-                    paramElement.addAttribute(withName: "key", value: key)
+                    paramElement.addAttribute(withName: AttributeName.key, value: key)
                 }
                 if let value = param.value {
-                    paramElement.addAttribute(withName: "value", value: value)
+                    paramElement.addAttribute(withName: AttributeName.value, value: value)
                 }
                 if let auxValue = param.auxValue {
-                    paramElement.addAttribute(withName: "auxValue", value: auxValue)
+                    paramElement.addAttribute(withName: AttributeName.auxValue, value: auxValue)
                 }
                 if !param.isEnabled {
-                    paramElement.addAttribute(withName: "enabled", value: "0")
+                    paramElement.addAttribute(withName: AttributeName.enabled, value: "0")
                 }
                 adjustElement.addChild(paramElement)
             }
@@ -632,14 +681,14 @@ extension FinalCutPro.FCPXML.Clip {
     public var reorientAdjustment: FinalCutPro.FCPXML.ReorientAdjustment? {
         get {
             guard let adjustElement = element.firstChildElement(named: "adjust-reorient") else { return nil }
-            let enabledString = adjustElement.stringValue(forAttributeNamed: "enabled") ?? "1"
+            let enabledString = adjustElement.stringValue(forAttributeNamed: AttributeName.enabled) ?? "1"
             let parameters = Array(adjustElement.childElements.filter { $0.name == "param" }.compactMap { FinalCutPro.FCPXML.FilterParameter(paramElement: $0) })
             return FinalCutPro.FCPXML.ReorientAdjustment(
                 isEnabled: enabledString == "1",
-                tilt: adjustElement.stringValue(forAttributeNamed: "tilt") ?? "0",
-                pan: adjustElement.stringValue(forAttributeNamed: "pan") ?? "0",
-                roll: adjustElement.stringValue(forAttributeNamed: "roll") ?? "0",
-                convergence: adjustElement.stringValue(forAttributeNamed: "convergence") ?? "0",
+                tilt: adjustElement.stringValue(forAttributeNamed: AttributeName.tilt) ?? "0",
+                pan: adjustElement.stringValue(forAttributeNamed: AttributeName.pan) ?? "0",
+                roll: adjustElement.stringValue(forAttributeNamed: AttributeName.roll) ?? "0",
+                convergence: adjustElement.stringValue(forAttributeNamed: AttributeName.convergence) ?? "0",
                 parameters: parameters
             )
         }
@@ -647,18 +696,18 @@ extension FinalCutPro.FCPXML.Clip {
             element.removeChildren { $0.name == "adjust-reorient" }
             guard let adjustment = newValue else { return }
             let adjustElement = XMLElement(name: "adjust-reorient")
-            if !adjustment.isEnabled { adjustElement.addAttribute(withName: "enabled", value: "0") }
-            adjustElement.addAttribute(withName: "tilt", value: adjustment.tilt)
-            adjustElement.addAttribute(withName: "pan", value: adjustment.pan)
-            adjustElement.addAttribute(withName: "roll", value: adjustment.roll)
-            adjustElement.addAttribute(withName: "convergence", value: adjustment.convergence)
+            if !adjustment.isEnabled { adjustElement.addAttribute(withName: AttributeName.enabled, value: "0") }
+            adjustElement.addAttribute(withName: AttributeName.tilt, value: adjustment.tilt)
+            adjustElement.addAttribute(withName: AttributeName.pan, value: adjustment.pan)
+            adjustElement.addAttribute(withName: AttributeName.roll, value: adjustment.roll)
+            adjustElement.addAttribute(withName: AttributeName.convergence, value: adjustment.convergence)
             for param in adjustment.parameters {
                 let paramElement = XMLElement(name: "param")
-                paramElement.addAttribute(withName: "name", value: param.name)
-                if let k = param.key { paramElement.addAttribute(withName: "key", value: k) }
-                if let v = param.value { paramElement.addAttribute(withName: "value", value: v) }
-                if let av = param.auxValue { paramElement.addAttribute(withName: "auxValue", value: av) }
-                if !param.isEnabled { paramElement.addAttribute(withName: "enabled", value: "0") }
+                paramElement.addAttribute(withName: AttributeName.name, value: param.name)
+                if let k = param.key { paramElement.addAttribute(withName: AttributeName.key, value: k) }
+                if let v = param.value { paramElement.addAttribute(withName: AttributeName.value, value: v) }
+                if let av = param.auxValue { paramElement.addAttribute(withName: AttributeName.auxValue, value: av) }
+                if !param.isEnabled { paramElement.addAttribute(withName: AttributeName.enabled, value: "0") }
                 adjustElement.addChild(paramElement)
             }
             element.addChild(adjustElement)
@@ -671,16 +720,16 @@ extension FinalCutPro.FCPXML.Clip {
     public var orientationAdjustment: FinalCutPro.FCPXML.OrientationAdjustment? {
         get {
             guard let adjustElement = element.firstChildElement(named: "adjust-orientation") else { return nil }
-            let enabledString = adjustElement.stringValue(forAttributeNamed: "enabled") ?? "1"
-            let mappingString = adjustElement.stringValue(forAttributeNamed: "mapping") ?? "normal"
+            let enabledString = adjustElement.stringValue(forAttributeNamed: AttributeName.enabled) ?? "1"
+            let mappingString = adjustElement.stringValue(forAttributeNamed: AttributeName.mapping) ?? "normal"
             let mapping = FinalCutPro.FCPXML.OrientationAdjustment.Mapping(rawValue: mappingString) ?? .normal
             let parameters = Array(adjustElement.childElements.filter { $0.name == "param" }.compactMap { FinalCutPro.FCPXML.FilterParameter(paramElement: $0) })
             return FinalCutPro.FCPXML.OrientationAdjustment(
                 isEnabled: enabledString == "1",
-                tilt: adjustElement.stringValue(forAttributeNamed: "tilt") ?? "0",
-                pan: adjustElement.stringValue(forAttributeNamed: "pan") ?? "0",
-                roll: adjustElement.stringValue(forAttributeNamed: "roll") ?? "0",
-                fieldOfView: adjustElement.stringValue(forAttributeNamed: "fieldOfView"),
+                tilt: adjustElement.stringValue(forAttributeNamed: AttributeName.tilt) ?? "0",
+                pan: adjustElement.stringValue(forAttributeNamed: AttributeName.pan) ?? "0",
+                roll: adjustElement.stringValue(forAttributeNamed: AttributeName.roll) ?? "0",
+                fieldOfView: adjustElement.stringValue(forAttributeNamed: AttributeName.fieldOfView),
                 mapping: mapping,
                 parameters: parameters
             )
@@ -689,19 +738,19 @@ extension FinalCutPro.FCPXML.Clip {
             element.removeChildren { $0.name == "adjust-orientation" }
             guard let adjustment = newValue else { return }
             let adjustElement = XMLElement(name: "adjust-orientation")
-            if !adjustment.isEnabled { adjustElement.addAttribute(withName: "enabled", value: "0") }
-            adjustElement.addAttribute(withName: "tilt", value: adjustment.tilt)
-            adjustElement.addAttribute(withName: "pan", value: adjustment.pan)
-            adjustElement.addAttribute(withName: "roll", value: adjustment.roll)
-            if let fov = adjustment.fieldOfView { adjustElement.addAttribute(withName: "fieldOfView", value: fov) }
-            adjustElement.addAttribute(withName: "mapping", value: adjustment.mapping.rawValue)
+            if !adjustment.isEnabled { adjustElement.addAttribute(withName: AttributeName.enabled, value: "0") }
+            adjustElement.addAttribute(withName: AttributeName.tilt, value: adjustment.tilt)
+            adjustElement.addAttribute(withName: AttributeName.pan, value: adjustment.pan)
+            adjustElement.addAttribute(withName: AttributeName.roll, value: adjustment.roll)
+            if let fov = adjustment.fieldOfView { adjustElement.addAttribute(withName: AttributeName.fieldOfView, value: fov) }
+            adjustElement.addAttribute(withName: AttributeName.mapping, value: adjustment.mapping.rawValue)
             for param in adjustment.parameters {
                 let paramElement = XMLElement(name: "param")
-                paramElement.addAttribute(withName: "name", value: param.name)
-                if let k = param.key { paramElement.addAttribute(withName: "key", value: k) }
-                if let v = param.value { paramElement.addAttribute(withName: "value", value: v) }
-                if let av = param.auxValue { paramElement.addAttribute(withName: "auxValue", value: av) }
-                if !param.isEnabled { paramElement.addAttribute(withName: "enabled", value: "0") }
+                paramElement.addAttribute(withName: AttributeName.name, value: param.name)
+                if let k = param.key { paramElement.addAttribute(withName: AttributeName.key, value: k) }
+                if let v = param.value { paramElement.addAttribute(withName: AttributeName.value, value: v) }
+                if let av = param.auxValue { paramElement.addAttribute(withName: AttributeName.auxValue, value: av) }
+                if !param.isEnabled { paramElement.addAttribute(withName: AttributeName.enabled, value: "0") }
                 adjustElement.addChild(paramElement)
             }
             element.addChild(adjustElement)
@@ -714,12 +763,12 @@ extension FinalCutPro.FCPXML.Clip {
     public var cinematicAdjustment: FinalCutPro.FCPXML.CinematicAdjustment? {
         get {
             guard let adjustElement = element.firstChildElement(named: "adjust-cinematic") else { return nil }
-            let enabledString = adjustElement.stringValue(forAttributeNamed: "enabled") ?? "1"
+            let enabledString = adjustElement.stringValue(forAttributeNamed: AttributeName.enabled) ?? "1"
             let parameters = Array(adjustElement.childElements.filter { $0.name == "param" }.compactMap { FinalCutPro.FCPXML.FilterParameter(paramElement: $0) })
             return FinalCutPro.FCPXML.CinematicAdjustment(
                 isEnabled: enabledString == "1",
-                dataLocator: adjustElement.stringValue(forAttributeNamed: "dataLocator"),
-                aperture: adjustElement.stringValue(forAttributeNamed: "aperture"),
+                dataLocator: adjustElement.stringValue(forAttributeNamed: AttributeName.dataLocator),
+                aperture: adjustElement.stringValue(forAttributeNamed: AttributeName.aperture),
                 parameters: parameters
             )
         }
@@ -727,16 +776,16 @@ extension FinalCutPro.FCPXML.Clip {
             element.removeChildren { $0.name == "adjust-cinematic" }
             guard let adjustment = newValue else { return }
             let adjustElement = XMLElement(name: "adjust-cinematic")
-            if !adjustment.isEnabled { adjustElement.addAttribute(withName: "enabled", value: "0") }
-            if let loc = adjustment.dataLocator { adjustElement.addAttribute(withName: "dataLocator", value: loc) }
-            if let ap = adjustment.aperture { adjustElement.addAttribute(withName: "aperture", value: ap) }
+            if !adjustment.isEnabled { adjustElement.addAttribute(withName: AttributeName.enabled, value: "0") }
+            if let loc = adjustment.dataLocator { adjustElement.addAttribute(withName: AttributeName.dataLocator, value: loc) }
+            if let ap = adjustment.aperture { adjustElement.addAttribute(withName: AttributeName.aperture, value: ap) }
             for param in adjustment.parameters {
                 let paramElement = XMLElement(name: "param")
-                paramElement.addAttribute(withName: "name", value: param.name)
-                if let k = param.key { paramElement.addAttribute(withName: "key", value: k) }
-                if let v = param.value { paramElement.addAttribute(withName: "value", value: v) }
-                if let av = param.auxValue { paramElement.addAttribute(withName: "auxValue", value: av) }
-                if !param.isEnabled { paramElement.addAttribute(withName: "enabled", value: "0") }
+                paramElement.addAttribute(withName: AttributeName.name, value: param.name)
+                if let k = param.key { paramElement.addAttribute(withName: AttributeName.key, value: k) }
+                if let v = param.value { paramElement.addAttribute(withName: AttributeName.value, value: v) }
+                if let av = param.auxValue { paramElement.addAttribute(withName: AttributeName.auxValue, value: av) }
+                if !param.isEnabled { paramElement.addAttribute(withName: AttributeName.enabled, value: "0") }
                 adjustElement.addChild(paramElement)
             }
             element.addChild(adjustElement)
@@ -749,13 +798,13 @@ extension FinalCutPro.FCPXML.Clip {
     public var colorConformAdjustment: FinalCutPro.FCPXML.ColorConformAdjustment? {
         get {
             guard let adjustElement = element.firstChildElement(named: "adjust-colorConform") else { return nil }
-            let enabledString = adjustElement.stringValue(forAttributeNamed: "enabled") ?? "1"
-            let autoString = adjustElement.stringValue(forAttributeNamed: "autoOrManual") ?? "automatic"
+            let enabledString = adjustElement.stringValue(forAttributeNamed: AttributeName.enabled) ?? "1"
+            let autoString = adjustElement.stringValue(forAttributeNamed: AttributeName.autoOrManual) ?? "automatic"
             let autoOrManual = FinalCutPro.FCPXML.ColorConformAdjustment.AutoOrManual(rawValue: autoString) ?? .automatic
-            let typeString = adjustElement.stringValue(forAttributeNamed: "conformType") ?? "conformNone"
+            let typeString = adjustElement.stringValue(forAttributeNamed: AttributeName.conformType) ?? "conformNone"
             let conformType = FinalCutPro.FCPXML.ColorConformAdjustment.ConformType(rawValue: typeString) ?? .conformNone
-            let peakPQ = adjustElement.stringValue(forAttributeNamed: "peakNitsOfPQSource") ?? "1000"
-            let peakSDR = adjustElement.stringValue(forAttributeNamed: "peakNitsOfSDRToPQSource") ?? "100"
+            let peakPQ = adjustElement.stringValue(forAttributeNamed: AttributeName.peakNitsOfPQSource) ?? "1000"
+            let peakSDR = adjustElement.stringValue(forAttributeNamed: AttributeName.peakNitsOfSDRToPQSource) ?? "100"
             return FinalCutPro.FCPXML.ColorConformAdjustment(
                 isEnabled: enabledString == "1",
                 autoOrManual: autoOrManual,
@@ -768,11 +817,11 @@ extension FinalCutPro.FCPXML.Clip {
             element.removeChildren { $0.name == "adjust-colorConform" }
             guard let adjustment = newValue else { return }
             let adjustElement = XMLElement(name: "adjust-colorConform")
-            if !adjustment.isEnabled { adjustElement.addAttribute(withName: "enabled", value: "0") }
-            adjustElement.addAttribute(withName: "autoOrManual", value: adjustment.autoOrManual.rawValue)
-            adjustElement.addAttribute(withName: "conformType", value: adjustment.conformType.rawValue)
-            adjustElement.addAttribute(withName: "peakNitsOfPQSource", value: adjustment.peakNitsOfPQSource)
-            adjustElement.addAttribute(withName: "peakNitsOfSDRToPQSource", value: adjustment.peakNitsOfSDRToPQSource)
+            if !adjustment.isEnabled { adjustElement.addAttribute(withName: AttributeName.enabled, value: "0") }
+            adjustElement.addAttribute(withName: AttributeName.autoOrManual, value: adjustment.autoOrManual.rawValue)
+            adjustElement.addAttribute(withName: AttributeName.conformType, value: adjustment.conformType.rawValue)
+            adjustElement.addAttribute(withName: AttributeName.peakNitsOfPQSource, value: adjustment.peakNitsOfPQSource)
+            adjustElement.addAttribute(withName: AttributeName.peakNitsOfSDRToPQSource, value: adjustment.peakNitsOfSDRToPQSource)
             element.addChild(adjustElement)
         }
     }
@@ -783,16 +832,16 @@ extension FinalCutPro.FCPXML.Clip {
     public var stereo3DAdjustment: FinalCutPro.FCPXML.Stereo3DAdjustment? {
         get {
             guard let adjustElement = element.firstChildElement(named: "adjust-stereo-3D") else { return nil }
-            let enabledString = adjustElement.stringValue(forAttributeNamed: "enabled") ?? "1"
-            let autoScaleString = adjustElement.stringValue(forAttributeNamed: "autoScale") ?? "1"
-            let swapEyesString = adjustElement.stringValue(forAttributeNamed: "swapEyes") ?? "0"
+            let enabledString = adjustElement.stringValue(forAttributeNamed: AttributeName.enabled) ?? "1"
+            let autoScaleString = adjustElement.stringValue(forAttributeNamed: AttributeName.autoScale) ?? "1"
+            let swapEyesString = adjustElement.stringValue(forAttributeNamed: AttributeName.swapEyes) ?? "0"
             let parameters = Array(adjustElement.childElements.filter { $0.name == "param" }.compactMap { FinalCutPro.FCPXML.FilterParameter(paramElement: $0) })
             return FinalCutPro.FCPXML.Stereo3DAdjustment(
                 isEnabled: enabledString == "1",
-                convergence: adjustElement.stringValue(forAttributeNamed: "convergence") ?? "0",
+                convergence: adjustElement.stringValue(forAttributeNamed: AttributeName.convergence) ?? "0",
                 autoScale: autoScaleString == "1",
                 swapEyes: swapEyesString == "1",
-                depth: adjustElement.stringValue(forAttributeNamed: "depth") ?? "0",
+                depth: adjustElement.stringValue(forAttributeNamed: AttributeName.depth) ?? "0",
                 parameters: parameters
             )
         }
@@ -800,18 +849,18 @@ extension FinalCutPro.FCPXML.Clip {
             element.removeChildren { $0.name == "adjust-stereo-3D" }
             guard let adjustment = newValue else { return }
             let adjustElement = XMLElement(name: "adjust-stereo-3D")
-            if !adjustment.isEnabled { adjustElement.addAttribute(withName: "enabled", value: "0") }
-            adjustElement.addAttribute(withName: "convergence", value: adjustment.convergence)
-            adjustElement.addAttribute(withName: "autoScale", value: adjustment.autoScale ? "1" : "0")
-            adjustElement.addAttribute(withName: "swapEyes", value: adjustment.swapEyes ? "1" : "0")
-            adjustElement.addAttribute(withName: "depth", value: adjustment.depth)
+            if !adjustment.isEnabled { adjustElement.addAttribute(withName: AttributeName.enabled, value: "0") }
+            adjustElement.addAttribute(withName: AttributeName.convergence, value: adjustment.convergence)
+            adjustElement.addAttribute(withName: AttributeName.autoScale, value: adjustment.autoScale ? "1" : "0")
+            adjustElement.addAttribute(withName: AttributeName.swapEyes, value: adjustment.swapEyes ? "1" : "0")
+            adjustElement.addAttribute(withName: AttributeName.depth, value: adjustment.depth)
             for param in adjustment.parameters {
                 let paramElement = XMLElement(name: "param")
-                paramElement.addAttribute(withName: "name", value: param.name)
-                if let k = param.key { paramElement.addAttribute(withName: "key", value: k) }
-                if let v = param.value { paramElement.addAttribute(withName: "value", value: v) }
-                if let av = param.auxValue { paramElement.addAttribute(withName: "auxValue", value: av) }
-                if !param.isEnabled { paramElement.addAttribute(withName: "enabled", value: "0") }
+                paramElement.addAttribute(withName: AttributeName.name, value: param.name)
+                if let k = param.key { paramElement.addAttribute(withName: AttributeName.key, value: k) }
+                if let v = param.value { paramElement.addAttribute(withName: AttributeName.value, value: v) }
+                if let av = param.auxValue { paramElement.addAttribute(withName: AttributeName.auxValue, value: av) }
+                if !param.isEnabled { paramElement.addAttribute(withName: AttributeName.enabled, value: "0") }
                 adjustElement.addChild(paramElement)
             }
             element.addChild(adjustElement)
@@ -827,7 +876,7 @@ extension FinalCutPro.FCPXML.Clip {
                 guard let child = node as? XMLElement else { continue }
                 if child.name == "audio-channel-source" || child.name == "audio-role-source",
                    let voiceEl = child.firstChildElement(named: "adjust-voiceIsolation"),
-                   let amount = voiceEl.stringValue(forAttributeNamed: "amount") {
+                   let amount = voiceEl.stringValue(forAttributeNamed: AttributeName.amount) {
                     return FinalCutPro.FCPXML.VoiceIsolationAdjustment(amount: amount)
                 }
             }
@@ -840,7 +889,7 @@ extension FinalCutPro.FCPXML.Clip {
                     child.removeChildren { $0.name == "adjust-voiceIsolation" }
                     if let adjustment = newValue {
                         let voiceElement = XMLElement(name: "adjust-voiceIsolation")
-                        voiceElement.addAttribute(withName: "amount", value: adjustment.amount)
+                        voiceElement.addAttribute(withName: AttributeName.amount, value: adjustment.amount)
                         child.addChild(voiceElement)
                     }
                     return
