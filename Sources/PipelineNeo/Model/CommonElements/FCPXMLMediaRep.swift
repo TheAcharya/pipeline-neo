@@ -23,7 +23,7 @@ extension FinalCutPro.FCPXML {
     /// > A media that Final Cut Pro manages in its library can have a proxy media representation,
     /// > in addition to the original media representation. Use the media-rep element to describe a
     /// > media representation, as a child element of the asset element.
-    public struct MediaRep: FCPXMLElement, Equatable, Hashable {
+    public struct MediaRep: FCPXMLElement, Equatable, Hashable, @unchecked Sendable {
         public let element: XMLElement
         
         public let elementType: ElementType = .mediaRep
@@ -73,7 +73,8 @@ extension FinalCutPro.FCPXML.MediaRep {
         self.sig = sig
         self.src = src
         self.suggestedFilename = suggestedFilename
-        self.bookmarkData = bookmark.data(using: .utf8)
+        // Use lossy UTF-8 encoding so this conversion cannot fail silently by returning nil.
+        self.bookmarkData = bookmark.data(using: .utf8, allowLossyConversion: true)!
     }
 }
 
@@ -101,7 +102,9 @@ extension FinalCutPro.FCPXML.MediaRep {
         case suggestedFilename
     }
     
-    // can contain one bookmark
+    /// Each `media-rep` element may contain a single `bookmark` child element, representing
+    /// bookmark data (for example, a security-scoped bookmark) used by Final Cut Pro to locate
+    /// the underlying media file.
 }
 
 // MARK: - Attributes

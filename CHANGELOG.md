@@ -27,11 +27,13 @@ Pipeline Neo uses **New Features**, **Improvements**, and **Bug Fixes** for each
 - **Project rules:** `.cursorrules` and `AGENT.md` updated (backward compatibility note, Changelog section with styling: version links to release tags, ✨ New Features / 🔧 Improvements / 🐛 Bug Fixes).
 - **FCPXMLClip+Adjustments:** Attribute names (e.g. `amount`, `enabled`, `type`) centralized in a private `AttributeName` enum to avoid typos and improve maintainability.
 - **FCPXMLTitle+Typed:** Simplified optional-bold/italic/underline assignment from `condition ? true : nil` to `if condition { textStyle.property = true }` for clarity.
+- **MediaRep:** Conforms to `@unchecked Sendable` for concurrent usage; bookmark child documented (single `bookmark` element for security-scoped bookmark data).
 
 ### 🐛 Bug Fixes
 
 - **Gap `lane` setter:** Replaced `assertionFailure` with a no-op so setting `lane` on a gap clip no longer risks a crash in production.
 - **MediaRep:** Added `FCPXMLElement` conformance so `_isElementTypeSupported` is correctly available and the type is consistent with other element models.
+- **MediaRep init(bookmark: String):** Uses lossy UTF-8 encoding so the string-to-data conversion cannot fail silently by returning `nil`.
 
 ---
 
