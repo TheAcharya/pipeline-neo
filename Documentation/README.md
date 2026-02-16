@@ -1,20 +1,40 @@
 # Pipeline Neo — Documentation
 
-This folder contains the complete manual and usage guide for Pipeline Neo.
+This folder contains the complete manual and reference for Pipeline Neo.
 
-## Contents
+---
 
-- [Manual](Manual.md) — Comprehensive user manual covering all APIs:
-  - **Core Operations**: Loading (file/bundle), parsing, modular architecture, timecode conversion, logging, XML operations, error handling
-  - **Async/Await**: Modern Swift 6 async/await operations, concurrent operations with task groups, async component-level operations
-  - **File Operations**: File loader API, media extraction and copy, parallel file I/O
-  - **Validation**: FCPXML version and element types, validation API (semantic + DTD), cut detection
-  - **Timeline**: Timeline creation and export, timeline manipulation (ripple insert, auto lane assignment), timeline metadata and timestamps
-  - **Media Processing**: MIME type detection, asset validation, silence detection, asset duration measurement
-  - **Typed Models**: Adjustment models (Crop, Transform, Blend, Stabilization, Volume, Loudness, NoiseReduction, HumReduction, Equalization, MatchEqualization, Transform360), effect/filter models (VideoFilter, AudioFilter, VideoFilterMask), caption/title models with TextStyle support, keyframe animation (KeyframeAnimation, Keyframe, FadeIn, FadeOut), collection organization (CollectionFolder, KeywordCollection)
-  - **Advanced Features**: Version conversion and save, element extraction (presets and scope), experimental CLI, CMTime Codable extension
-  - **Extensions**: XMLDocument/XMLElement extensions, FinalCutPro.FCPXML model, CMTime Codable
-  - **Utilities**: Error types, progress bar (CLI), FCPXMLTimecode custom timecode type
-  - **Examples**: Complete workflows, practical code examples for all major features
+## Manual (structured)
 
-- [CLI](../Sources/PipelineNeoCLI/README.md) — Experimental command-line interface (`pipeline-neo`): single binary with embedded FCPXML DTDs; **GENERAL** options (`--check-version`, `--convert-version`, `--extension-type` fcpxml|fcpxmld, `--validate`), **EXTRACTION** (`--media-copy`), **LOG** options; output format for convert: .fcpxmld bundle (default for 1.10+) or .fcpxml (1.5–1.9 always .fcpxml); building, extending, and regenerating embedded DTDs (`Scripts/generate_embedded_dtds.sh` or `swift run GenerateEmbeddedDTDs`).
+The manual is split into **chapters** for easier navigation and maintenance:
+
+**[Manual Index (start here)](Manual/00-Index.md)** — Table of contents and links to all chapters.
+
+| Chapter | Content |
+|--------|---------|
+| [01 — Overview](Manual/01-Overview.md) | Introduction, architecture, entry points, protocols and implementations |
+| [02 — Loading & Parsing](Manual/02-Loading-Parsing.md) | File loader, bundle support, parsing, FCPXML versions, element types |
+| [03 — Timecode & Timing](Manual/03-Timecode-Timing.md) | SwiftTimecode, FCPXMLTimecode, CMTime, conversions, frame alignment |
+| [04 — Pipeline & Logging](Manual/04-Pipeline-Logging.md) | FCPXMLService, ModularUtilities, logging |
+| [05 — Validation & Cut Detection](Manual/05-Validation-CutDetection.md) | Semantic and DTD validation, cut detection API |
+| [06 — Version Conversion & Export](Manual/06-Version-Conversion-Export.md) | Version conversion, save as .fcpxml / .fcpxmld |
+| [07 — Timeline & Export](Manual/07-Timeline-Export.md) | Timeline, TimelineClip, TimelineFormat, exporters |
+| [08 — Timeline Manipulation](Manual/08-Timeline-Manipulation.md) | Ripple insert, auto lane, clip queries, lane range |
+| [09 — Timeline Metadata](Manual/09-Timeline-Metadata.md) | Markers, chapter markers, keywords, ratings, timestamps |
+| [10 — Extraction & Media](Manual/10-Extraction-Media.md) | Extraction scope and presets, media extraction and copy |
+| [11 — Media Processing](Manual/11-Media-Processing.md) | MIME type, asset validation, silence detection, duration, parallel I/O |
+| [12 — Typed Models](Manual/12-Typed-Models.md) | Adjustments, filters, captions/titles, keyframe animation, Live Drawing, collections |
+| [13 — XML Extensions](Manual/13-XML-Extensions.md) | XMLDocument and XMLElement FCPXML extensions |
+| [14 — High-Level Model](Manual/14-High-Level-Model.md) | FinalCutPro.FCPXML, Root, events, projects |
+| [15 — Errors & Utilities](Manual/15-Errors-Utilities.md) | Error types, ErrorHandling, ProgressBar |
+| [16 — CLI](Manual/16-CLI.md) | Experimental command-line interface (pipeline-neo) |
+| [17 — Examples](Manual/17-Examples.md) | End-to-end workflows and code examples |
+
+The manual covers the **entire public API** with examples: core operations, async/await, file I/O, validation, timeline creation and manipulation, metadata, media processing, typed models (including Live Drawing, HiddenClipMarker, SmartCollection match rules, Format/Asset 1.13+), version conversion, CLI, and utilities.
+
+---
+
+## Other references
+
+- **[CLI](../Sources/PipelineNeoCLI/README.md)** — Full CLI usage, options, building, extending, and regenerating embedded DTDs (`Scripts/generate_embedded_dtds.sh` or `swift run GenerateEmbeddedDTDs`).
+- **Project [README](../README.md)** — Installation, architecture, requirements.

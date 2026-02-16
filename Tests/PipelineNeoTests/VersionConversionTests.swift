@@ -90,6 +90,119 @@ final class VersionConversionTests: XCTestCase, @unchecked Sendable {
         XCTAssertNil(found, "adjust-stereo-3D must be stripped when converting to 1.12")
     }
 
+    /// When converting to 1.12, hidden-clip-marker (1.13+) is stripped.
+    func testConvertToVersion_1_12_StripsHiddenClipMarker() throws {
+        let doc = service.createFCPXMLDocument(version: "1.14")
+        guard let root = doc.rootElement() else { XCTFail("No root"); return }
+        let resources = root.firstChildElement(named: "resources") ?? XMLElement(name: "resources")
+        if root.firstChildElement(named: "resources") == nil { root.addChild(resources) }
+        let format = XMLElement(name: "format")
+        format.setAttributesWith(["id": "f1"])
+        resources.addChild(format)
+        let asset = XMLElement(name: "asset")
+        let mediaRep = XMLElement(name: "media-rep")
+        mediaRep.setAttributesWith(["src": "file:///tmp/x.mov"])
+        asset.addChild(mediaRep)
+        resources.addChild(asset)
+        let sequence = root.firstChildElement(named: "sequence") ?? XMLElement(name: "sequence")
+        if root.firstChildElement(named: "sequence") == nil { root.addChild(sequence) }
+        let spine = sequence.firstChildElement(named: "spine") ?? XMLElement(name: "spine")
+        if sequence.firstChildElement(named: "spine") == nil { sequence.addChild(spine) }
+        let clip = XMLElement(name: "clip")
+        clip.setAttributesWith(["ref": "r1", "offset": "0s", "start": "0s", "duration": "1s"])
+        let video = XMLElement(name: "video")
+        video.setAttributesWith(["ref": "r1"])
+        clip.addChild(video)
+        let hidden = XMLElement(name: "hidden-clip-marker")
+        clip.addChild(hidden)
+        spine.addChild(clip)
+        let converted = try service.convertToVersion(doc, targetVersion: .v1_12)
+        XCTAssertEqual(converted.fcpxmlVersion, "1.12")
+        let found = findElement(named: "hidden-clip-marker", in: converted)
+        XCTAssertNil(found, "hidden-clip-marker must be stripped when converting to 1.12")
+    }
+
+    // MARK: - Attribute stripping (backward compatibility with 1.5)
+
+    /// When converting to 1.5, format heroEye and asset heroEyeOverride (1.13+) are stripped.
+    func testConvertToVersion_1_5_StripsFormatHeroEyeAndAssetHeroEyeOverride() throws {
+        let doc = service.createFCPXMLDocument(version: "1.14")
+        guard let root = doc.rootElement() else { XCTFail("No root"); return }
+        let resources = root.firstChildElement(named: "resources") ?? XMLElement(name: "resources")
+        if root.firstChildElement(named: "resources") == nil { root.addChild(resources) }
+
+        let format = XMLElement(name: "format")
+        format.setAttributesWith(["id": "f1", "heroEye": "left"])
+        resources.addChild(format)
+
+        let asset = XMLElement(name: "asset")
+        asset.setAttributesWith(["id": "a1", "heroEyeOverride": "right"])
+        let mediaRep = XMLElement(name: "media-rep")
+        mediaRep.setAttributesWith(["src": "file:///tmp/test.mov"])
+        asset.addChild(mediaRep)
+        resources.addChild(asset)
+
+        let converted = try service.convertToVersion(doc, targetVersion: .v1_5)
+        XCTAssertEqual(converted.fcpxmlVersion, "1.5")
+
+        let convFormat = findElement(named: "format", in: converted)
+        XCTAssertNotNil(convFormat)
+        XCTAssertNil(convFormat?.attribute(forName: "heroEye")?.stringValue, "heroEye must be stripped when converting to 1.5")
+
+        let convAsset = findElement(named: "asset", in: converted)
+        XCTAssertNotNil(convAsset)
+        XCTAssertNil(convAsset?.attribute(forName: "heroEyeOverride")?.stringValue, "heroEyeOverride must be stripped when converting to 1.5")
+    }
+
+    /// When converting to 1.10, param auxValue and keyframe auxValue (1.11+) are stripped.
+    func testConvertToVersion_1_10_StripsParamAndKeyframeAuxValue() throws {
+        let doc = service.createFCPXMLDocument(version: "1.14")
+        guard let root = doc.rootElement() else { XCTFail("No root"); return }
+        let resources = root.firstChildElement(named: "resources") ?? XMLElement(name: "resources")
+        if root.firstChildElement(named: "resources") == nil { root.addChild(resources) }
+
+        let clip = XMLElement(name: "clip")
+        let filterVideo = XMLElement(name: "filter-video")
+        filterVideo.setAttributesWith(["ref": "r1"])
+        let param = XMLElement(name: "param")
+        param.setAttributesWith(["name": "Amount", "value": "1.0", "auxValue": "linear"])
+        filterVideo.addChild(param)
+        clip.addChild(filterVideo)
+        root.addChild(clip)
+
+        let keyframe = XMLElement(name: "keyframe")
+        keyframe.setAttributesWith(["time": "0s", "value": "0", "auxValue": "extra"])
+        clip.addChild(keyframe)
+
+        let converted = try service.convertToVersion(doc, targetVersion: .v1_10)
+        XCTAssertEqual(converted.fcpxmlVersion, "1.10")
+
+        let convParam = findElement(named: "param", in: converted)
+        XCTAssertNotNil(convParam)
+        XCTAssertNil(convParam?.attribute(forName: "auxValue")?.stringValue, "param auxValue must be stripped when converting to 1.10")
+
+        let convKeyframe = findElement(named: "keyframe", in: converted)
+        XCTAssertNotNil(convKeyframe)
+        XCTAssertNil(convKeyframe?.attribute(forName: "auxValue")?.stringValue, "keyframe auxValue must be stripped when converting to 1.10")
+    }
+
+    /// When converting to 1.13, param auxValue is kept (1.11+); when converting to 1.5, it is stripped.
+    func testConvertToVersion_KeepsAuxValueAt1_13_StripsAt1_5() throws {
+        let doc = service.createFCPXMLDocument(version: "1.14")
+        guard let root = doc.rootElement() else { XCTFail("No root"); return }
+        let param = XMLElement(name: "param")
+        param.setAttributesWith(["name": "Gain", "value": "0.8", "auxValue": "dB"])
+        root.addChild(param)
+
+        let to13 = try service.convertToVersion(doc, targetVersion: .v1_13)
+        let param13 = findElement(named: "param", in: to13)
+        XCTAssertEqual(param13?.attribute(forName: "auxValue")?.stringValue, "dB", "param auxValue kept at 1.13")
+
+        let to5 = try service.convertToVersion(doc, targetVersion: .v1_5)
+        let param5 = findElement(named: "param", in: to5)
+        XCTAssertNil(param5?.attribute(forName: "auxValue")?.stringValue, "param auxValue stripped at 1.5")
+    }
+
     private func findElement(named name: String, in document: XMLDocument) -> XMLElement? {
         guard let root = document.rootElement() else { return nil }
         return findElement(named: name, in: root)

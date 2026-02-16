@@ -248,6 +248,41 @@ final class AdjustmentTests: XCTestCase {
         
         XCTAssertEqual(decoded.type, stabilization.type)
     }
+
+    // MARK: - RollingShutterAdjustment Tests
+
+    func testRollingShutterAdjustmentInitialization() {
+        let rs = FinalCutPro.FCPXML.RollingShutterAdjustment()
+        XCTAssertTrue(rs.isEnabled)
+        XCTAssertEqual(rs.amount, .none)
+        let rs2 = FinalCutPro.FCPXML.RollingShutterAdjustment(isEnabled: false, amount: .high)
+        XCTAssertFalse(rs2.isEnabled)
+        XCTAssertEqual(rs2.amount, .high)
+    }
+
+    func testRollingShutterAdjustmentCodable() throws {
+        let rs = FinalCutPro.FCPXML.RollingShutterAdjustment(isEnabled: true, amount: .medium)
+        let data = try JSONEncoder().encode(rs)
+        let decoded = try JSONDecoder().decode(FinalCutPro.FCPXML.RollingShutterAdjustment.self, from: data)
+        XCTAssertEqual(decoded.isEnabled, rs.isEnabled)
+        XCTAssertEqual(decoded.amount, rs.amount)
+    }
+
+    // MARK: - ConformAdjustment Tests
+
+    func testConformAdjustmentInitialization() {
+        let conform = FinalCutPro.FCPXML.ConformAdjustment()
+        XCTAssertEqual(conform.type, .fit)
+        let fill = FinalCutPro.FCPXML.ConformAdjustment(type: .fill)
+        XCTAssertEqual(fill.type, .fill)
+    }
+
+    func testConformAdjustmentCodable() throws {
+        let conform = FinalCutPro.FCPXML.ConformAdjustment(type: .none)
+        let data = try JSONEncoder().encode(conform)
+        let decoded = try JSONDecoder().decode(FinalCutPro.FCPXML.ConformAdjustment.self, from: data)
+        XCTAssertEqual(decoded.type, .none)
+    }
     
     // MARK: - VolumeAdjustment Tests
     
@@ -311,7 +346,160 @@ final class AdjustmentTests: XCTestCase {
         XCTAssertEqual(decoded.amount, loudness.amount)
         XCTAssertEqual(decoded.uniformity, loudness.uniformity)
     }
-    
+
+    // MARK: - ReorientAdjustment (FCPXML 1.7+)
+
+    func testReorientAdjustmentInitialization() {
+        let reorient = FinalCutPro.FCPXML.ReorientAdjustment(tilt: "1", pan: "2", roll: "0", convergence: "0.5")
+        XCTAssertEqual(reorient.tilt, "1")
+        XCTAssertEqual(reorient.pan, "2")
+        XCTAssertTrue(reorient.isEnabled)
+    }
+
+    func testReorientAdjustmentCodable() throws {
+        let reorient = FinalCutPro.FCPXML.ReorientAdjustment(convergence: "0.5")
+        let data = try JSONEncoder().encode(reorient)
+        let decoded = try JSONDecoder().decode(FinalCutPro.FCPXML.ReorientAdjustment.self, from: data)
+        XCTAssertEqual(decoded.convergence, "0.5")
+    }
+
+    // MARK: - OrientationAdjustment (FCPXML 1.7+)
+
+    func testOrientationAdjustmentInitialization() {
+        let orientation = FinalCutPro.FCPXML.OrientationAdjustment(mapping: .tinyPlanet)
+        XCTAssertEqual(orientation.mapping, .tinyPlanet)
+    }
+
+    func testOrientationAdjustmentCodable() throws {
+        let orientation = FinalCutPro.FCPXML.OrientationAdjustment(fieldOfView: "90", mapping: .normal)
+        let data = try JSONEncoder().encode(orientation)
+        let decoded = try JSONDecoder().decode(FinalCutPro.FCPXML.OrientationAdjustment.self, from: data)
+        XCTAssertEqual(decoded.fieldOfView, "90")
+    }
+
+    // MARK: - CinematicAdjustment (FCPXML 1.10+)
+
+    func testCinematicAdjustmentInitialization() {
+        let cinematic = FinalCutPro.FCPXML.CinematicAdjustment(aperture: "2.8")
+        XCTAssertEqual(cinematic.aperture, "2.8")
+    }
+
+    // MARK: - ColorConformAdjustment (FCPXML 1.11+)
+
+    func testColorConformAdjustmentInitialization() {
+        let colorConform = FinalCutPro.FCPXML.ColorConformAdjustment(
+            conformType: .conformHLGtoSDR,
+            peakNitsOfPQSource: "1000",
+            peakNitsOfSDRToPQSource: "100"
+        )
+        XCTAssertEqual(colorConform.conformType, .conformHLGtoSDR)
+        XCTAssertEqual(colorConform.peakNitsOfPQSource, "1000")
+    }
+
+    func testColorConformAdjustmentCodable() throws {
+        let colorConform = FinalCutPro.FCPXML.ColorConformAdjustment(
+            peakNitsOfPQSource: "2000",
+            peakNitsOfSDRToPQSource: "200"
+        )
+        let data = try JSONEncoder().encode(colorConform)
+        let decoded = try JSONDecoder().decode(FinalCutPro.FCPXML.ColorConformAdjustment.self, from: data)
+        XCTAssertEqual(decoded.peakNitsOfSDRToPQSource, "200")
+    }
+
+    // MARK: - Stereo3DAdjustment (FCPXML 1.13+)
+
+    func testStereo3DAdjustmentInitialization() {
+        let stereo = FinalCutPro.FCPXML.Stereo3DAdjustment(swapEyes: true, depth: "0.5")
+        XCTAssertTrue(stereo.swapEyes)
+        XCTAssertEqual(stereo.depth, "0.5")
+    }
+
+    // MARK: - VoiceIsolationAdjustment (FCPXML 1.14)
+
+    func testVoiceIsolationAdjustmentInitialization() {
+        let voice = FinalCutPro.FCPXML.VoiceIsolationAdjustment(amount: "0.8")
+        XCTAssertEqual(voice.amount, "0.8")
+    }
+
+    func testVoiceIsolationAdjustmentCodable() throws {
+        let voice = FinalCutPro.FCPXML.VoiceIsolationAdjustment(amount: "1.0")
+        let data = try JSONEncoder().encode(voice)
+        let decoded = try JSONDecoder().decode(FinalCutPro.FCPXML.VoiceIsolationAdjustment.self, from: data)
+        XCTAssertEqual(decoded.amount, "1.0")
+    }
+
+    // MARK: - Clip adjustment round-trip (new adjustments)
+
+    func testClipReorientAdjustmentRoundTrip() throws {
+        let clipEl = XMLElement(name: "clip")
+        clipEl.addAttribute(withName: "ref", value: "r1")
+        let videoEl = XMLElement(name: "video")
+        clipEl.addChild(videoEl)
+        guard let clip = FinalCutPro.FCPXML.Clip(element: clipEl) else { XCTFail("Clip init"); return }
+        let reorient = FinalCutPro.FCPXML.ReorientAdjustment(pan: "10", roll: "5")
+        clip.reorientAdjustment = reorient
+        XCTAssertNotNil(clip.reorientAdjustment)
+        XCTAssertEqual(clip.reorientAdjustment?.pan, "10")
+        let adjustEl = clip.element.firstChildElement(named: "adjust-reorient")
+        XCTAssertNotNil(adjustEl)
+        XCTAssertEqual(adjustEl?.stringValue(forAttributeNamed: "pan"), "10")
+    }
+
+    func testClipColorConformAdjustmentRoundTrip() throws {
+        let clipEl = XMLElement(name: "clip")
+        clipEl.addAttribute(withName: "ref", value: "r1")
+        let videoEl = XMLElement(name: "video")
+        clipEl.addChild(videoEl)
+        guard let clip = FinalCutPro.FCPXML.Clip(element: clipEl) else { XCTFail("Clip init"); return }
+        let colorConform = FinalCutPro.FCPXML.ColorConformAdjustment(
+            peakNitsOfPQSource: "1000",
+            peakNitsOfSDRToPQSource: "100"
+        )
+        clip.colorConformAdjustment = colorConform
+        XCTAssertEqual(clip.colorConformAdjustment?.conformType, .conformNone)
+        clip.colorConformAdjustment = nil
+        XCTAssertNil(clip.colorConformAdjustment)
+    }
+
+    func testClipStereo3DAdjustmentRoundTrip() throws {
+        let clipEl = XMLElement(name: "clip")
+        clipEl.addAttribute(withName: "ref", value: "r1")
+        let videoEl = XMLElement(name: "video")
+        clipEl.addChild(videoEl)
+        guard let clip = FinalCutPro.FCPXML.Clip(element: clipEl) else { XCTFail("Clip init"); return }
+        let stereo = FinalCutPro.FCPXML.Stereo3DAdjustment(convergence: "0.2", autoScale: false)
+        clip.stereo3DAdjustment = stereo
+        XCTAssertEqual(clip.stereo3DAdjustment?.convergence, "0.2")
+        XCTAssertFalse(clip.stereo3DAdjustment?.autoScale ?? true)
+    }
+
+    func testClipRollingShutterAdjustmentRoundTrip() throws {
+        let clipEl = XMLElement(name: "clip")
+        clipEl.addAttribute(withName: "ref", value: "r1")
+        let videoEl = XMLElement(name: "video")
+        clipEl.addChild(videoEl)
+        guard let clip = FinalCutPro.FCPXML.Clip(element: clipEl) else { XCTFail("Clip init"); return }
+        let rs = FinalCutPro.FCPXML.RollingShutterAdjustment(isEnabled: true, amount: .high)
+        clip.rollingShutterAdjustment = rs
+        XCTAssertNotNil(clip.rollingShutterAdjustment)
+        XCTAssertEqual(clip.rollingShutterAdjustment?.amount, .high)
+        let adjustEl = clip.element.firstChildElement(named: "adjust-rollingShutter")
+        XCTAssertEqual(adjustEl?.stringValue(forAttributeNamed: "amount"), "high")
+    }
+
+    func testClipConformAdjustmentRoundTrip() throws {
+        let clipEl = XMLElement(name: "clip")
+        clipEl.addAttribute(withName: "ref", value: "r1")
+        let videoEl = XMLElement(name: "video")
+        clipEl.addChild(videoEl)
+        guard let clip = FinalCutPro.FCPXML.Clip(element: clipEl) else { XCTFail("Clip init"); return }
+        let conform = FinalCutPro.FCPXML.ConformAdjustment(type: .fill)
+        clip.conformAdjustment = conform
+        XCTAssertEqual(clip.conformAdjustment?.type, .fill)
+        let adjustEl = clip.element.firstChildElement(named: "adjust-conform")
+        XCTAssertEqual(adjustEl?.stringValue(forAttributeNamed: "type"), "fill")
+    }
+
     // MARK: - Equatable Tests
     
     func testAdjustmentEquality() {

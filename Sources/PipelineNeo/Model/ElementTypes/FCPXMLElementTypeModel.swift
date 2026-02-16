@@ -71,6 +71,7 @@ extension FinalCutPro.FCPXML {
         case keyword
         case marker
         case chapterMarker = "chapter-marker"
+        case hiddenClipMarker = "hidden-clip-marker"
         
         // textual
         case note
@@ -130,7 +131,7 @@ extension Set<FinalCutPro.FCPXML.ElementType> {
     ]
     
     public static let allAnnotationCases: Self = [
-        .caption, .keyword, .marker, .chapterMarker
+        .caption, .keyword, .marker, .chapterMarker, .hiddenClipMarker
     ]
     
     public static let allStoryElementCases: Self =
@@ -144,7 +145,7 @@ extension Set<FinalCutPro.FCPXML.ElementType> {
         // audition
         .clip,
         .gap,
-        // .liveDrawing, // Note: not yet implemented.
+        .liveDrawing,
         .mcAngle,
         .mcClip,
         .refClip,

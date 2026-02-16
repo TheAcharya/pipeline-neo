@@ -196,14 +196,13 @@ where Self == FinalCutPro.FCPXML.ElementModelType<FinalCutPro.FCPXML.Gap>
     }
 }
 
-// Note: uncomment when live-drawing element model is implemented.
-// extension FCPXMLElementModelTypeProtocol
-// where Self == FinalCutPro.FCPXML.ElementModelType<FinalCutPro.FCPXML.LiveDrawing>
-// {
-//     public static var liveDrawing: FinalCutPro.FCPXML.ElementModelType<FinalCutPro.FCPXML.LiveDrawing> {
-//         .init()
-//     }
-// }
+extension FCPXMLElementModelTypeProtocol
+where Self == FinalCutPro.FCPXML.ElementModelType<FinalCutPro.FCPXML.LiveDrawing>
+{
+    public static var liveDrawing: FinalCutPro.FCPXML.ElementModelType<FinalCutPro.FCPXML.LiveDrawing> {
+        .init()
+    }
+}
 
 extension FCPXMLElementModelTypeProtocol
 where Self == FinalCutPro.FCPXML.ElementModelType<FinalCutPro.FCPXML.MCClip>

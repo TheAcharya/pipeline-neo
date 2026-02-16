@@ -227,6 +227,53 @@ extension FinalCutPro.FCPXML.Clip {
             element.addChild(adjustElement)
         }
     }
+
+    /// The rolling shutter adjustment applied to the clip.
+    public var rollingShutterAdjustment: FinalCutPro.FCPXML.RollingShutterAdjustment? {
+        get {
+            guard let adjustElement = element.firstChildElement(named: "adjust-rollingShutter") else {
+                return nil
+            }
+            let enabledString = adjustElement.stringValue(forAttributeNamed: "enabled") ?? "1"
+            let amountString = adjustElement.stringValue(forAttributeNamed: "amount") ?? "none"
+            return FinalCutPro.FCPXML.RollingShutterAdjustment(
+                isEnabled: enabledString == "1",
+                amount: FinalCutPro.FCPXML.RollingShutterAdjustment.Amount(rawValue: amountString) ?? .none
+            )
+        }
+        nonmutating set {
+            if let existing = element.firstChildElement(named: "adjust-rollingShutter") {
+                element.removeChild(at: existing.index)
+            }
+            guard let adjustment = newValue else { return }
+            let adjustElement = XMLElement(name: "adjust-rollingShutter")
+            if !adjustment.isEnabled { adjustElement.addAttribute(withName: "enabled", value: "0") }
+            adjustElement.addAttribute(withName: "amount", value: adjustment.amount.rawValue)
+            element.addChild(adjustElement)
+        }
+    }
+
+    /// The conform (fit/fill) adjustment applied to the clip.
+    public var conformAdjustment: FinalCutPro.FCPXML.ConformAdjustment? {
+        get {
+            guard let adjustElement = element.firstChildElement(named: "adjust-conform") else {
+                return nil
+            }
+            let typeString = adjustElement.stringValue(forAttributeNamed: "type") ?? "fit"
+            return FinalCutPro.FCPXML.ConformAdjustment(
+                type: FinalCutPro.FCPXML.ConformAdjustment.ConformType(rawValue: typeString) ?? .fit
+            )
+        }
+        nonmutating set {
+            if let existing = element.firstChildElement(named: "adjust-conform") {
+                element.removeChild(at: existing.index)
+            }
+            guard let adjustment = newValue else { return }
+            let adjustElement = XMLElement(name: "adjust-conform")
+            adjustElement.addAttribute(withName: "type", value: adjustment.type.rawValue)
+            element.addChild(adjustElement)
+        }
+    }
     
     /// The volume adjustment applied to the clip.
     public var volumeAdjustment: FinalCutPro.FCPXML.VolumeAdjustment? {
@@ -369,19 +416,7 @@ extension FinalCutPro.FCPXML.Clip {
             let parameters = Array(adjustElement.childElements
                 .filter { $0.name == "param" }
                 .compactMap { paramElement -> FinalCutPro.FCPXML.FilterParameter? in
-                    guard let name = paramElement.stringValue(forAttributeNamed: "name") else {
-                        return nil
-                    }
-                    let key = paramElement.stringValue(forAttributeNamed: "key")
-                    let value = paramElement.stringValue(forAttributeNamed: "value")
-                    let enabledString = paramElement.stringValue(forAttributeNamed: "enabled") ?? "1"
-                    let isEnabled = enabledString == "1"
-                    return FinalCutPro.FCPXML.FilterParameter(
-                        name: name,
-                        key: key,
-                        value: value,
-                        isEnabled: isEnabled
-                    )
+                    FinalCutPro.FCPXML.FilterParameter(paramElement: paramElement)
                 })
             
             return FinalCutPro.FCPXML.EqualizationAdjustment(mode: mode, parameters: parameters)
@@ -405,6 +440,9 @@ extension FinalCutPro.FCPXML.Clip {
                 }
                 if let value = param.value {
                     paramElement.addAttribute(withName: "value", value: value)
+                }
+                if let auxValue = param.auxValue {
+                    paramElement.addAttribute(withName: "auxValue", value: auxValue)
                 }
                 if !param.isEnabled {
                     paramElement.addAttribute(withName: "enabled", value: "0")
@@ -490,19 +528,7 @@ extension FinalCutPro.FCPXML.Clip {
             let parameters = Array(adjustElement.childElements
                 .filter { $0.name == "param" }
                 .compactMap { paramElement -> FinalCutPro.FCPXML.FilterParameter? in
-                    guard let name = paramElement.stringValue(forAttributeNamed: "name") else {
-                        return nil
-                    }
-                    let key = paramElement.stringValue(forAttributeNamed: "key")
-                    let value = paramElement.stringValue(forAttributeNamed: "value")
-                    let enabledString = paramElement.stringValue(forAttributeNamed: "enabled") ?? "1"
-                    let isEnabled = enabledString == "1"
-                    return FinalCutPro.FCPXML.FilterParameter(
-                        name: name,
-                        key: key,
-                        value: value,
-                        isEnabled: isEnabled
-                    )
+                    FinalCutPro.FCPXML.FilterParameter(paramElement: paramElement)
                 })
             
             var adjustment = FinalCutPro.FCPXML.Transform360Adjustment(
@@ -587,6 +613,9 @@ extension FinalCutPro.FCPXML.Clip {
                 if let value = param.value {
                     paramElement.addAttribute(withName: "value", value: value)
                 }
+                if let auxValue = param.auxValue {
+                    paramElement.addAttribute(withName: "auxValue", value: auxValue)
+                }
                 if !param.isEnabled {
                     paramElement.addAttribute(withName: "enabled", value: "0")
                 }
@@ -594,6 +623,229 @@ extension FinalCutPro.FCPXML.Clip {
             }
             
             element.addChild(adjustElement)
+        }
+    }
+
+    // MARK: - Reorient (FCPXML 1.7+)
+
+    /// The reorient adjustment applied to the clip. FCPXML 1.7+.
+    public var reorientAdjustment: FinalCutPro.FCPXML.ReorientAdjustment? {
+        get {
+            guard let adjustElement = element.firstChildElement(named: "adjust-reorient") else { return nil }
+            let enabledString = adjustElement.stringValue(forAttributeNamed: "enabled") ?? "1"
+            let parameters = Array(adjustElement.childElements.filter { $0.name == "param" }.compactMap { FinalCutPro.FCPXML.FilterParameter(paramElement: $0) })
+            return FinalCutPro.FCPXML.ReorientAdjustment(
+                isEnabled: enabledString == "1",
+                tilt: adjustElement.stringValue(forAttributeNamed: "tilt") ?? "0",
+                pan: adjustElement.stringValue(forAttributeNamed: "pan") ?? "0",
+                roll: adjustElement.stringValue(forAttributeNamed: "roll") ?? "0",
+                convergence: adjustElement.stringValue(forAttributeNamed: "convergence") ?? "0",
+                parameters: parameters
+            )
+        }
+        nonmutating set {
+            element.removeChildren { $0.name == "adjust-reorient" }
+            guard let adjustment = newValue else { return }
+            let adjustElement = XMLElement(name: "adjust-reorient")
+            if !adjustment.isEnabled { adjustElement.addAttribute(withName: "enabled", value: "0") }
+            adjustElement.addAttribute(withName: "tilt", value: adjustment.tilt)
+            adjustElement.addAttribute(withName: "pan", value: adjustment.pan)
+            adjustElement.addAttribute(withName: "roll", value: adjustment.roll)
+            adjustElement.addAttribute(withName: "convergence", value: adjustment.convergence)
+            for param in adjustment.parameters {
+                let paramElement = XMLElement(name: "param")
+                paramElement.addAttribute(withName: "name", value: param.name)
+                if let k = param.key { paramElement.addAttribute(withName: "key", value: k) }
+                if let v = param.value { paramElement.addAttribute(withName: "value", value: v) }
+                if let av = param.auxValue { paramElement.addAttribute(withName: "auxValue", value: av) }
+                if !param.isEnabled { paramElement.addAttribute(withName: "enabled", value: "0") }
+                adjustElement.addChild(paramElement)
+            }
+            element.addChild(adjustElement)
+        }
+    }
+
+    // MARK: - Orientation (FCPXML 1.7+)
+
+    /// The orientation adjustment applied to the clip. FCPXML 1.7+.
+    public var orientationAdjustment: FinalCutPro.FCPXML.OrientationAdjustment? {
+        get {
+            guard let adjustElement = element.firstChildElement(named: "adjust-orientation") else { return nil }
+            let enabledString = adjustElement.stringValue(forAttributeNamed: "enabled") ?? "1"
+            let mappingString = adjustElement.stringValue(forAttributeNamed: "mapping") ?? "normal"
+            let mapping = FinalCutPro.FCPXML.OrientationAdjustment.Mapping(rawValue: mappingString) ?? .normal
+            let parameters = Array(adjustElement.childElements.filter { $0.name == "param" }.compactMap { FinalCutPro.FCPXML.FilterParameter(paramElement: $0) })
+            return FinalCutPro.FCPXML.OrientationAdjustment(
+                isEnabled: enabledString == "1",
+                tilt: adjustElement.stringValue(forAttributeNamed: "tilt") ?? "0",
+                pan: adjustElement.stringValue(forAttributeNamed: "pan") ?? "0",
+                roll: adjustElement.stringValue(forAttributeNamed: "roll") ?? "0",
+                fieldOfView: adjustElement.stringValue(forAttributeNamed: "fieldOfView"),
+                mapping: mapping,
+                parameters: parameters
+            )
+        }
+        nonmutating set {
+            element.removeChildren { $0.name == "adjust-orientation" }
+            guard let adjustment = newValue else { return }
+            let adjustElement = XMLElement(name: "adjust-orientation")
+            if !adjustment.isEnabled { adjustElement.addAttribute(withName: "enabled", value: "0") }
+            adjustElement.addAttribute(withName: "tilt", value: adjustment.tilt)
+            adjustElement.addAttribute(withName: "pan", value: adjustment.pan)
+            adjustElement.addAttribute(withName: "roll", value: adjustment.roll)
+            if let fov = adjustment.fieldOfView { adjustElement.addAttribute(withName: "fieldOfView", value: fov) }
+            adjustElement.addAttribute(withName: "mapping", value: adjustment.mapping.rawValue)
+            for param in adjustment.parameters {
+                let paramElement = XMLElement(name: "param")
+                paramElement.addAttribute(withName: "name", value: param.name)
+                if let k = param.key { paramElement.addAttribute(withName: "key", value: k) }
+                if let v = param.value { paramElement.addAttribute(withName: "value", value: v) }
+                if let av = param.auxValue { paramElement.addAttribute(withName: "auxValue", value: av) }
+                if !param.isEnabled { paramElement.addAttribute(withName: "enabled", value: "0") }
+                adjustElement.addChild(paramElement)
+            }
+            element.addChild(adjustElement)
+        }
+    }
+
+    // MARK: - Cinematic (FCPXML 1.10+)
+
+    /// The cinematic adjustment applied to the clip. FCPXML 1.10+.
+    public var cinematicAdjustment: FinalCutPro.FCPXML.CinematicAdjustment? {
+        get {
+            guard let adjustElement = element.firstChildElement(named: "adjust-cinematic") else { return nil }
+            let enabledString = adjustElement.stringValue(forAttributeNamed: "enabled") ?? "1"
+            let parameters = Array(adjustElement.childElements.filter { $0.name == "param" }.compactMap { FinalCutPro.FCPXML.FilterParameter(paramElement: $0) })
+            return FinalCutPro.FCPXML.CinematicAdjustment(
+                isEnabled: enabledString == "1",
+                dataLocator: adjustElement.stringValue(forAttributeNamed: "dataLocator"),
+                aperture: adjustElement.stringValue(forAttributeNamed: "aperture"),
+                parameters: parameters
+            )
+        }
+        nonmutating set {
+            element.removeChildren { $0.name == "adjust-cinematic" }
+            guard let adjustment = newValue else { return }
+            let adjustElement = XMLElement(name: "adjust-cinematic")
+            if !adjustment.isEnabled { adjustElement.addAttribute(withName: "enabled", value: "0") }
+            if let loc = adjustment.dataLocator { adjustElement.addAttribute(withName: "dataLocator", value: loc) }
+            if let ap = adjustment.aperture { adjustElement.addAttribute(withName: "aperture", value: ap) }
+            for param in adjustment.parameters {
+                let paramElement = XMLElement(name: "param")
+                paramElement.addAttribute(withName: "name", value: param.name)
+                if let k = param.key { paramElement.addAttribute(withName: "key", value: k) }
+                if let v = param.value { paramElement.addAttribute(withName: "value", value: v) }
+                if let av = param.auxValue { paramElement.addAttribute(withName: "auxValue", value: av) }
+                if !param.isEnabled { paramElement.addAttribute(withName: "enabled", value: "0") }
+                adjustElement.addChild(paramElement)
+            }
+            element.addChild(adjustElement)
+        }
+    }
+
+    // MARK: - Color Conform (FCPXML 1.11+)
+
+    /// The color conform adjustment applied to the clip. FCPXML 1.11+.
+    public var colorConformAdjustment: FinalCutPro.FCPXML.ColorConformAdjustment? {
+        get {
+            guard let adjustElement = element.firstChildElement(named: "adjust-colorConform") else { return nil }
+            let enabledString = adjustElement.stringValue(forAttributeNamed: "enabled") ?? "1"
+            let autoString = adjustElement.stringValue(forAttributeNamed: "autoOrManual") ?? "automatic"
+            let autoOrManual = FinalCutPro.FCPXML.ColorConformAdjustment.AutoOrManual(rawValue: autoString) ?? .automatic
+            let typeString = adjustElement.stringValue(forAttributeNamed: "conformType") ?? "conformNone"
+            let conformType = FinalCutPro.FCPXML.ColorConformAdjustment.ConformType(rawValue: typeString) ?? .conformNone
+            let peakPQ = adjustElement.stringValue(forAttributeNamed: "peakNitsOfPQSource") ?? "1000"
+            let peakSDR = adjustElement.stringValue(forAttributeNamed: "peakNitsOfSDRToPQSource") ?? "100"
+            return FinalCutPro.FCPXML.ColorConformAdjustment(
+                isEnabled: enabledString == "1",
+                autoOrManual: autoOrManual,
+                conformType: conformType,
+                peakNitsOfPQSource: peakPQ,
+                peakNitsOfSDRToPQSource: peakSDR
+            )
+        }
+        nonmutating set {
+            element.removeChildren { $0.name == "adjust-colorConform" }
+            guard let adjustment = newValue else { return }
+            let adjustElement = XMLElement(name: "adjust-colorConform")
+            if !adjustment.isEnabled { adjustElement.addAttribute(withName: "enabled", value: "0") }
+            adjustElement.addAttribute(withName: "autoOrManual", value: adjustment.autoOrManual.rawValue)
+            adjustElement.addAttribute(withName: "conformType", value: adjustment.conformType.rawValue)
+            adjustElement.addAttribute(withName: "peakNitsOfPQSource", value: adjustment.peakNitsOfPQSource)
+            adjustElement.addAttribute(withName: "peakNitsOfSDRToPQSource", value: adjustment.peakNitsOfSDRToPQSource)
+            element.addChild(adjustElement)
+        }
+    }
+
+    // MARK: - Stereo 3D (FCPXML 1.13+)
+
+    /// The stereo 3D adjustment applied to the clip. FCPXML 1.13+.
+    public var stereo3DAdjustment: FinalCutPro.FCPXML.Stereo3DAdjustment? {
+        get {
+            guard let adjustElement = element.firstChildElement(named: "adjust-stereo-3D") else { return nil }
+            let enabledString = adjustElement.stringValue(forAttributeNamed: "enabled") ?? "1"
+            let autoScaleString = adjustElement.stringValue(forAttributeNamed: "autoScale") ?? "1"
+            let swapEyesString = adjustElement.stringValue(forAttributeNamed: "swapEyes") ?? "0"
+            let parameters = Array(adjustElement.childElements.filter { $0.name == "param" }.compactMap { FinalCutPro.FCPXML.FilterParameter(paramElement: $0) })
+            return FinalCutPro.FCPXML.Stereo3DAdjustment(
+                isEnabled: enabledString == "1",
+                convergence: adjustElement.stringValue(forAttributeNamed: "convergence") ?? "0",
+                autoScale: autoScaleString == "1",
+                swapEyes: swapEyesString == "1",
+                depth: adjustElement.stringValue(forAttributeNamed: "depth") ?? "0",
+                parameters: parameters
+            )
+        }
+        nonmutating set {
+            element.removeChildren { $0.name == "adjust-stereo-3D" }
+            guard let adjustment = newValue else { return }
+            let adjustElement = XMLElement(name: "adjust-stereo-3D")
+            if !adjustment.isEnabled { adjustElement.addAttribute(withName: "enabled", value: "0") }
+            adjustElement.addAttribute(withName: "convergence", value: adjustment.convergence)
+            adjustElement.addAttribute(withName: "autoScale", value: adjustment.autoScale ? "1" : "0")
+            adjustElement.addAttribute(withName: "swapEyes", value: adjustment.swapEyes ? "1" : "0")
+            adjustElement.addAttribute(withName: "depth", value: adjustment.depth)
+            for param in adjustment.parameters {
+                let paramElement = XMLElement(name: "param")
+                paramElement.addAttribute(withName: "name", value: param.name)
+                if let k = param.key { paramElement.addAttribute(withName: "key", value: k) }
+                if let v = param.value { paramElement.addAttribute(withName: "value", value: v) }
+                if let av = param.auxValue { paramElement.addAttribute(withName: "auxValue", value: av) }
+                if !param.isEnabled { paramElement.addAttribute(withName: "enabled", value: "0") }
+                adjustElement.addChild(paramElement)
+            }
+            element.addChild(adjustElement)
+        }
+    }
+
+    // MARK: - Voice Isolation (FCPXML 1.14; on audio-channel-source / audio-role-source)
+
+    /// The voice isolation adjustment, if present on an audio-channel-source or audio-role-source child. FCPXML 1.14+.
+    public var voiceIsolationAdjustment: FinalCutPro.FCPXML.VoiceIsolationAdjustment? {
+        get {
+            for node in element.children ?? [] {
+                guard let child = node as? XMLElement else { continue }
+                if child.name == "audio-channel-source" || child.name == "audio-role-source",
+                   let voiceEl = child.firstChildElement(named: "adjust-voiceIsolation"),
+                   let amount = voiceEl.stringValue(forAttributeNamed: "amount") {
+                    return FinalCutPro.FCPXML.VoiceIsolationAdjustment(amount: amount)
+                }
+            }
+            return nil
+        }
+        nonmutating set {
+            for node in element.children ?? [] {
+                guard let child = node as? XMLElement else { continue }
+                if child.name == "audio-channel-source" || child.name == "audio-role-source" {
+                    child.removeChildren { $0.name == "adjust-voiceIsolation" }
+                    if let adjustment = newValue {
+                        let voiceElement = XMLElement(name: "adjust-voiceIsolation")
+                        voiceElement.addAttribute(withName: "amount", value: adjustment.amount)
+                        child.addChild(voiceElement)
+                    }
+                    return
+                }
+            }
         }
     }
 }

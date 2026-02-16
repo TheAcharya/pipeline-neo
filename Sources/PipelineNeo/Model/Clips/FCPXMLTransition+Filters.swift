@@ -38,19 +38,7 @@ extension FinalCutPro.FCPXML.Transition {
                     let parameters = Array(filterElement.childElements
                         .filter { $0.name == "param" }
                         .compactMap { paramElement -> FinalCutPro.FCPXML.FilterParameter? in
-                            guard let name = paramElement.stringValue(forAttributeNamed: "name") else {
-                                return nil
-                            }
-                            let key = paramElement.stringValue(forAttributeNamed: "key")
-                            let value = paramElement.stringValue(forAttributeNamed: "value")
-                            let enabledString = paramElement.stringValue(forAttributeNamed: "enabled") ?? "1"
-                            let isEnabled = enabledString == "1"
-                            return FinalCutPro.FCPXML.FilterParameter(
-                                name: name,
-                                key: key,
-                                value: value,
-                                isEnabled: isEnabled
-                            )
+                            FinalCutPro.FCPXML.FilterParameter(paramElement: paramElement)
                         })
                     
                     return FinalCutPro.FCPXML.VideoFilter(
@@ -97,6 +85,9 @@ extension FinalCutPro.FCPXML.Transition {
                     if let value = param.value {
                         paramElement.addAttribute(withName: "value", value: value)
                     }
+                    if let auxValue = param.auxValue {
+                        paramElement.addAttribute(withName: "auxValue", value: auxValue)
+                    }
                     if !param.isEnabled {
                         paramElement.addAttribute(withName: "enabled", value: "0")
                     }
@@ -136,19 +127,7 @@ extension FinalCutPro.FCPXML.Transition {
                     let parameters = Array(filterElement.childElements
                         .filter { $0.name == "param" }
                         .compactMap { paramElement -> FinalCutPro.FCPXML.FilterParameter? in
-                            guard let name = paramElement.stringValue(forAttributeNamed: "name") else {
-                                return nil
-                            }
-                            let key = paramElement.stringValue(forAttributeNamed: "key")
-                            let value = paramElement.stringValue(forAttributeNamed: "value")
-                            let enabledString = paramElement.stringValue(forAttributeNamed: "enabled") ?? "1"
-                            let isEnabled = enabledString == "1"
-                            return FinalCutPro.FCPXML.FilterParameter(
-                                name: name,
-                                key: key,
-                                value: value,
-                                isEnabled: isEnabled
-                            )
+                            FinalCutPro.FCPXML.FilterParameter(paramElement: paramElement)
                         })
                     
                     return FinalCutPro.FCPXML.AudioFilter(
@@ -198,6 +177,9 @@ extension FinalCutPro.FCPXML.Transition {
                     }
                     if let value = param.value {
                         paramElement.addAttribute(withName: "value", value: value)
+                    }
+                    if let auxValue = param.auxValue {
+                        paramElement.addAttribute(withName: "auxValue", value: auxValue)
                     }
                     if !param.isEnabled {
                         paramElement.addAttribute(withName: "enabled", value: "0")

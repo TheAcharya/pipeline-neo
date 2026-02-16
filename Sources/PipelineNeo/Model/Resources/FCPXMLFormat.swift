@@ -58,7 +58,8 @@ extension FinalCutPro.FCPXML.Format {
         paspV: Int? = nil,
         colorSpace: String? = nil,
         projection: String? = nil,
-        stereoscopic: String? = nil
+        stereoscopic: String? = nil,
+        heroEye: String? = nil  // FCPXML 1.13+; omit for 1.5–1.12
     ) {
         self.init()
         
@@ -73,6 +74,7 @@ extension FinalCutPro.FCPXML.Format {
         self.colorSpace = colorSpace
         self.projection = projection
         self.stereoscopic = stereoscopic
+        self.heroEye = heroEye
     }
 }
 
@@ -94,6 +96,8 @@ extension FinalCutPro.FCPXML.Format {
         case colorSpace
         case projection
         case stereoscopic // note that Apple docs misspell it as "sterioscopic"
+        /// Hero eye for stereoscopic. FCPXML 1.13+; backward compatible with 1.5 (omit when version < 1.13). "left" | "right".
+        case heroEye
     }
 }
 
@@ -159,6 +163,12 @@ extension FinalCutPro.FCPXML.Format {
     public var stereoscopic: String? {
         get { element.stringValue(forAttributeNamed: Attributes.stereoscopic.rawValue) }
         nonmutating set { element.addAttribute(withName: Attributes.stereoscopic.rawValue, value: newValue) }
+    }
+    
+    /// Hero eye for stereoscopic. FCPXML 1.13+; backward compatible with 1.5 (omit when version < 1.13). Values: "left" | "right".
+    public var heroEye: String? {
+        get { element.stringValue(forAttributeNamed: Attributes.heroEye.rawValue) }
+        nonmutating set { element.addAttribute(withName: Attributes.heroEye.rawValue, value: newValue) }
     }
 }
 

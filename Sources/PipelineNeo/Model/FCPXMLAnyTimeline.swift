@@ -19,7 +19,7 @@ extension FinalCutPro.FCPXML {
         // case audition(Audition)
         case clip(Clip)
         case gap(Gap)
-        // case liveDrawing(LiveDrawing) // Note: not yet implemented.
+        case liveDrawing(LiveDrawing)
         case mcAngle(Media.Multicam.Angle)
         case mcClip(MCClip)
         case refClip(RefClip)
@@ -35,6 +35,7 @@ extension FinalCutPro.FCPXML {
             case let .assetClip(model): return model.element
             case let .clip(model): return model.element
             case let .gap(model): return model.element
+            case let .liveDrawing(model): return model.element
             case let .mcAngle(model): return model.element
             case let .mcClip(model): return model.element
             case let .refClip(model): return model.element
@@ -61,6 +62,7 @@ extension FinalCutPro.FCPXML {
             /**/ if let model = element.fcpAsAssetClip { self = .assetClip(model) }
             else if let model = element.fcpAsClip { self = .clip(model) }
             else if let model = element.fcpAsGap { self = .gap(model) }
+            else if let model = element.fcpAsLiveDrawing { self = .liveDrawing(model) }
             else if let model = element.fcpAsMCAngle { self = .mcAngle(model) }
             else if let model = element.fcpAsMCClip { self = .mcClip(model) }
             else if let model = element.fcpAsRefClip { self = .refClip(model) }
@@ -93,6 +95,7 @@ extension FinalCutPro.FCPXML.AnyTimeline {
         case let .assetClip(model): return model
         case let .clip(model): return model
         case let .gap(model): return model
+        case let .liveDrawing(model): return model
         case let .mcAngle(model): return model
         case let .mcClip(model): return model
         case let .refClip(model): return model

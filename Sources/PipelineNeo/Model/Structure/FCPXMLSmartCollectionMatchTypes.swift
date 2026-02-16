@@ -292,4 +292,125 @@ extension FinalCutPro.FCPXML {
             self.isEnabled = isEnabled
         }
     }
+
+    // MARK: - Match Usage (FCPXML 1.9+)
+
+    /// A usage match criterion for a smart collection (used vs unused in project).
+    /// FCPXML 1.9+; backward compatible with 1.5 (omit when version < 1.9).
+    public struct MatchUsage: Sendable, Equatable, Hashable, Codable {
+        /// Rule for usage match: used or unused in project.
+        public enum Rule: String, Sendable, Equatable, Hashable, Codable {
+            case used
+            case unused
+        }
+
+        public var isEnabled: Bool
+        public var rule: Rule
+
+        private enum CodingKeys: String, CodingKey {
+            case isEnabled = "enabled"
+            case rule
+        }
+
+        public init(rule: Rule = .used, isEnabled: Bool = true) {
+            self.rule = rule
+            self.isEnabled = isEnabled
+        }
+    }
+
+    // MARK: - Match Representation (FCPXML 1.10+)
+
+    /// A representation type match (original, optimized, proxy) and availability.
+    /// FCPXML 1.10+; backward compatible with 1.5 (omit when version < 1.10).
+    public struct MatchRepresentation: Sendable, Equatable, Hashable, Codable {
+        /// Media representation type.
+        public enum RepresentationType: String, Sendable, Equatable, Hashable, Codable {
+            case original
+            case optimized
+            case proxy
+        }
+
+        /// Availability rule: isAvailable | isMissing.
+        public enum AvailabilityRule: String, Sendable, Equatable, Hashable, Codable {
+            case isAvailable
+            case isMissing
+        }
+
+        public var isEnabled: Bool
+        public var type: RepresentationType
+        public var rule: AvailabilityRule
+
+        private enum CodingKeys: String, CodingKey {
+            case isEnabled = "enabled"
+            case type, rule
+        }
+
+        public init(type: RepresentationType, rule: AvailabilityRule = .isAvailable, isEnabled: Bool = true) {
+            self.type = type
+            self.rule = rule
+            self.isEnabled = isEnabled
+        }
+    }
+
+    // MARK: - Match Markers (FCPXML 1.10+)
+
+    /// A markers match criterion (all, standard, todo state, etc.).
+    /// FCPXML 1.10+; backward compatible with 1.5 (omit when version < 1.10).
+    public struct MatchMarkers: Sendable, Equatable, Hashable, Codable {
+        /// Markers match type.
+        public enum MarkersType: String, Sendable, Equatable, Hashable, Codable {
+            case all
+            case standard
+            case allTodo
+            case complete
+            case incomplete
+        }
+
+        public var isEnabled: Bool
+        public var type: MarkersType
+
+        private enum CodingKeys: String, CodingKey {
+            case isEnabled = "enabled"
+            case type
+        }
+
+        public init(type: MarkersType = .all, isEnabled: Bool = true) {
+            self.type = type
+            self.isEnabled = isEnabled
+        }
+    }
+
+    // MARK: - Match Analysis Type (FCPXML 1.14)
+
+    /// An analysis type match (transcript, visual availability).
+    /// FCPXML 1.14+; backward compatible with 1.5 (omit when version < 1.14).
+    public struct MatchAnalysisType: Sendable, Equatable, Hashable, Codable {
+        /// Availability rule: isAvailable | isMissing.
+        public enum AvailabilityRule: String, Sendable, Equatable, Hashable, Codable {
+            case isAvailable
+            case isMissing
+        }
+
+        /// Analysis type value: any | transcript | visual.
+        public enum Value: String, Sendable, Equatable, Hashable, Codable {
+            case any
+            case transcript
+            case visual
+        }
+
+        public var isEnabled: Bool
+        public var rule: AvailabilityRule
+        public var value: Value
+
+        private enum CodingKeys: String, CodingKey {
+            case isEnabled = "enabled"
+            case rule, value
+        }
+
+        public init(rule: AvailabilityRule = .isAvailable, value: Value = .any, isEnabled: Bool = true) {
+            self.rule = rule
+            self.value = value
+            self.isEnabled = isEnabled
+        }
+    }
 }

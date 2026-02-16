@@ -32,15 +32,28 @@ enum ConvertVersion {
         }
 
         let baseName = fcpxmlPath.deletingPathExtension().lastPathComponent
-        let nameSuffix = "\(baseName)_\(targetVersion.rawValue)"
+        let displayName = "\(baseName) (Converted-\(targetVersion.rawValue))"
+
+        // Set project name(s) inside the document to match the converted filename.
+        // (elements(forName:) only returns direct children; project is under library/event, so use XPath.)
+        if let root = converted.rootElement() {
+            let projects = (try? root.nodes(forXPath: "//project"))?.compactMap { $0 as? XMLElement } ?? []
+            for project in projects {
+                if let attr = project.attribute(forName: "name") {
+                    attr.stringValue = displayName
+                } else {
+                    project.addAttribute(withName: "name", value: displayName)
+                }
+            }
+        }
 
         let useBundle = (extensionType == .fcpxmld) && targetVersion.supportsBundleFormat
         if useBundle {
-            let bundleURL = try service.saveAsBundle(converted, to: outputDir, bundleName: nameSuffix)
+            let bundleURL = try service.saveAsBundle(converted, to: outputDir, bundleName: displayName)
             print(bundleURL.path)
             logger.log(level: .info, message: "Wrote \(bundleURL.path)", metadata: ["version": targetVersion.rawValue])
         } else {
-            let outputFileName = "\(nameSuffix).fcpxml"
+            let outputFileName = "\(displayName).fcpxml"
             let outputURL = outputDir.appendingPathComponent(outputFileName)
             try service.saveAsFCPXML(converted, to: outputURL)
             print(outputURL.path)

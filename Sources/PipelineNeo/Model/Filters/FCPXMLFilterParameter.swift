@@ -24,6 +24,9 @@ extension FinalCutPro.FCPXML {
         /// The value of the parameter.
         public var value: String?
         
+        /// Auxiliary value. FCPXML 1.11+; backward compatible with 1.5 (omit when version < 1.11).
+        public var auxValue: String?
+        
         /// A Boolean value indicating whether the parameter is enabled.
         public var isEnabled: Bool
         
@@ -40,7 +43,7 @@ extension FinalCutPro.FCPXML {
         public var parameters: [FilterParameter]
         
         private enum CodingKeys: String, CodingKey {
-            case name, key, value
+            case name, key, value, auxValue
             case isEnabled = "enabled"
             case fadeIn
             case fadeOut
@@ -53,6 +56,7 @@ extension FinalCutPro.FCPXML {
         ///   - name: The name of the parameter.
         ///   - key: The key of the parameter (default: `nil`).
         ///   - value: The value of the parameter (default: `nil`).
+        ///   - auxValue: The auxiliary value (FCPXML 1.11+; omit for 1.5–1.10, default: `nil`).
         ///   - isEnabled: Whether the parameter is enabled (default: `true`).
         ///   - fadeIn: The fade in effect (default: `nil`).
         ///   - fadeOut: The fade out effect (default: `nil`).
@@ -62,6 +66,7 @@ extension FinalCutPro.FCPXML {
             name: String,
             key: String? = nil,
             value: String? = nil,
+            auxValue: String? = nil,
             isEnabled: Bool = true,
             fadeIn: FadeIn? = nil,
             fadeOut: FadeOut? = nil,
@@ -71,6 +76,7 @@ extension FinalCutPro.FCPXML {
             self.name = name
             self.key = key
             self.value = value
+            self.auxValue = auxValue
             self.isEnabled = isEnabled
             self.fadeIn = fadeIn
             self.fadeOut = fadeOut
@@ -78,7 +84,34 @@ extension FinalCutPro.FCPXML {
             self.parameters = parameters
         }
     }
-    
+}
+
+// MARK: - From param element
+
+extension FinalCutPro.FCPXML.FilterParameter {
+    /// Creates a filter parameter from a `param` XML element (e.g. name, key, value, auxValue, enabled).
+    /// auxValue is FCPXML 1.11+; ignored when reading 1.5 documents, omitted when writing to 1.5.
+    public init?(paramElement: XMLElement) {
+        guard paramElement.name == "param",
+              let name = paramElement.stringValue(forAttributeNamed: "name") else {
+            return nil
+        }
+        let key = paramElement.stringValue(forAttributeNamed: "key")
+        let value = paramElement.stringValue(forAttributeNamed: "value")
+        let auxValue = paramElement.stringValue(forAttributeNamed: "auxValue")
+        let enabledString = paramElement.stringValue(forAttributeNamed: "enabled") ?? "1"
+        let isEnabled = enabledString == "1"
+        self.init(
+            name: name,
+            key: key,
+            value: value,
+            auxValue: auxValue,
+            isEnabled: isEnabled
+        )
+    }
+}
+
+extension FinalCutPro.FCPXML {
     /// Keyed data associated with filters and effects.
     ///
     /// Used for storing effect configuration and data.

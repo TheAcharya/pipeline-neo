@@ -50,6 +50,10 @@ extension FinalCutPro.FCPXML {
             case matchTimes = "match-time"
             case matchTimeRanges = "match-timeRange"
             case matchRoles = "match-roles"
+            case matchUsages = "match-usage"
+            case matchRepresentations = "match-representation"
+            case matchMarkers = "match-markers"
+            case matchAnalysisTypes = "match-analysis-type"
             case name, match
         }
         
@@ -71,6 +75,10 @@ extension FinalCutPro.FCPXML {
             try container.encodeIfPresent(matchTimes.isEmpty ? nil : matchTimes, forKey: .matchTimes)
             try container.encodeIfPresent(matchTimeRanges.isEmpty ? nil : matchTimeRanges, forKey: .matchTimeRanges)
             try container.encodeIfPresent(matchRoles.isEmpty ? nil : matchRoles, forKey: .matchRoles)
+            try container.encodeIfPresent(matchUsages.isEmpty ? nil : matchUsages, forKey: .matchUsages)
+            try container.encodeIfPresent(matchRepresentations.isEmpty ? nil : matchRepresentations, forKey: .matchRepresentations)
+            try container.encodeIfPresent(matchMarkers.isEmpty ? nil : matchMarkers, forKey: .matchMarkers)
+            try container.encodeIfPresent(matchAnalysisTypes.isEmpty ? nil : matchAnalysisTypes, forKey: .matchAnalysisTypes)
         }
         
         /// Creates a smart collection from a decoder.
@@ -94,6 +102,10 @@ extension FinalCutPro.FCPXML {
             matchTimes = try container.decodeIfPresent([FinalCutPro.FCPXML.MatchTime].self, forKey: .matchTimes) ?? []
             matchTimeRanges = try container.decodeIfPresent([FinalCutPro.FCPXML.MatchTimeRange].self, forKey: .matchTimeRanges) ?? []
             matchRoles = try container.decodeIfPresent([FinalCutPro.FCPXML.MatchRoles].self, forKey: .matchRoles) ?? []
+            matchUsages = try container.decodeIfPresent([FinalCutPro.FCPXML.MatchUsage].self, forKey: .matchUsages) ?? []
+            matchRepresentations = try container.decodeIfPresent([FinalCutPro.FCPXML.MatchRepresentation].self, forKey: .matchRepresentations) ?? []
+            matchMarkers = try container.decodeIfPresent([FinalCutPro.FCPXML.MatchMarkers].self, forKey: .matchMarkers) ?? []
+            matchAnalysisTypes = try container.decodeIfPresent([FinalCutPro.FCPXML.MatchAnalysisType].self, forKey: .matchAnalysisTypes) ?? []
         }
     }
 }
@@ -567,6 +579,116 @@ extension FinalCutPro.FCPXML.SmartCollection {
                     matchElement.addChild(roleElement)
                 }
                 
+                element.addChild(matchElement)
+            }
+        }
+    }
+
+    /// The usage matches of the smart collection (FCPXML 1.9+).
+    public var matchUsages: [FinalCutPro.FCPXML.MatchUsage] {
+        get {
+            element.childElements
+                .filter { $0.name == "match-usage" }
+                .compactMap { matchElement -> FinalCutPro.FCPXML.MatchUsage? in
+                    guard let ruleString = matchElement.stringValue(forAttributeNamed: "rule"),
+                          let rule = FinalCutPro.FCPXML.MatchUsage.Rule(rawValue: ruleString) else {
+                        return nil
+                    }
+                    let enabledString = matchElement.stringValue(forAttributeNamed: "enabled") ?? "1"
+                    let isEnabled = enabledString == "1"
+                    return FinalCutPro.FCPXML.MatchUsage(rule: rule, isEnabled: isEnabled)
+                }
+        }
+        nonmutating set {
+            element.removeChildren { $0.name == "match-usage" }
+            for matchUsage in newValue {
+                let matchElement = XMLElement(name: "match-usage")
+                matchElement.addAttribute(withName: "enabled", value: matchUsage.isEnabled ? "1" : "0")
+                matchElement.addAttribute(withName: "rule", value: matchUsage.rule.rawValue)
+                element.addChild(matchElement)
+            }
+        }
+    }
+
+    /// The representation matches of the smart collection (FCPXML 1.10+).
+    public var matchRepresentations: [FinalCutPro.FCPXML.MatchRepresentation] {
+        get {
+            element.childElements
+                .filter { $0.name == "match-representation" }
+                .compactMap { matchElement -> FinalCutPro.FCPXML.MatchRepresentation? in
+                    guard let typeString = matchElement.stringValue(forAttributeNamed: "type"),
+                          let type = FinalCutPro.FCPXML.MatchRepresentation.RepresentationType(rawValue: typeString),
+                          let ruleString = matchElement.stringValue(forAttributeNamed: "rule"),
+                          let rule = FinalCutPro.FCPXML.MatchRepresentation.AvailabilityRule(rawValue: ruleString) else {
+                        return nil
+                    }
+                    let enabledString = matchElement.stringValue(forAttributeNamed: "enabled") ?? "1"
+                    let isEnabled = enabledString == "1"
+                    return FinalCutPro.FCPXML.MatchRepresentation(type: type, rule: rule, isEnabled: isEnabled)
+                }
+        }
+        nonmutating set {
+            element.removeChildren { $0.name == "match-representation" }
+            for matchRep in newValue {
+                let matchElement = XMLElement(name: "match-representation")
+                matchElement.addAttribute(withName: "enabled", value: matchRep.isEnabled ? "1" : "0")
+                matchElement.addAttribute(withName: "type", value: matchRep.type.rawValue)
+                matchElement.addAttribute(withName: "rule", value: matchRep.rule.rawValue)
+                element.addChild(matchElement)
+            }
+        }
+    }
+
+    /// The markers matches of the smart collection (FCPXML 1.10+).
+    public var matchMarkers: [FinalCutPro.FCPXML.MatchMarkers] {
+        get {
+            element.childElements
+                .filter { $0.name == "match-markers" }
+                .compactMap { matchElement -> FinalCutPro.FCPXML.MatchMarkers? in
+                    guard let typeString = matchElement.stringValue(forAttributeNamed: "type"),
+                          let type = FinalCutPro.FCPXML.MatchMarkers.MarkersType(rawValue: typeString) else {
+                        return nil
+                    }
+                    let enabledString = matchElement.stringValue(forAttributeNamed: "enabled") ?? "1"
+                    let isEnabled = enabledString == "1"
+                    return FinalCutPro.FCPXML.MatchMarkers(type: type, isEnabled: isEnabled)
+                }
+        }
+        nonmutating set {
+            element.removeChildren { $0.name == "match-markers" }
+            for matchMarkersItem in newValue {
+                let matchElement = XMLElement(name: "match-markers")
+                matchElement.addAttribute(withName: "enabled", value: matchMarkersItem.isEnabled ? "1" : "0")
+                matchElement.addAttribute(withName: "type", value: matchMarkersItem.type.rawValue)
+                element.addChild(matchElement)
+            }
+        }
+    }
+
+    /// The analysis type matches of the smart collection (FCPXML 1.14).
+    public var matchAnalysisTypes: [FinalCutPro.FCPXML.MatchAnalysisType] {
+        get {
+            element.childElements
+                .filter { $0.name == "match-analysis-type" }
+                .compactMap { matchElement -> FinalCutPro.FCPXML.MatchAnalysisType? in
+                    guard let ruleString = matchElement.stringValue(forAttributeNamed: "rule"),
+                          let rule = FinalCutPro.FCPXML.MatchAnalysisType.AvailabilityRule(rawValue: ruleString),
+                          let valueString = matchElement.stringValue(forAttributeNamed: "value"),
+                          let value = FinalCutPro.FCPXML.MatchAnalysisType.Value(rawValue: valueString) else {
+                        return nil
+                    }
+                    let enabledString = matchElement.stringValue(forAttributeNamed: "enabled") ?? "1"
+                    let isEnabled = enabledString == "1"
+                    return FinalCutPro.FCPXML.MatchAnalysisType(rule: rule, value: value, isEnabled: isEnabled)
+                }
+        }
+        nonmutating set {
+            element.removeChildren { $0.name == "match-analysis-type" }
+            for matchAnalysis in newValue {
+                let matchElement = XMLElement(name: "match-analysis-type")
+                matchElement.addAttribute(withName: "enabled", value: matchAnalysis.isEnabled ? "1" : "0")
+                matchElement.addAttribute(withName: "rule", value: matchAnalysis.rule.rawValue)
+                matchElement.addAttribute(withName: "value", value: matchAnalysis.value.rawValue)
                 element.addChild(matchElement)
             }
         }

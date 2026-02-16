@@ -113,11 +113,10 @@ extension FinalCutPro.FCPXML.AnyElementModelType {
         .init(base: FinalCutPro.FCPXML.ElementModelType<FinalCutPro.FCPXML.Gap>.gap)
     }
     
-    // Note: uncomment when live-drawing element model is implemented.
-    // public static var liveDrawing: Self {
-    //     .init(base: FinalCutPro.FCPXML.ElementModelType<FinalCutPro.FCPXML.LiveDrawing>.liveDrawing)
-    // }
-    
+    public static var liveDrawing: Self {
+        .init(base: FinalCutPro.FCPXML.ElementModelType<FinalCutPro.FCPXML.LiveDrawing>.liveDrawing)
+    }
+
     public static var mcClip: Self {
         .init(base: FinalCutPro.FCPXML.ElementModelType<FinalCutPro.FCPXML.MCClip>.mcClip)
     }

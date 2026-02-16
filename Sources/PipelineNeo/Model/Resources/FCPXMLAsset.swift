@@ -59,6 +59,7 @@ extension FinalCutPro.FCPXML.Asset {
         audioRate: FinalCutPro.FCPXML.AudioRate? = nil,
         videoSources: Int = 0,
         auxVideoFlags: String? = nil,
+        heroEyeOverride: String? = nil,  // FCPXML 1.13+; omit for 1.5–1.12
         mediaRep: FinalCutPro.FCPXML.MediaRep = .init(),
         metadata: FinalCutPro.FCPXML.Metadata? = nil
     ) {
@@ -77,7 +78,46 @@ extension FinalCutPro.FCPXML.Asset {
         self.audioRate = audioRate
         self.videoSources = videoSources
         self.auxVideoFlags = auxVideoFlags
+        self.heroEyeOverride = heroEyeOverride
         self.mediaRep = mediaRep
+        self.metadata = metadata
+    }
+
+    /// Initializer with multiple media representations (e.g. original + proxy).
+    public init(
+        id: String,
+        name: String? = nil,
+        start: Fraction? = nil,
+        duration: Fraction? = nil,
+        format: String? = nil,
+        uid: String? = nil,
+        hasAudio: Bool = false,
+        hasVideo: Bool = false,
+        audioSources: Int = 0,
+        audioChannels: Int = 0,
+        audioRate: FinalCutPro.FCPXML.AudioRate? = nil,
+        videoSources: Int = 0,
+        auxVideoFlags: String? = nil,
+        heroEyeOverride: String? = nil,  // FCPXML 1.13+; omit for 1.5–1.12
+        mediaReps: [FinalCutPro.FCPXML.MediaRep],
+        metadata: FinalCutPro.FCPXML.Metadata? = nil
+    ) {
+        self.init()
+        self.id = id
+        self.name = name
+        self.start = start
+        self.duration = duration
+        self.format = format
+        self.uid = uid
+        self.hasAudio = hasAudio
+        self.hasVideo = hasVideo
+        self.audioSources = audioSources
+        self.audioChannels = audioChannels
+        self.audioRate = audioRate
+        self.videoSources = videoSources
+        self.auxVideoFlags = auxVideoFlags
+        self.heroEyeOverride = heroEyeOverride
+        self.mediaReps = mediaReps.isEmpty ? [.init()] : mediaReps
         self.metadata = metadata
     }
 }
@@ -122,9 +162,11 @@ extension FinalCutPro.FCPXML.Asset {
         case projectionOverride
         case stereoscopicOverride
         case auxVideoFlags
+        /// Hero eye override for stereoscopic. FCPXML 1.13+; backward compatible with 1.5 (omit when version < 1.13). "left" | "right".
+        case heroEyeOverride
     }
     
-    // contains one or more media-rep
+    // contains one or more media-rep (backward compatible with 1.5: DTD allows media-rep+ in all supported versions)
     // can contain metadata
 }
 
@@ -232,6 +274,12 @@ extension FinalCutPro.FCPXML.Asset {
         get { element.stringValue(forAttributeNamed: Attributes.auxVideoFlags.rawValue) }
         nonmutating set { element.addAttribute(withName: Attributes.auxVideoFlags.rawValue, value: newValue) }
     }
+    
+    /// Hero eye override for stereoscopic. FCPXML 1.13+; backward compatible with 1.5 (omit when version < 1.13). Values: "left" | "right".
+    public var heroEyeOverride: String? {
+        get { element.stringValue(forAttributeNamed: Attributes.heroEyeOverride.rawValue) }
+        nonmutating set { element.addAttribute(withName: Attributes.heroEyeOverride.rawValue, value: newValue) }
+    }
 }
 
 extension FinalCutPro.FCPXML.Asset: FCPXMLElementOptionalStart { }
@@ -241,18 +289,30 @@ extension FinalCutPro.FCPXML.Asset: FCPXMLElementOptionalDuration { }
 // MARK: - Children
 
 extension FinalCutPro.FCPXML.Asset {
-    // Note: DTD allows one or more media-rep children.
-    // only used by `asset`
+    /// All media representations (original and proxy). DTD: one or more `media-rep`. Backward compatible with 1.5.
+    public var mediaReps: [FinalCutPro.FCPXML.MediaRep] {
+        get {
+            Array(element.children(whereFCPElement: .mediaRep))
+        }
+        nonmutating set {
+            element._updateChildElements(ofType: .mediaRep, with: newValue)
+        }
+    }
+
+    /// First media representation; backward-compatible single-rep access.
+    /// Get: first of `mediaReps`, or a default instance (and add it as child if none).
+    /// Set: replaces first rep or appends (so `mediaReps` becomes `[newValue]` or `[newValue] + mediaReps.dropFirst()`).
     public var mediaRep: FinalCutPro.FCPXML.MediaRep {
         get {
             element.firstChild(whereFCPElement: .mediaRep, defaultChild: .init())
         }
         nonmutating set {
-            element._updateFirstChildElement(
-                ofType: .mediaRep,
-                withChild: newValue,
-                default: .init()
-            )
+            let current = mediaReps
+            if current.isEmpty {
+                mediaReps = [newValue]
+            } else {
+                mediaReps = [newValue] + Array(current.dropFirst())
+            }
         }
     }
 }
