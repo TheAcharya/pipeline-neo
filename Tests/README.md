@@ -2,7 +2,7 @@
 
 This directory contains the test suite for Pipeline Neo, a Swift 6 framework for Final Cut Pro FCPXML processing with SwiftTimecode integration.
 
-- **Test count:** 628 tests  
+- **Test count:** 638 tests  
 - **Scope:** Parsing, timecode, document operations, file loading, timeline export, validation, timeline manipulation, media processing, typed models (adjustments, filters, captions/titles, keyframe animation), CMTime Codable, collections, Live Drawing (1.11+), HiddenClipMarker (1.13+), Format/Asset 1.13+ (heroEye, heroEyeOverride, mediaReps), SmartCollection match rules, 360 video (projection, stereoscopic), auditions, conform-rate, still images, multicam, secondary storylines, audio keyframes, keyword collections/folders, and all supported FCPXML versions and frame rates  
 - **Layout:** Shared utilities for sample paths; file tests per sample; logic/parsing tests for model types and structure  
 
@@ -85,6 +85,7 @@ Tests/
     ├── FilterTests.swift
     ├── ImportOptionsTests.swift
     ├── KeyframeAnimationTests.swift
+    ├── AudioKeyframeTests.swift
     ├── SmartCollectionTests.swift
     ├── Transform360Tests.swift
     ├── VersionConversionTests.swift
@@ -199,6 +200,7 @@ Tests are discoverable via **XCTestManifests.swift**. Run `swift test` in an env
 - **FilterTests** — VideoFilter, AudioFilter, VideoFilterMask, FilterParameter (keyframe animation, param auxValue 1.11+); Codable, clip integration.
 - **CaptionTitleTests** — Caption, Title, TextStyle, TextStyleDefinition; typedTextStyleDefinitions; XML parse/serialization; CaptionSample.fcpxml file test.
 - **KeyframeAnimationTests** — KeyframeAnimation, Keyframe (interpolation), FadeIn/FadeOut (fade types); FilterParameter integration; CMTime Codable.
+- **AudioKeyframeTests** — Audio keyframes in adjust-volume (param name="amount" with keyframeAnimation); parsing from FCPXML samples; decibel values (-3dB, -37dB); time values (FCPXML fractional format); fadeIn/fadeOut integration; multiple keyframes in sequence; secondary storyline and nested clips; TimelineWithSecondaryStorylineWithAudioKeyframes, TimelineSample file tests.
 - **CMTimeCodableTests** — CMTime encode/decode as FCPXML time strings; round-trip; edge cases.
 - **CollectionTests** — CollectionFolder, KeywordCollection; nested folders; Codable.
 
@@ -274,7 +276,7 @@ Tests that require a sample use `loadFCPXMLSample(named:)` or `loadFCPXMLSampleD
 
 **APIAndEdgeCaseTests** — Async load API; optional logging (NoOp, Print, createCustomPipeline); edge cases (parse empty/invalid/malformed data; invalid path, resolveFCPXMLFileURL); validation types (ValidationResult with errors, ValidationWarning); FCPXML creation (all versions); **Live Drawing (1.11+)** model and AnyTimeline round-trip; **HiddenClipMarker (1.13+)** model and fcpxAnnotations.
 
-**Other files** (see [§3.2](#32-dedicated-test-files-by-theme)) — TimelineManipulationTests, FCPXMLTimecodeTests, MIMETypeDetectionTests, AssetValidationTests, SilenceDetectionTests, AssetDurationMeasurementTests, ParallelFileIOTests, AdjustmentTests, AudioEnhancementTests, Transform360Tests, FilterTests, CaptionTitleTests, KeyframeAnimationTests, CMTimeCodableTests, CollectionTests.
+**Other files** (see [§3.2](#32-dedicated-test-files-by-theme)) — TimelineManipulationTests, FCPXMLTimecodeTests, MIMETypeDetectionTests, AssetValidationTests, SilenceDetectionTests, AssetDurationMeasurementTests, ParallelFileIOTests, AdjustmentTests, AudioEnhancementTests, Transform360Tests, FilterTests, CaptionTitleTests, KeyframeAnimationTests, AudioKeyframeTests, CMTimeCodableTests, CollectionTests.
 
 **FCPXMLFileLoader async** — testFCPXMLFileLoaderAsyncLoadFromURL (temp file, root/name); testFCPXMLFileLoaderAsyncLoadThrowsForMissingFile (FCPXMLLoadError).
 

@@ -27,10 +27,10 @@ final class FCPXMLFileTest_Keywords: XCTestCase {
         XCTAssertFalse(events.isEmpty, "Expected at least one event")
         
         // Verify keywords exist in events
+        var foundKeywords = false
         for event in events {
             let eventElement = event.element
             guard let clips = eventElement.eventClips else { continue }
-            var foundKeywords = false
             for clip in clips {
                 let annotations = clip.fcpxAnnotations
                 let keywords = annotations.filter { $0.fcpxType == FCPXMLElementType.keyword }
@@ -39,8 +39,11 @@ final class FCPXMLFileTest_Keywords: XCTestCase {
                     break
                 }
             }
-            // At least some events should have keywords
+            if foundKeywords {
+                break
+            }
         }
+        XCTAssertTrue(foundKeywords, "Expected to find keywords in at least one event")
     }
 
     func testKeywordsWithinFolders() throws {
