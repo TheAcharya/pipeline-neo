@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE fcpxml>
+
+<fcpxml version="1.13">
+    <resources>
+        <format id="r1" name="FFVideoFormat720p2398" frameDuration="1001/24000s" width="1280" height="720" colorSpace="1-1-1 (Rec. 709)"/>
+        <asset id="r2" name="chocolate for senses" uid="39C9842B509855F0493200C91EFB7222" start="5937932/24000s" duration="631631/24000s" hasVideo="1" format="r1" hasAudio="1" videoSources="1" audioSources="1" audioChannels="2" audioRate="48000">
+            <media-rep kind="original-media" sig="39C9842B509855F0493200C91EFB7222" src="file:///Users/user/Movies/Media/Chocolats%20du%20CaliBressan%20(WITHOUT%20MUSIC)/Chocolate%20Media/Interviews/chocolate%20for%20senses.mov">
+                <bookmark>Ym9vazAFAAAAAAUQQAAAAGopiQg/fiy+3ZQAb+zTWfpVwhq3dRjkP+w+mhMA8DFhAAAAAAAAAAAAAAAAAAAAAEAEAAAEAAAAAwMAAAAYACgHAAAAAQEAAFZvbHVtZXMAEAAAAAEBAABBbmNlc3RyYWwgUmVjYWxsDAAAAAEBAABBcHAgUHJvamVjdHMMAAAAAQEAAFBpcGVsaW5lIE5lbwMAAAABAQAARkNQAAUAAAABAQAATWVkaWEAAAAoAAAAAQEAAENob2NvbGF0cyBkdSBDYWxpQnJlc3NhbiAoV0lUSE9VVCBNVVNJQykPAAAAAQEAAENob2NvbGF0ZSBNZWRpYQAKAAAAAQEAAEludGVydmlld3MAABgAAAABAQAAY2hvY29sYXRlIGZvciBzZW5zZXMubW92KAAAAAEGAAAQAAAAIAAAADgAAABMAAAAYAAAAGwAAAB8AAAArAAAAMQAAADYAAAACAAAAAQDAAB6SQAAAAAAAAgAAAAEAwAAAgAAAAAAAAAIAAAABAMAAF0DAgAAAAAACAAAAAQDAAAMOAsAAAAAAAgAAAAEAwAA3G4LAAAAAAAIAAAABAMAAMb/CwAAAAAACAAAAAQDAADwewsAAAAAAAgAAAAEAwAA8XsLAAAAAAAIAAAABAMAAG98CwAAAAAACAAAAAQDAACBfAsAAAAAACgAAAABBgAAKAEAADgBAABIAQAAWAEAAGgBAAB4AQAAiAEAAJgBAACoAQAAuAEAAAgAAAAABAAAQcDv8zwAAAAYAAAAAQIAAAEAAAAAAAAADwAAAAAAAAAAAAAAAAAAACMAAAABCQAAZmlsZTovLy9Wb2x1bWVzL0FuY2VzdHJhbCUyMFJlY2FsbC8ACAAAAAQDAAAAwFrU6AAAAAgAAAAABAAAQcTIXika2WEkAAAAAQEAAEY0QUExRjc5LTAwNUMtNEQwMi05MEVFLTMxNDA4MTU4MjFDMxgAAAABAgAAAQEAAAEAAADvEwAAAQAAAAAAAAAAAAAAGQAAAAEBAAAvVm9sdW1lcy9BbmNlc3RyYWwgUmVjYWxsAAAACAAAAAEJAABmaWxlOi8vLwwAAAABAQAATWFjaW50b3NoIEhECAAAAAQDAAAAUKEbcwAAAAgAAAAABAAAQcdorZwAAAAkAAAAAQEAADI4QTVGMDdCLUNDQUEtNDQ3OS04MkZDLUExMEM3NkJGNEY4MBgAAAABAgAAgQAAAAEAAADvEwAAAQAAAAAAAAAAAAAAAQAAAAEBAAAvAAAAYAAAAP7///8A8AAAAAAAAAcAAAACIAAAdAMAAAAAAAAFIAAA5AIAAAAAAAAQIAAA9AIAAAAAAAARIAAAKAMAAAAAAAASIAAACAMAAAAAAAATIAAAGAMAAAAAAAAgIAAAVAMAAAAAAAAEAAAAAwMAAADwAAAEAAAAAwMAAAAAAAAEAAAAAwMAAAEAAAAsAAAAAQYAAOgDAAD0AwAAAAQAAPQDAAD0AwAA9AMAAPQDAAD0AwAA9AMAAPQDAAD0AwAAqAAAAP7///8BAAAAgAMAAA0AAAAEEAAA+AAAAAAAAAAFEAAAyAEAAAAAAAAQEAAACAIAAAAAAABAEAAA+AEAAAAAAAAAIAAADAQAAAAAAAACIAAAwAIAAAAAAAAFIAAAKAIAAAAAAAAQIAAAIAAAAAAAAAARIAAAdAIAAAAAAAASIAAAVAIAAAAAAAATIAAAZAIAAAAAAAAgIAAAoAIAAAAAAAAQ0AAABAAAAAAAAAA=</bookmark>
+            </media-rep>
+            <metadata>
+                <md key="com.apple.proapps.studio.rawToLogConversion" value="0"/>
+                <md key="com.apple.proapps.spotlight.kMDItemProfileName" value="HD (1-1-1)"/>
+                <md key="com.apple.proapps.studio.cameraISO" value="0"/>
+                <md key="com.apple.proapps.studio.cameraColorTemperature" value="0"/>
+                <md key="com.apple.proapps.spotlight.kMDItemCodecs">
+                    <array>
+                        <string>HEVC</string>
+                        <string>MPEG-4 AAC</string>
+                    </array>
+                </md>
+                <md key="com.apple.proapps.mio.ingestDate" value="2019-01-10 03:47:54 +0800"/>
+            </metadata>
+        </asset>
+        <asset id="r3" name="MULTICAM MATCH SHOTS 11" uid="AF09D001B58BFD2309958DD41DCD2D4E" start="1398397/24000s" duration="175175/24000s" hasVideo="1" format="r4" hasAudio="1" videoSources="1" audioSources="1" audioChannels="2" audioRate="48000">
+            <media-rep kind="original-media" sig="AF09D001B58BFD2309958DD41DCD2D4E" src="file:///Users/user/Movies/Media/CC%20Clips/MULTICAM%20MATCH%20SHOTS%2011.mov">
+                <bookmark>Ym9va7AEAAAAAAUQQAAAAGNXgy4KUlmQAqLD1eSzZWhfmFAj1RLcayL1nFGPWXZZAAAAAAAAAAAAAAAAAAAAAMADAAAEAAAAAwMAAAAYACgHAAAAAQEAAFZvbHVtZXMAEAAAAAEBAABBbmNlc3RyYWwgUmVjYWxsDAAAAAEBAABBcHAgUHJvamVjdHMMAAAAAQEAAFBpcGVsaW5lIE5lbwMAAAABAQAARkNQAAUAAAABAQAATWVkaWEAAAAIAAAAAQEAAENDIENsaXBzGwAAAAEBAABNVUxUSUNBTSBNQVRDSCBTSE9UUyAxMS5tb3YAIAAAAAEGAAAQAAAAIAAAADgAAABMAAAAYAAAAGwAAAB8AAAAjAAAAAgAAAAEAwAAekkAAAAAAAAIAAAABAMAAAIAAAAAAAAACAAAAAQDAABdAwIAAAAAAAgAAAAEAwAADDgLAAAAAAAIAAAABAMAANxuCwAAAAAACAAAAAQDAADG/wsAAAAAAAgAAAAEAwAAZnsLAAAAAAAIAAAABAMAAGl7CwAAAAAAIAAAAAEGAADYAAAA6AAAAPgAAAAIAQAAGAEAACgBAAA4AQAASAEAAAgAAAAABAAAQcDv8zwAAAAYAAAAAQIAAAEAAAAAAAAADwAAAAAAAAAAAAAAAAAAACMAAAABCQAAZmlsZTovLy9Wb2x1bWVzL0FuY2VzdHJhbCUyMFJlY2FsbC8ACAAAAAQDAAAAwFrU6AAAAAgAAAAABAAAQcTIXika2WEkAAAAAQEAAEY0QUExRjc5LTAwNUMtNEQwMi05MEVFLTMxNDA4MTU4MjFDMxgAAAABAgAAAQEAAAEAAADvEwAAAQAAAAAAAAAAAAAAGQAAAAEBAAAvVm9sdW1lcy9BbmNlc3RyYWwgUmVjYWxsAAAACAAAAAEJAABmaWxlOi8vLwwAAAABAQAATWFjaW50b3NoIEhECAAAAAQDAAAAUKEbcwAAAAgAAAAABAAAQcdorZwAAAAkAAAAAQEAADI4QTVGMDdCLUNDQUEtNDQ3OS04MkZDLUExMEM3NkJGNEY4MBgAAAABAgAAgQAAAAEAAADvEwAAAQAAAAAAAAAAAAAAAQAAAAEBAAAvAAAAYAAAAP7///8A8AAAAAAAAAcAAAACIAAA/AIAAAAAAAAFIAAAbAIAAAAAAAAQIAAAfAIAAAAAAAARIAAAsAIAAAAAAAASIAAAkAIAAAAAAAATIAAAoAIAAAAAAAAgIAAA3AIAAAAAAAAEAAAAAwMAAADwAAAEAAAAAwMAAAAAAAAEAAAAAwMAAAEAAAAkAAAAAQYAAHADAAB8AwAAiAMAAHwDAAB8AwAAfAMAAHwDAAB8AwAAfAMAAKgAAAD+////AQAAAAgDAAANAAAABBAAALAAAAAAAAAABRAAAFgBAAAAAAAAEBAAAJABAAAAAAAAQBAAAIABAAAAAAAAACAAAJQDAAAAAAAAAiAAAEgCAAAAAAAABSAAALABAAAAAAAAECAAACAAAAAAAAAAESAAAPwBAAAAAAAAEiAAANwBAAAAAAAAEyAAAOwBAAAAAAAAICAAACgCAAAAAAAAENAAAAQAAAAAAAAA</bookmark>
+            </media-rep>
+            <metadata>
+                <md key="com.apple.proapps.studio.rawToLogConversion" value="0"/>
+                <md key="com.apple.proapps.spotlight.kMDItemProfileName" value="HD (1-1-1)"/>
+                <md key="com.apple.proapps.studio.cameraISO" value="0"/>
+                <md key="com.apple.proapps.studio.cameraColorTemperature" value="0"/>
+                <md key="com.apple.proapps.spotlight.kMDItemCodecs">
+                    <array>
+                        <string>H.264</string>
+                        <string>MPEG-4 AAC</string>
+                    </array>
+                </md>
+                <md key="com.apple.proapps.mio.ingestDate" value="2017-07-10 21:12:50 +0800"/>
+            </metadata>
+        </asset>
+        <format id="r4" name="FFVideoFormat1080p2398" frameDuration="1001/24000s" width="1920" height="1080" colorSpace="1-1-1 (Rec. 709)"/>
+        <asset id="r5" name="Happy Talk Final" uid="E66D49C66FC9E01D0AF81294F57D3394" start="0s" duration="4741737/90000s" hasVideo="1" format="r6" hasAudio="1" videoSources="1" audioSources="1" audioChannels="2" audioRate="48000">
+            <media-rep kind="original-media" sig="E66D49C66FC9E01D0AF81294F57D3394" src="file:///Users/user/Movies/Media/The%20News%20-%20Coffee%20Shop%20Scene%20(WITHOUT%20MUSIC)/Happy%20Talk%20Final.mp4">
+                <bookmark>Ym9va8wEAAAAAAUQQAAAAINHMQ4wIXNUpc+i0Iqr1u/kO2ziaatw9Irs2gAMKcHoAAAAAAAAAAAAAAAAAAAAANwDAAAEAAAAAwMAAAAYACgHAAAAAQEAAFZvbHVtZXMAEAAAAAEBAABBbmNlc3RyYWwgUmVjYWxsDAAAAAEBAABBcHAgUHJvamVjdHMMAAAAAQEAAFBpcGVsaW5lIE5lbwMAAAABAQAARkNQAAUAAAABAQAATWVkaWEAAAAsAAAAAQEAAFRoZSBOZXdzIC0gQ29mZmVlIFNob3AgU2NlbmUgKFdJVEhPVVQgTVVTSUMpFAAAAAEBAABIYXBweSBUYWxrIEZpbmFsLm1wNCAAAAABBgAAEAAAACAAAAA4AAAATAAAAGAAAABsAAAAfAAAALAAAAAIAAAABAMAAHpJAAAAAAAACAAAAAQDAAACAAAAAAAAAAgAAAAEAwAAXQMCAAAAAAAIAAAABAMAAAw4CwAAAAAACAAAAAQDAADcbgsAAAAAAAgAAAAEAwAAxv8LAAAAAAAIAAAABAMAAGp7CwAAAAAACAAAAAQDAABrewsAAAAAACAAAAABBgAA9AAAAAQBAAAUAQAAJAEAADQBAABEAQAAVAEAAGQBAAAIAAAAAAQAAEHA7/M9AAAAGAAAAAECAAABAAAAAAAAAA8AAAAAAAAAAAAAAAAAAAAjAAAAAQkAAGZpbGU6Ly8vVm9sdW1lcy9BbmNlc3RyYWwlMjBSZWNhbGwvAAgAAAAEAwAAAMBa1OgAAAAIAAAAAAQAAEHEyF4pGtlhJAAAAAEBAABGNEFBMUY3OS0wMDVDLTREMDItOTBFRS0zMTQwODE1ODIxQzMYAAAAAQIAAAEBAAABAAAA7xMAAAEAAAAAAAAAAAAAABkAAAABAQAAL1ZvbHVtZXMvQW5jZXN0cmFsIFJlY2FsbAAAAAgAAAABCQAAZmlsZTovLy8MAAAAAQEAAE1hY2ludG9zaCBIRAgAAAAEAwAAAFChG3MAAAAIAAAAAAQAAEHHaK2cAAAAJAAAAAEBAAAyOEE1RjA3Qi1DQ0FBLTQ0NzktODJGQy1BMTBDNzZCRjRGODAYAAAAAQIAAIEAAAABAAAA7xMAAAEAAAAAAAAAAAAAAAEAAAABAQAALwAAAGAAAAD+////APAAAAAAAAAHAAAAAiAAABgDAAAAAAAABSAAAIgCAAAAAAAAECAAAJgCAAAAAAAAESAAAMwCAAAAAAAAEiAAAKwCAAAAAAAAEyAAALwCAAAAAAAAICAAAPgCAAAAAAAABAAAAAMDAAAA8AAABAAAAAMDAAAAAAAABAAAAAMDAAABAAAAJAAAAAEGAACMAwAAmAMAAKQDAACYAwAAmAMAAJgDAACYAwAAmAMAAJgDAACoAAAA/v///wEAAAAkAwAADQAAAAQQAADMAAAAAAAAAAUQAAB0AQAAAAAAABAQAACsAQAAAAAAAEAQAACcAQAAAAAAAAAgAACwAwAAAAAAAAIgAABkAgAAAAAAAAUgAADMAQAAAAAAABAgAAAgAAAAAAAAABEgAAAYAgAAAAAAABIgAAD4AQAAAAAAABMgAAAIAgAAAAAAACAgAABEAgAAAAAAABDQAAAEAAAAAAAAAA==</bookmark>
+            </media-rep>
+            <metadata>
+                <md key="com.apple.proapps.studio.rawToLogConversion" value="0"/>
+                <md key="com.apple.proapps.spotlight.kMDItemProfileName" value="HD (1-1-1)"/>
+                <md key="com.apple.proapps.studio.cameraISO" value="0"/>
+                <md key="com.apple.proapps.studio.cameraColorTemperature" value="0"/>
+                <md key="com.apple.proapps.spotlight.kMDItemCodecs">
+                    <array>
+                        <string>AVC Coding</string>
+                        <string>MPEG-4 AAC</string>
+                    </array>
+                </md>
+                <md key="com.apple.proapps.mio.ingestDate" value="2026-02-18 10:37:42 +0800"/>
+            </metadata>
+        </asset>
+        <format id="r6" name="FFVideoFormat720p2997" frameDuration="1001/30000s" width="1280" height="720" colorSpace="1-1-1 (Rec. 709)"/>
+    </resources>
+    <library location="file:///Users/user/Movies/FCPX%20Essential%20Training.fcpbundle/">
+        <event name="Projects" uid="44213ED4-48FA-4D04-B182-AC5DBF568CE3">
+            <project name="Audition-Sample" uid="109F511D-BF4C-4BA7-A679-88E67974FDFE" modDate="2026-02-18 15:03:08 +0800">
+                <sequence format="r1" duration="237237/24000s" tcStart="0s" tcFormat="NDF" audioLayout="stereo" audioRate="48k" keywords="chapter 4 ">
+                    <note>Label 2: Forest
+</note>
+                    <spine>
+                        <audition offset="0s">
+                            <asset-clip ref="r2" name="chocolate for senses" start="6037031/24000s" duration="237237/24000s" tcFormat="NDF" audioRole="dialogue">
+                                <adjust-colorConform enabled="1" autoOrManual="manual" conformType="conformNone" peakNitsOfPQSource="1000" peakNitsOfSDRToPQSource="203"/>
+                                <keyword start="1484483/6000s" duration="631631/24000s" value="interviews"/>
+                            </asset-clip>
+                            <asset-clip ref="r3" name="MULTICAM MATCH SHOTS 11" start="1398397/24000s" duration="175175/24000s" format="r4" tcFormat="NDF" audioRole="dialogue">
+                                <adjust-colorConform enabled="1" autoOrManual="manual" conformType="conformNone" peakNitsOfPQSource="1000" peakNitsOfSDRToPQSource="203"/>
+                            </asset-clip>
+                            <asset-clip ref="r5" name="Happy Talk Final" duration="1580579/30000s" format="r6" tcFormat="NDF" audioRole="dialogue">
+                                <conform-rate scaleEnabled="0" srcFrameRate="29.97"/>
+                                <adjust-colorConform enabled="1" autoOrManual="manual" conformType="conformNone" peakNitsOfPQSource="1000" peakNitsOfSDRToPQSource="203"/>
+                            </asset-clip>
+                        </audition>
+                    </spine>
+                </sequence>
+            </project>
+        </event>
+        <smart-collection name="Projects" match="all">
+            <match-clip rule="is" type="project"/>
+        </smart-collection>
+        <smart-collection name="All Video" match="any">
+            <match-media rule="is" type="videoOnly"/>
+            <match-media rule="is" type="videoWithAudio"/>
+        </smart-collection>
+        <smart-collection name="Audio Only" match="all">
+            <match-media rule="is" type="audioOnly"/>
+        </smart-collection>
+        <smart-collection name="Stills" match="all">
+            <match-media rule="is" type="stills"/>
+        </smart-collection>
+        <smart-collection name="Favorites" match="all">
+            <match-ratings value="favorites"/>
+        </smart-collection>
+    </library>
+</fcpxml>

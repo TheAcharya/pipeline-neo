@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE fcpxml>
+
+<fcpxml version="1.13">
+    <resources>
+        <format id="r1" name="FFVideoFormat1080p2398" frameDuration="1001/24000s" width="1920" height="1080" colorSpace="1-1-1 (Rec. 709)"/>
+        <media id="r2" name="Chocolate Interview" uid="snP6PwOZT4Wr+sdA39hX8g" modDate="2018-11-06 00:46:39 +0800">
+            <multicam format="r1" tcStart="0s" tcFormat="NDF">
+                <mc-angle name="4CH001I" angleID="vx767AypQ4KHHxVD6YFRdg">
+                    <asset-clip ref="r3" offset="0s" name="4CH001I" start="41029s" duration="13273260/48000s" audioRole="dialogue">
+                        <keyword start="41029s" duration="13273408/48000s" value="Multicam Clips, Sync Video and Audio"/>
+                    </asset-clip>
+                </mc-angle>
+                <mc-angle name="Day2_InterviewOwners_02_A" angleID="UNx7r0rBQK+YH4GNKotbRg">
+                    <gap name="Gap" offset="0s" start="86400314/24000s" duration="260260/24000s"/>
+                    <asset-clip ref="r4" offset="260260/24000s" name="Day2_InterviewOwners_02_A" duration="12532520/48000s" format="r5" tcFormat="NDF" audioRole="dialogue">
+                        <adjust-colorConform enabled="1" autoOrManual="manual" conformType="conformNone" peakNitsOfPQSource="1000" peakNitsOfSDRToPQSource="203"/>
+                        <keyword start="0s" duration="12532520/48000s" value="Multicam Clips"/>
+                    </asset-clip>
+                </mc-angle>
+                <mc-angle name="Day2_InterviewOwners_02_B" angleID="c8SsDuAFQ02JBoSHZdjRuA">
+                    <gap name="Gap" offset="0s" start="86400314/24000s" duration="304304/24000s"/>
+                    <asset-clip ref="r6" offset="304304/24000s" name="Day2_InterviewOwners_02_B" duration="12138126/48000s" format="r5" tcFormat="NDF" audioRole="dialogue">
+                        <adjust-colorConform enabled="1" autoOrManual="manual" conformType="conformNone" peakNitsOfPQSource="1000" peakNitsOfSDRToPQSource="203"/>
+                        <keyword start="0s" duration="12138126/48000s" value="Multicam Clips, Sync Video and Audio"/>
+                    </asset-clip>
+                </mc-angle>
+                <mc-angle name="Day2_InterviewOwners_02_C" angleID="Mpl9fGiSRrqzjeHMpi/62g">
+                    <gap name="Gap" offset="0s" start="86400314/24000s" duration="338338/24000s"/>
+                    <asset-clip ref="r7" offset="338338/24000s" name="Day2_InterviewOwners_02_C" duration="12028016/48000s" format="r5" tcFormat="NDF" audioRole="dialogue">
+                        <adjust-colorConform enabled="1" autoOrManual="manual" conformType="conformNone" peakNitsOfPQSource="1000" peakNitsOfSDRToPQSource="203"/>
+                        <keyword start="0s" duration="12028016/48000s" value="Multicam Clips"/>
+                    </asset-clip>
+                </mc-angle>
+            </multicam>
+        </media>
+        <asset id="r3" name="4CH001I" uid="36EF4A27A54272FEB9152C461E18766F" start="41029s" duration="13273408/48000s" hasAudio="1" audioSources="1" audioChannels="2" audioRate="48000">
+            <media-rep kind="original-media" sig="36EF4A27A54272FEB9152C461E18766F" src="file:///Users/user/Movies/Media/Multicam%20Clips/Take%202/4CH001I.wav">
+                <bookmark>Ym9va9QEAAAAAAUQQAAAAKb7oKpYADAK+1hp25uwnqw76u6lyqyLcwNQv9wsW8goAAAAAAAAAAAAAAAAAAAAAOQDAAAEAAAAAwMAAAAYACgHAAAAAQEAAFZvbHVtZXMAEAAAAAEBAABBbmNlc3RyYWwgUmVjYWxsDAAAAAEBAABBcHAgUHJvamVjdHMMAAAAAQEAAFBpcGVsaW5lIE5lbwMAAAABAQAARkNQAAUAAAABAQAATWVkaWEAAAAOAAAAAQEAAE11bHRpY2FtIENsaXBzAAAGAAAAAQEAAFRha2UgMgAACwAAAAEBAAA0Q0gwMDFJLndhdgAkAAAAAQYAABAAAAAgAAAAOAAAAEwAAABgAAAAbAAAAHwAAACUAAAApAAAAAgAAAAEAwAAekkAAAAAAAAIAAAABAMAAAIAAAAAAAAACAAAAAQDAABdAwIAAAAAAAgAAAAEAwAADDgLAAAAAAAIAAAABAMAANxuCwAAAAAACAAAAAQDAADG/wsAAAAAAAgAAAAEAwAA3nsLAAAAAAAIAAAABAMAAOF7CwAAAAAACAAAAAQDAADlewsAAAAAACQAAAABBgAA5AAAAPQAAAAEAQAAFAEAACQBAAA0AQAARAEAAFQBAABkAQAACAAAAAAEAABBwO/zPQAAABgAAAABAgAAAQAAAAAAAAAPAAAAAAAAAAAAAAAAAAAAIwAAAAEJAABmaWxlOi8vL1ZvbHVtZXMvQW5jZXN0cmFsJTIwUmVjYWxsLwAIAAAABAMAAADAWtToAAAACAAAAAAEAABBxMheKRrZYSQAAAABAQAARjRBQTFGNzktMDA1Qy00RDAyLTkwRUUtMzE0MDgxNTgyMUMzGAAAAAECAAABAQAAAQAAAO8TAAABAAAAAAAAAAAAAAAZAAAAAQEAAC9Wb2x1bWVzL0FuY2VzdHJhbCBSZWNhbGwAAAAIAAAAAQkAAGZpbGU6Ly8vDAAAAAEBAABNYWNpbnRvc2ggSEQIAAAABAMAAABQoRtzAAAACAAAAAAEAABBx2itnAAAACQAAAABAQAAMjhBNUYwN0ItQ0NBQS00NDc5LTgyRkMtQTEwQzc2QkY0RjgwGAAAAAECAACBAAAAAQAAAO8TAAABAAAAAAAAAAAAAAABAAAAAQEAAC8AAABgAAAA/v///wDwAAAAAAAABwAAAAIgAAAcAwAAAAAAAAUgAACMAgAAAAAAABAgAACcAgAAAAAAABEgAADQAgAAAAAAABIgAACwAgAAAAAAABMgAADAAgAAAAAAACAgAAD8AgAAAAAAAAQAAAADAwAAAPAAAAQAAAADAwAAAAAAAAQAAAADAwAAAQAAACgAAAABBgAAkAMAAJwDAACoAwAAnAMAAJwDAACcAwAAnAMAAJwDAACcAwAAnAMAAKgAAAD+////AQAAACgDAAANAAAABBAAALgAAAAAAAAABRAAAHQBAAAAAAAAEBAAALABAAAAAAAAQBAAAKABAAAAAAAAACAAALQDAAAAAAAAAiAAAGgCAAAAAAAABSAAANABAAAAAAAAECAAACAAAAAAAAAAESAAABwCAAAAAAAAEiAAAPwBAAAAAAAAEyAAAAwCAAAAAAAAICAAAEgCAAAAAAAAENAAAAQAAAAAAAAA</bookmark>
+            </media-rep>
+            <metadata>
+                <md key="com.apple.proapps.mio.ingestDate" value="2018-10-06 04:22:16 +0800"/>
+            </metadata>
+        </asset>
+        <asset id="r4" name="Day2_InterviewOwners_02_A" uid="20F01B59B6E9A3259792BB18B8B084E8" start="0s" duration="6266260/24000s" hasVideo="1" format="r5" hasAudio="1" videoSources="1" audioSources="1" audioChannels="2" audioRate="48000">
+            <media-rep kind="original-media" sig="20F01B59B6E9A3259792BB18B8B084E8" src="file:///Users/user/Movies/Media/Multicam%20Clips/Take%202/Day2_InterviewOwners_02_A.mov">
+                <bookmark>Ym9va+gEAAAAAAUQQAAAAJBnAkRB73PNN7IRv2GxNS4n5X84Bu9mj8HIpTx3br5BAAAAAAAAAAAAAAAAAAAAAPgDAAAEAAAAAwMAAAAYACgHAAAAAQEAAFZvbHVtZXMAEAAAAAEBAABBbmNlc3RyYWwgUmVjYWxsDAAAAAEBAABBcHAgUHJvamVjdHMMAAAAAQEAAFBpcGVsaW5lIE5lbwMAAAABAQAARkNQAAUAAAABAQAATWVkaWEAAAAOAAAAAQEAAE11bHRpY2FtIENsaXBzAAAGAAAAAQEAAFRha2UgMgAAHQAAAAEBAABEYXkyX0ludGVydmlld093bmVyc18wMl9BLm1vdgAAACQAAAABBgAAEAAAACAAAAA4AAAATAAAAGAAAABsAAAAfAAAAJQAAACkAAAACAAAAAQDAAB6SQAAAAAAAAgAAAAEAwAAAgAAAAAAAAAIAAAABAMAAF0DAgAAAAAACAAAAAQDAAAMOAsAAAAAAAgAAAAEAwAA3G4LAAAAAAAIAAAABAMAAMb/CwAAAAAACAAAAAQDAADeewsAAAAAAAgAAAAEAwAA4XsLAAAAAAAIAAAABAMAAOJ7CwAAAAAAJAAAAAEGAAD4AAAACAEAABgBAAAoAQAAOAEAAEgBAABYAQAAaAEAAHgBAAAIAAAAAAQAAEHA7/M9AAAAGAAAAAECAAABAAAAAAAAAA8AAAAAAAAAAAAAAAAAAAAjAAAAAQkAAGZpbGU6Ly8vVm9sdW1lcy9BbmNlc3RyYWwlMjBSZWNhbGwvAAgAAAAEAwAAAMBa1OgAAAAIAAAAAAQAAEHEyF4pGtlhJAAAAAEBAABGNEFBMUY3OS0wMDVDLTREMDItOTBFRS0zMTQwODE1ODIxQzMYAAAAAQIAAAEBAAABAAAA7xMAAAEAAAAAAAAAAAAAABkAAAABAQAAL1ZvbHVtZXMvQW5jZXN0cmFsIFJlY2FsbAAAAAgAAAABCQAAZmlsZTovLy8MAAAAAQEAAE1hY2ludG9zaCBIRAgAAAAEAwAAAFChG3MAAAAIAAAAAAQAAEHHaK2cAAAAJAAAAAEBAAAyOEE1RjA3Qi1DQ0FBLTQ0NzktODJGQy1BMTBDNzZCRjRGODAYAAAAAQIAAIEAAAABAAAA7xMAAAEAAAAAAAAAAAAAAAEAAAABAQAALwAAAGAAAAD+////APAAAAAAAAAHAAAAAiAAADADAAAAAAAABSAAAKACAAAAAAAAECAAALACAAAAAAAAESAAAOQCAAAAAAAAEiAAAMQCAAAAAAAAEyAAANQCAAAAAAAAICAAABADAAAAAAAABAAAAAMDAAAA8AAABAAAAAMDAAAAAAAABAAAAAMDAAABAAAAKAAAAAEGAACkAwAAsAMAALwDAACwAwAAsAMAALADAACwAwAAsAMAALADAACwAwAAqAAAAP7///8BAAAAPAMAAA0AAAAEEAAAzAAAAAAAAAAFEAAAiAEAAAAAAAAQEAAAxAEAAAAAAABAEAAAtAEAAAAAAAAAIAAAyAMAAAAAAAACIAAAfAIAAAAAAAAFIAAA5AEAAAAAAAAQIAAAIAAAAAAAAAARIAAAMAIAAAAAAAASIAAAEAIAAAAAAAATIAAAIAIAAAAAAAAgIAAAXAIAAAAAAAAQ0AAABAAAAAAAAAA=</bookmark>
+            </media-rep>
+            <metadata>
+                <md key="com.apple.proapps.studio.rawToLogConversion" value="0"/>
+                <md key="com.apple.proapps.spotlight.kMDItemProfileName" value="HD (1-1-1)"/>
+                <md key="com.apple.proapps.studio.cameraISO" value="0"/>
+                <md key="com.apple.proapps.studio.cameraColorTemperature" value="0"/>
+                <md key="com.apple.proapps.spotlight.kMDItemCodecs">
+                    <array>
+                        <string>HEVC</string>
+                        <string>MPEG-4 AAC</string>
+                    </array>
+                </md>
+                <md key="com.apple.proapps.mio.ingestDate" value="2019-01-10 03:47:55 +0800"/>
+            </metadata>
+        </asset>
+        <format id="r5" name="FFVideoFormat720p2398" frameDuration="1001/24000s" width="1280" height="720" colorSpace="1-1-1 (Rec. 709)"/>
+        <asset id="r6" name="Day2_InterviewOwners_02_B" uid="4D80CB9827D255B5140EAA3A6A4F72A1" start="0s" duration="6069063/24000s" hasVideo="1" format="r5" hasAudio="1" videoSources="1" audioSources="1" audioChannels="2" audioRate="48000">
+            <media-rep kind="original-media" sig="4D80CB9827D255B5140EAA3A6A4F72A1" src="file:///Users/user/Movies/Media/Multicam%20Clips/Take%202/Day2_InterviewOwners_02_B.mov">
+                <bookmark>Ym9va+gEAAAAAAUQQAAAAAiwneuBSw4Vfq0vsb9ViCwVsbeHop5fha+iacoWysVGAAAAAAAAAAAAAAAAAAAAAPgDAAAEAAAAAwMAAAAYACgHAAAAAQEAAFZvbHVtZXMAEAAAAAEBAABBbmNlc3RyYWwgUmVjYWxsDAAAAAEBAABBcHAgUHJvamVjdHMMAAAAAQEAAFBpcGVsaW5lIE5lbwMAAAABAQAARkNQAAUAAAABAQAATWVkaWEAAAAOAAAAAQEAAE11bHRpY2FtIENsaXBzAAAGAAAAAQEAAFRha2UgMgAAHQAAAAEBAABEYXkyX0ludGVydmlld093bmVyc18wMl9CLm1vdgAAACQAAAABBgAAEAAAACAAAAA4AAAATAAAAGAAAABsAAAAfAAAAJQAAACkAAAACAAAAAQDAAB6SQAAAAAAAAgAAAAEAwAAAgAAAAAAAAAIAAAABAMAAF0DAgAAAAAACAAAAAQDAAAMOAsAAAAAAAgAAAAEAwAA3G4LAAAAAAAIAAAABAMAAMb/CwAAAAAACAAAAAQDAADeewsAAAAAAAgAAAAEAwAA4XsLAAAAAAAIAAAABAMAAON7CwAAAAAAJAAAAAEGAAD4AAAACAEAABgBAAAoAQAAOAEAAEgBAABYAQAAaAEAAHgBAAAIAAAAAAQAAEHA7/M9AAAAGAAAAAECAAABAAAAAAAAAA8AAAAAAAAAAAAAAAAAAAAjAAAAAQkAAGZpbGU6Ly8vVm9sdW1lcy9BbmNlc3RyYWwlMjBSZWNhbGwvAAgAAAAEAwAAAMBa1OgAAAAIAAAAAAQAAEHEyF4pGtlhJAAAAAEBAABGNEFBMUY3OS0wMDVDLTREMDItOTBFRS0zMTQwODE1ODIxQzMYAAAAAQIAAAEBAAABAAAA7xMAAAEAAAAAAAAAAAAAABkAAAABAQAAL1ZvbHVtZXMvQW5jZXN0cmFsIFJlY2FsbAAAAAgAAAABCQAAZmlsZTovLy8MAAAAAQEAAE1hY2ludG9zaCBIRAgAAAAEAwAAAFChG3MAAAAIAAAAAAQAAEHHaK2cAAAAJAAAAAEBAAAyOEE1RjA3Qi1DQ0FBLTQ0NzktODJGQy1BMTBDNzZCRjRGODAYAAAAAQIAAIEAAAABAAAA7xMAAAEAAAAAAAAAAAAAAAEAAAABAQAALwAAAGAAAAD+////APAAAAAAAAAHAAAAAiAAADADAAAAAAAABSAAAKACAAAAAAAAECAAALACAAAAAAAAESAAAOQCAAAAAAAAEiAAAMQCAAAAAAAAEyAAANQCAAAAAAAAICAAABADAAAAAAAABAAAAAMDAAAA8AAABAAAAAMDAAAAAAAABAAAAAMDAAABAAAAKAAAAAEGAACkAwAAsAMAALwDAACwAwAAsAMAALADAACwAwAAsAMAALADAACwAwAAqAAAAP7///8BAAAAPAMAAA0AAAAEEAAAzAAAAAAAAAAFEAAAiAEAAAAAAAAQEAAAxAEAAAAAAABAEAAAtAEAAAAAAAAAIAAAyAMAAAAAAAACIAAAfAIAAAAAAAAFIAAA5AEAAAAAAAAQIAAAIAAAAAAAAAARIAAAMAIAAAAAAAASIAAAEAIAAAAAAAATIAAAIAIAAAAAAAAgIAAAXAIAAAAAAAAQ0AAABAAAAAAAAAA=</bookmark>
+            </media-rep>
+            <metadata>
+                <md key="com.apple.proapps.studio.rawToLogConversion" value="0"/>
+                <md key="com.apple.proapps.spotlight.kMDItemProfileName" value="HD (1-1-1)"/>
+                <md key="com.apple.proapps.studio.cameraISO" value="0"/>
+                <md key="com.apple.proapps.studio.cameraColorTemperature" value="0"/>
+                <md key="com.apple.proapps.spotlight.kMDItemCodecs">
+                    <array>
+                        <string>HEVC</string>
+                        <string>MPEG-4 AAC</string>
+                    </array>
+                </md>
+                <md key="com.apple.proapps.mio.ingestDate" value="2019-01-10 03:47:55 +0800"/>
+            </metadata>
+        </asset>
+        <asset id="r7" name="Day2_InterviewOwners_02_C" uid="C0AE3818CA056C81A199B17C697ACFAF" start="0s" duration="6014008/24000s" hasVideo="1" format="r5" hasAudio="1" videoSources="1" audioSources="1" audioChannels="2" audioRate="48000">
+            <media-rep kind="original-media" sig="C0AE3818CA056C81A199B17C697ACFAF" src="file:///Users/user/Movies/Media/Multicam%20Clips/Take%202/Day2_InterviewOwners_02_C.mov">
+                <bookmark>Ym9va+gEAAAAAAUQQAAAAHyWzIv1DigfoNandvOt7Z3JlSef2GPuTq2XgsE+CHx8AAAAAAAAAAAAAAAAAAAAAPgDAAAEAAAAAwMAAAAYACgHAAAAAQEAAFZvbHVtZXMAEAAAAAEBAABBbmNlc3RyYWwgUmVjYWxsDAAAAAEBAABBcHAgUHJvamVjdHMMAAAAAQEAAFBpcGVsaW5lIE5lbwMAAAABAQAARkNQAAUAAAABAQAATWVkaWEAAAAOAAAAAQEAAE11bHRpY2FtIENsaXBzAAAGAAAAAQEAAFRha2UgMgAAHQAAAAEBAABEYXkyX0ludGVydmlld093bmVyc18wMl9DLm1vdgAAACQAAAABBgAAEAAAACAAAAA4AAAATAAAAGAAAABsAAAAfAAAAJQAAACkAAAACAAAAAQDAAB6SQAAAAAAAAgAAAAEAwAAAgAAAAAAAAAIAAAABAMAAF0DAgAAAAAACAAAAAQDAAAMOAsAAAAAAAgAAAAEAwAA3G4LAAAAAAAIAAAABAMAAMb/CwAAAAAACAAAAAQDAADeewsAAAAAAAgAAAAEAwAA4XsLAAAAAAAIAAAABAMAAOR7CwAAAAAAJAAAAAEGAAD4AAAACAEAABgBAAAoAQAAOAEAAEgBAABYAQAAaAEAAHgBAAAIAAAAAAQAAEHA7/M9AAAAGAAAAAECAAABAAAAAAAAAA8AAAAAAAAAAAAAAAAAAAAjAAAAAQkAAGZpbGU6Ly8vVm9sdW1lcy9BbmNlc3RyYWwlMjBSZWNhbGwvAAgAAAAEAwAAAMBa1OgAAAAIAAAAAAQAAEHEyF4pGtlhJAAAAAEBAABGNEFBMUY3OS0wMDVDLTREMDItOTBFRS0zMTQwODE1ODIxQzMYAAAAAQIAAAEBAAABAAAA7xMAAAEAAAAAAAAAAAAAABkAAAABAQAAL1ZvbHVtZXMvQW5jZXN0cmFsIFJlY2FsbAAAAAgAAAABCQAAZmlsZTovLy8MAAAAAQEAAE1hY2ludG9zaCBIRAgAAAAEAwAAAFChG3MAAAAIAAAAAAQAAEHHaK2cAAAAJAAAAAEBAAAyOEE1RjA3Qi1DQ0FBLTQ0NzktODJGQy1BMTBDNzZCRjRGODAYAAAAAQIAAIEAAAABAAAA7xMAAAEAAAAAAAAAAAAAAAEAAAABAQAALwAAAGAAAAD+////APAAAAAAAAAHAAAAAiAAADADAAAAAAAABSAAAKACAAAAAAAAECAAALACAAAAAAAAESAAAOQCAAAAAAAAEiAAAMQCAAAAAAAAEyAAANQCAAAAAAAAICAAABADAAAAAAAABAAAAAMDAAAA8AAABAAAAAMDAAAAAAAABAAAAAMDAAABAAAAKAAAAAEGAACkAwAAsAMAALwDAACwAwAAsAMAALADAACwAwAAsAMAALADAACwAwAAqAAAAP7///8BAAAAPAMAAA0AAAAEEAAAzAAAAAAAAAAFEAAAiAEAAAAAAAAQEAAAxAEAAAAAAABAEAAAtAEAAAAAAAAAIAAAyAMAAAAAAAACIAAAfAIAAAAAAAAFIAAA5AEAAAAAAAAQIAAAIAAAAAAAAAARIAAAMAIAAAAAAAASIAAAEAIAAAAAAAATIAAAIAIAAAAAAAAgIAAAXAIAAAAAAAAQ0AAABAAAAAAAAAA=</bookmark>
+            </media-rep>
+            <metadata>
+                <md key="com.apple.proapps.studio.rawToLogConversion" value="0"/>
+                <md key="com.apple.proapps.spotlight.kMDItemProfileName" value="HD (1-1-1)"/>
+                <md key="com.apple.proapps.studio.cameraISO" value="0"/>
+                <md key="com.apple.proapps.studio.cameraColorTemperature" value="0"/>
+                <md key="com.apple.proapps.spotlight.kMDItemCodecs">
+                    <array>
+                        <string>HEVC</string>
+                        <string>MPEG-4 AAC</string>
+                    </array>
+                </md>
+                <md key="com.apple.proapps.mio.ingestDate" value="2019-01-10 03:47:55 +0800"/>
+            </metadata>
+        </asset>
+    </resources>
+    <library location="file:///Users/user/Movies/FCPX%20Essential%20Training.fcpbundle/">
+        <event name="Projects" uid="44213ED4-48FA-4D04-B182-AC5DBF568CE3">
+            <project name="Multicam Sample" uid="B4FD29B5-57CE-4621-B2EB-2FC07A3A71B2" modDate="2026-02-18 14:52:59 +0800">
+                <sequence format="r1" duration="6636630/24000s" tcStart="0s" tcFormat="NDF" audioLayout="stereo" audioRate="48k">
+                    <spine>
+                        <mc-clip ref="r2" offset="0s" name="Chocolate Interview" duration="6636630/24000s">
+                            <mc-source angleID="UNx7r0rBQK+YH4GNKotbRg" srcEnable="video">
+                                <adjust-colorConform enabled="1" autoOrManual="manual" conformType="conformNone" peakNitsOfPQSource="1000" peakNitsOfSDRToPQSource="203"/>
+                            </mc-source>
+                            <mc-source angleID="vx767AypQ4KHHxVD6YFRdg" srcEnable="audio"/>
+                            <keyword start="0s" duration="6636630/24000s" value="multicam clips"/>
+                        </mc-clip>
+                    </spine>
+                </sequence>
+            </project>
+        </event>
+        <smart-collection name="Projects" match="all">
+            <match-clip rule="is" type="project"/>
+        </smart-collection>
+        <smart-collection name="All Video" match="any">
+            <match-media rule="is" type="videoOnly"/>
+            <match-media rule="is" type="videoWithAudio"/>
+        </smart-collection>
+        <smart-collection name="Audio Only" match="all">
+            <match-media rule="is" type="audioOnly"/>
+        </smart-collection>
+        <smart-collection name="Stills" match="all">
+            <match-media rule="is" type="stills"/>
+        </smart-collection>
+        <smart-collection name="Favorites" match="all">
+            <match-ratings value="favorites"/>
+        </smart-collection>
+    </library>
+</fcpxml>

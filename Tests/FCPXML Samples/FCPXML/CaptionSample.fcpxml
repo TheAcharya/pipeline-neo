@@ -1,0 +1,448 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE fcpxml>
+
+<fcpxml version="1.13">
+    <resources>
+        <format id="r1" name="FFVideoFormat1080p2398" frameDuration="1001/24000s" width="1920" height="1080" colorSpace="1-1-1 (Rec. 709)"/>
+        <asset id="r2" name="AA0005" uid="9BB577EA0D1B4CC20C7CF65DC0D20E54" start="0s" duration="3081078/24000s" hasVideo="1" format="r1" hasAudio="1" videoSources="1" audioSources="1" audioChannels="2" audioRate="48000">
+            <media-rep kind="original-media" sig="9BB577EA0D1B4CC20C7CF65DC0D20E54" src="file:///Users/user/Movies/Media/Josie/AA0005.mov">
+                <bookmark>Ym9va6AEAAAAAAUQQAAAAJiQa1HAOTLrNN5Xd0L22g13H/zA8sGvRX+2sRH2rWrsAAAAAAAAAAAAAAAAAAAAALADAAAEAAAAAwMAAAAYACgHAAAAAQEAAFZvbHVtZXMAEAAAAAEBAABBbmNlc3RyYWwgUmVjYWxsDAAAAAEBAABBcHAgUHJvamVjdHMMAAAAAQEAAFBpcGVsaW5lIE5lbwMAAAABAQAARkNQAAUAAAABAQAATWVkaWEAAAAFAAAAAQEAAEpvc2llAAAACgAAAAEBAABBQTAwMDUubW92AAAgAAAAAQYAABAAAAAgAAAAOAAAAEwAAABgAAAAbAAAAHwAAACMAAAACAAAAAQDAAB6SQAAAAAAAAgAAAAEAwAAAgAAAAAAAAAIAAAABAMAAF0DAgAAAAAACAAAAAQDAAAMOAsAAAAAAAgAAAAEAwAA3G4LAAAAAAAIAAAABAMAAMb/CwAAAAAACAAAAAQDAACDfAsAAAAAAAgAAAAEAwAAhXwLAAAAAAAgAAAAAQYAAMgAAADYAAAA6AAAAPgAAAAIAQAAGAEAACgBAAA4AQAACAAAAAAEAABBwO/zPQAAABgAAAABAgAAAQAAAAAAAAAPAAAAAAAAAAAAAAAAAAAAIwAAAAEJAABmaWxlOi8vL1ZvbHVtZXMvQW5jZXN0cmFsJTIwUmVjYWxsLwAIAAAABAMAAADAWtToAAAACAAAAAAEAABBxMheKRrZYSQAAAABAQAARjRBQTFGNzktMDA1Qy00RDAyLTkwRUUtMzE0MDgxNTgyMUMzGAAAAAECAAABAQAAAQAAAO8TAAABAAAAAAAAAAAAAAAZAAAAAQEAAC9Wb2x1bWVzL0FuY2VzdHJhbCBSZWNhbGwAAAAIAAAAAQkAAGZpbGU6Ly8vDAAAAAEBAABNYWNpbnRvc2ggSEQIAAAABAMAAABQoRtzAAAACAAAAAAEAABBx2itnAAAACQAAAABAQAAMjhBNUYwN0ItQ0NBQS00NDc5LTgyRkMtQTEwQzc2QkY0RjgwGAAAAAECAACBAAAAAQAAAO8TAAABAAAAAAAAAAAAAAABAAAAAQEAAC8AAABgAAAA/v///wDwAAAAAAAABwAAAAIgAADsAgAAAAAAAAUgAABcAgAAAAAAABAgAABsAgAAAAAAABEgAACgAgAAAAAAABIgAACAAgAAAAAAABMgAACQAgAAAAAAACAgAADMAgAAAAAAAAQAAAADAwAAAPAAAAQAAAADAwAAAAAAAAQAAAADAwAAAQAAACQAAAABBgAAYAMAAGwDAAB4AwAAbAMAAGwDAABsAwAAbAMAAGwDAABsAwAAqAAAAP7///8BAAAA+AIAAA0AAAAEEAAAoAAAAAAAAAAFEAAASAEAAAAAAAAQEAAAgAEAAAAAAABAEAAAcAEAAAAAAAAAIAAAhAMAAAAAAAACIAAAOAIAAAAAAAAFIAAAoAEAAAAAAAAQIAAAIAAAAAAAAAARIAAA7AEAAAAAAAASIAAAzAEAAAAAAAATIAAA3AEAAAAAAAAgIAAAGAIAAAAAAAAQ0AAABAAAAAAAAAA=</bookmark>
+            </media-rep>
+            <metadata>
+                <md key="com.apple.proapps.studio.rawToLogConversion" value="0"/>
+                <md key="com.apple.proapps.spotlight.kMDItemProfileName" value="HD (1-1-1)"/>
+                <md key="com.apple.proapps.studio.cameraISO" value="0"/>
+                <md key="com.apple.proapps.studio.cameraColorTemperature" value="0"/>
+                <md key="com.apple.proapps.spotlight.kMDItemCodecs">
+                    <array>
+                        <string>HEVC</string>
+                        <string>MPEG-4 AAC</string>
+                    </array>
+                </md>
+                <md key="com.apple.proapps.mio.ingestDate" value="2019-01-10 03:47:54 +0800"/>
+            </metadata>
+        </asset>
+    </resources>
+    <library location="file:///Users/user/Movies/FCPX%20Essential%20Training.fcpbundle/">
+        <event name="Projects" uid="44213ED4-48FA-4D04-B182-AC5DBF568CE3">
+            <project name="Subtitle-Sample" uid="1F085E2A-BC57-4CF2-96BF-11E728CD0D24" modDate="2026-02-18 14:57:32 +0800">
+                <sequence format="r1" duration="2546544/24000s" tcStart="0s" tcFormat="NDF" audioLayout="stereo" audioRate="48k" keywords="chapter 13">
+                    <spine>
+                        <asset-clip ref="r2" offset="0s" name="AA0005" start="426426/24000s" duration="2546544/24000s" tcFormat="NDF" audioRole="dialogue">
+                            <adjust-colorConform enabled="1" autoOrManual="manual" conformType="conformNone" peakNitsOfPQSource="1000" peakNitsOfSDRToPQSource="203"/>
+                            <caption lane="1" offset="447447/24000s" name="Speaker 1: Right." start="3600s" duration="13013/24000s" role="SRT?captionFormat=SRT.en">
+                                <text placement="bottom">
+                                    <text-style ref="ts1">Speaker 1: Right.</text-style>
+                                </text>
+                                <text-style-def id="ts1">
+                                    <text-style font=".AppleSystemUIFont" fontSize="13" fontFace="Regular" fontColor="1 1 1 1" backgroundColor="0 0 0 1"/>
+                                </text-style-def>
+                            </caption>
+                            <caption lane="1" offset="23023/1200s" name="So intentions extremely important." start="3600s" duration="51051/24000s" role="SRT?captionFormat=SRT.en">
+                                <text placement="bottom">
+                                    <text-style ref="ts2">So intentions
+extremely important.</text-style>
+                                </text>
+                                <text-style-def id="ts2">
+                                    <text-style font=".AppleSystemUIFont" fontSize="13" fontFace="Regular" fontColor="1 1 1 1" backgroundColor="0 0 0 1"/>
+                                </text-style-def>
+                            </caption>
+                            <caption lane="1" offset="529529/24000s" name="If you think about any goal we have to really" start="3600s" duration="77077/24000s" role="SRT?captionFormat=SRT.en">
+                                <text placement="bottom">
+                                    <text-style ref="ts3">If you think about any
+goal we have to really</text-style>
+                                </text>
+                                <text-style-def id="ts3">
+                                    <text-style font=".AppleSystemUIFont" fontSize="13" fontFace="Regular" fontColor="1 1 1 1" backgroundColor="0 0 0 1"/>
+                                </text-style-def>
+                            </caption>
+                            <caption lane="1" offset="303303/12000s" name="be clear on what that is." start="3600s" duration="45045/24000s" role="SRT?captionFormat=SRT.en">
+                                <text placement="bottom">
+                                    <text-style ref="ts4">be clear on what that is.</text-style>
+                                </text>
+                                <text-style-def id="ts4">
+                                    <text-style font=".AppleSystemUIFont" fontSize="13" fontFace="Regular" fontColor="1 1 1 1" backgroundColor="0 0 0 1"/>
+                                </text-style-def>
+                            </caption>
+                            <caption lane="1" offset="651651/24000s" name="And our attention comes before that set." start="3600s" duration="43043/24000s" role="SRT?captionFormat=SRT.en">
+                                <text placement="bottom">
+                                    <text-style ref="ts5">And our attention comes before
+that set.</text-style>
+                                </text>
+                                <text-style-def id="ts5">
+                                    <text-style font=".AppleSystemUIFont" fontSize="13" fontFace="Regular" fontColor="1 1 1 1" backgroundColor="0 0 0 1"/>
+                                </text-style-def>
+                            </caption>
+                            <caption lane="1" offset="347347/12000s" name="So it's kind of this idea of your commitment towards" start="3600s" duration="57057/24000s" role="SRT?captionFormat=SRT.en">
+                                <text placement="bottom">
+                                    <text-style ref="ts6">So it's kind of this idea
+of your commitment towards</text-style>
+                                </text>
+                                <text-style-def id="ts6">
+                                    <text-style font=".AppleSystemUIFont" fontSize="13" fontFace="Regular" fontColor="1 1 1 1" backgroundColor="0 0 0 1"/>
+                                </text-style-def>
+                            </caption>
+                            <caption lane="1" offset="751751/24000s" name="it and it also taps into our desire for what you really want." start="3600s" duration="80080/24000s" role="SRT?captionFormat=SRT.en">
+                                <text placement="bottom">
+                                    <text-style ref="ts7">it and it also taps into our
+desire for what you really want.</text-style>
+                                </text>
+                                <text-style-def id="ts7">
+                                    <text-style font=".AppleSystemUIFont" fontSize="13" fontFace="Regular" fontColor="1 1 1 1" backgroundColor="0 0 0 1"/>
+                                </text-style-def>
+                            </caption>
+                            <caption lane="1" offset="831831/24000s" name="Right." start="3600s" duration="8008/24000s" role="SRT?captionFormat=SRT.en">
+                                <text placement="bottom">
+                                    <text-style ref="ts8">Right.</text-style>
+                                </text>
+                                <text-style-def id="ts8">
+                                    <text-style font=".AppleSystemUIFont" fontSize="13" fontFace="Regular" fontColor="1 1 1 1" backgroundColor="0 0 0 1"/>
+                                </text-style-def>
+                            </caption>
+                            <caption lane="1" offset="839839/24000s" name="So this is kind of the landscape of coaching for sure." start="3600s" duration="50050/24000s" role="SRT?captionFormat=SRT.en">
+                                <text placement="bottom">
+                                    <text-style ref="ts9">So this is kind of the landscape
+of coaching for sure.</text-style>
+                                </text>
+                                <text-style-def id="ts9">
+                                    <text-style font=".AppleSystemUIFont" fontSize="13" fontFace="Regular" fontColor="1 1 1 1" backgroundColor="0 0 0 1"/>
+                                </text-style-def>
+                            </caption>
+                            <caption lane="1" offset="91091/2400s" name="So one thing I like to think about is if you are getting" start="3600s" duration="60060/24000s" role="SRT?captionFormat=SRT.en">
+                                <text placement="bottom">
+                                    <text-style ref="ts10">So one thing I like to think
+about is if you are getting</text-style>
+                                </text>
+                                <text-style-def id="ts10">
+                                    <text-style font=".AppleSystemUIFont" fontSize="13" fontFace="Regular" fontColor="1 1 1 1" backgroundColor="0 0 0 1"/>
+                                </text-style-def>
+                            </caption>
+                            <caption lane="1" offset="97097/2400s" name="ready to throw a ball and you're taking aim and just" start="3600s" duration="69069/24000s" role="SRT?captionFormat=SRT.en">
+                                <text placement="bottom">
+                                    <text-style ref="ts11">ready to throw a ball and you're
+taking aim and just</text-style>
+                                </text>
+                                <text-style-def id="ts11">
+                                    <text-style font=".AppleSystemUIFont" fontSize="13" fontFace="Regular" fontColor="1 1 1 1" backgroundColor="0 0 0 1"/>
+                                </text-style-def>
+                            </caption>
+                            <caption lane="1" offset="1040039/24000s" name="as you start to release the ball you look" start="3600s" duration="51051/24000s" role="SRT?captionFormat=SRT.en">
+                                <text placement="bottom">
+                                    <text-style ref="ts12">as you start to release the ball
+you look</text-style>
+                                </text>
+                                <text-style-def id="ts12">
+                                    <text-style font=".AppleSystemUIFont" fontSize="13" fontFace="Regular" fontColor="1 1 1 1" backgroundColor="0 0 0 1"/>
+                                </text-style-def>
+                            </caption>
+                            <caption lane="1" offset="109109/2400s" name="in the other direction." start="3600s" duration="26026/24000s" role="SRT?captionFormat=SRT.en">
+                                <text placement="bottom">
+                                    <text-style ref="ts13">in the other direction.</text-style>
+                                </text>
+                                <text-style-def id="ts13">
+                                    <text-style font=".AppleSystemUIFont" fontSize="13" fontFace="Regular" fontColor="1 1 1 1" backgroundColor="0 0 0 1"/>
+                                </text-style-def>
+                            </caption>
+                            <caption lane="1" offset="1142141/24000s" name="Where did you think the ball's going to land." start="3600s" duration="39039/24000s" role="SRT?captionFormat=SRT.en">
+                                <text placement="bottom">
+                                    <text-style ref="ts14">Where did you think the ball's
+going to land.</text-style>
+                                </text>
+                                <text-style-def id="ts14">
+                                    <text-style font=".AppleSystemUIFont" fontSize="13" fontFace="Regular" fontColor="1 1 1 1" backgroundColor="0 0 0 1"/>
+                                </text-style-def>
+                            </caption>
+                            <caption lane="1" offset="151151/3000s" name="You know it's not likely going to hit your target" start="3600s" duration="52052/24000s" role="SRT?captionFormat=SRT.en">
+                                <text placement="bottom">
+                                    <text-style ref="ts15">You know it's not likely
+going to hit your target</text-style>
+                                </text>
+                                <text-style-def id="ts15">
+                                    <text-style font=".AppleSystemUIFont" fontSize="13" fontFace="Regular" fontColor="1 1 1 1" backgroundColor="0 0 0 1"/>
+                                </text-style-def>
+                            </caption>
+                            <caption lane="1" offset="63063/1200s" name="and more than likely it's going to be" start="3600s" duration="39039/24000s" role="SRT?captionFormat=SRT.en">
+                                <text placement="bottom">
+                                    <text-style ref="ts16">and more than likely
+it's going to be</text-style>
+                                </text>
+                                <text-style-def id="ts16">
+                                    <text-style font=".AppleSystemUIFont" fontSize="13" fontFace="Regular" fontColor="1 1 1 1" backgroundColor="0 0 0 1"/>
+                                </text-style-def>
+                            </caption>
+                            <caption lane="1" offset="1300299/24000s" name="somewhere in between and intentions work" start="3600s" duration="55055/24000s" role="SRT?captionFormat=SRT.en">
+                                <text placement="bottom">
+                                    <text-style ref="ts17">somewhere in between
+and intentions work</text-style>
+                                </text>
+                                <text-style-def id="ts17">
+                                    <text-style font=".AppleSystemUIFont" fontSize="13" fontFace="Regular" fontColor="1 1 1 1" backgroundColor="0 0 0 1"/>
+                                </text-style-def>
+                            </caption>
+                            <caption lane="1" offset="677677/12000s" name="the exact same way." start="3600s" duration="33033/24000s" role="SRT?captionFormat=SRT.en">
+                                <text placement="bottom">
+                                    <text-style ref="ts18">the exact same way.</text-style>
+                                </text>
+                                <text-style-def id="ts18">
+                                    <text-style font=".AppleSystemUIFont" fontSize="13" fontFace="Regular" fontColor="1 1 1 1" backgroundColor="0 0 0 1"/>
+                                </text-style-def>
+                            </caption>
+                            <caption lane="1" offset="709709/12000s" name="So often what I find is that people get they have" start="3600s" duration="101101/24000s" role="SRT?captionFormat=SRT.en">
+                                <text placement="bottom">
+                                    <text-style ref="ts19">So often what I find is that
+people get they have</text-style>
+                                </text>
+                                <text-style-def id="ts19">
+                                    <text-style font=".AppleSystemUIFont" fontSize="13" fontFace="Regular" fontColor="1 1 1 1" backgroundColor="0 0 0 1"/>
+                                </text-style-def>
+                            </caption>
+                            <caption lane="1" offset="1520519/24000s" name="their intentions clear but there's another" start="3600s" duration="51051/24000s" role="SRT?captionFormat=SRT.en">
+                                <text placement="bottom">
+                                    <text-style ref="ts20">their intentions clear
+but there's another</text-style>
+                                </text>
+                                <text-style-def id="ts20">
+                                    <text-style font=".AppleSystemUIFont" fontSize="13" fontFace="Regular" fontColor="1 1 1 1" backgroundColor="0 0 0 1"/>
+                                </text-style-def>
+                            </caption>
+                            <caption lane="1" offset="157157/2400s" name="subconscious intention or a different design" start="3600s" duration="55055/24000s" role="SRT?captionFormat=SRT.en">
+                                <text placement="bottom">
+                                    <text-style ref="ts21">subconscious intention
+or a different design</text-style>
+                                </text>
+                                <text-style-def id="ts21">
+                                    <text-style font=".AppleSystemUIFont" fontSize="13" fontFace="Regular" fontColor="1 1 1 1" backgroundColor="0 0 0 1"/>
+                                </text-style-def>
+                            </caption>
+                            <caption lane="1" offset="65065/960s" name="that's competing with it." start="3600s" duration="26026/24000s" role="SRT?captionFormat=SRT.en">
+                                <text placement="bottom">
+                                    <text-style ref="ts22">that's competing with it.</text-style>
+                                </text>
+                                <text-style-def id="ts22">
+                                    <text-style font=".AppleSystemUIFont" fontSize="13" fontFace="Regular" fontColor="1 1 1 1" backgroundColor="0 0 0 1"/>
+                                </text-style-def>
+                            </caption>
+                            <caption lane="1" offset="1652651/24000s" name="So it's actually really hard to hit your mark." start="3600s" duration="62062/24000s" role="SRT?captionFormat=SRT.en">
+                                <text placement="bottom">
+                                    <text-style ref="ts23">So it's actually really
+hard to hit your mark.</text-style>
+                                </text>
+                                <text-style-def id="ts23">
+                                    <text-style font=".AppleSystemUIFont" fontSize="13" fontFace="Regular" fontColor="1 1 1 1" backgroundColor="0 0 0 1"/>
+                                </text-style-def>
+                            </caption>
+                            <caption lane="1" offset="1714713/24000s" name="So for example people that are looking to let's say" start="3600s" duration="70070/24000s" role="SRT?captionFormat=SRT.en">
+                                <text placement="bottom">
+                                    <text-style ref="ts24">So for example people that are
+looking to let's say</text-style>
+                                </text>
+                                <text-style-def id="ts24">
+                                    <text-style font=".AppleSystemUIFont" fontSize="13" fontFace="Regular" fontColor="1 1 1 1" backgroundColor="0 0 0 1"/>
+                                </text-style-def>
+                            </caption>
+                            <caption lane="1" offset="1784783/24000s" name="health and wellness be a priority in their life" start="3600s" duration="63063/24000s" role="SRT?captionFormat=SRT.en">
+                                <text placement="bottom">
+                                    <text-style ref="ts25">health and wellness be
+a priority in their life</text-style>
+                                </text>
+                                <text-style-def id="ts25">
+                                    <text-style font=".AppleSystemUIFont" fontSize="13" fontFace="Regular" fontColor="1 1 1 1" backgroundColor="0 0 0 1"/>
+                                </text-style-def>
+                            </caption>
+                            <caption lane="1" offset="923923/12000s" name="and they want to improve their physical fitness." start="3600s" duration="53053/24000s" role="SRT?captionFormat=SRT.en">
+                                <text placement="bottom">
+                                    <text-style ref="ts26">and they want to improve
+their physical fitness.</text-style>
+                                </text>
+                                <text-style-def id="ts26">
+                                    <text-style font=".AppleSystemUIFont" fontSize="13" fontFace="Regular" fontColor="1 1 1 1" backgroundColor="0 0 0 1"/>
+                                </text-style-def>
+                            </caption>
+                            <caption lane="1" offset="1900899/24000s" name="This might be their intention." start="3600s" duration="35035/24000s" role="SRT?captionFormat=SRT.en">
+                                <text placement="bottom">
+                                    <text-style ref="ts27">This might be their intention.</text-style>
+                                </text>
+                                <text-style-def id="ts27">
+                                    <text-style font=".AppleSystemUIFont" fontSize="13" fontFace="Regular" fontColor="1 1 1 1" backgroundColor="0 0 0 1"/>
+                                </text-style-def>
+                            </caption>
+                            <caption lane="1" offset="967967/12000s" name="They talk about it." start="3600s" duration="21021/24000s" role="SRT?captionFormat=SRT.en">
+                                <text placement="bottom">
+                                    <text-style ref="ts28">They talk about it.</text-style>
+                                </text>
+                                <text-style-def id="ts28">
+                                    <text-style font=".AppleSystemUIFont" fontSize="13" fontFace="Regular" fontColor="1 1 1 1" backgroundColor="0 0 0 1"/>
+                                </text-style-def>
+                            </caption>
+                            <caption lane="1" offset="391391/4800s" name="They feel it." start="3600s" duration="18018/24000s" role="SRT?captionFormat=SRT.en">
+                                <text placement="bottom">
+                                    <text-style ref="ts29">They feel it.</text-style>
+                                </text>
+                                <text-style-def id="ts29">
+                                    <text-style font=".AppleSystemUIFont" fontSize="13" fontFace="Regular" fontColor="1 1 1 1" backgroundColor="0 0 0 1"/>
+                                </text-style-def>
+                            </caption>
+                            <caption lane="1" offset="1974973/24000s" name="They set goals to get to the gym but they have" start="3600s" duration="56056/24000s" role="SRT?captionFormat=SRT.en">
+                                <text placement="bottom">
+                                    <text-style ref="ts30">They set goals to get
+to the gym but they have</text-style>
+                                </text>
+                                <text-style-def id="ts30">
+                                    <text-style font=".AppleSystemUIFont" fontSize="13" fontFace="Regular" fontColor="1 1 1 1" backgroundColor="0 0 0 1"/>
+                                </text-style-def>
+                            </caption>
+                            <caption lane="1" offset="2031029/24000s" name="a stronger intention or a subconscious desire" start="3600s" duration="63063/24000s" role="SRT?captionFormat=SRT.en">
+                                <text placement="bottom">
+                                    <text-style ref="ts31">a stronger intention
+or a subconscious desire</text-style>
+                                </text>
+                                <text-style-def id="ts31">
+                                    <text-style font=".AppleSystemUIFont" fontSize="13" fontFace="Regular" fontColor="1 1 1 1" backgroundColor="0 0 0 1"/>
+                                </text-style-def>
+                            </caption>
+                            <caption lane="1" offset="523523/6000s" name="which is to stay comfortable and to not experience pain." start="3600s" duration="77077/24000s" role="SRT?captionFormat=SRT.en">
+                                <text placement="bottom">
+                                    <text-style ref="ts32">which is to stay comfortable
+and to not experience pain.</text-style>
+                                </text>
+                                <text-style-def id="ts32">
+                                    <text-style font=".AppleSystemUIFont" fontSize="13" fontFace="Regular" fontColor="1 1 1 1" backgroundColor="0 0 0 1"/>
+                                </text-style-def>
+                            </caption>
+                            <caption lane="1" offset="1092091/12000s" name="So it's conflicting and therefore that's where" start="3600s" duration="57057/24000s" role="SRT?captionFormat=SRT.en">
+                                <text placement="bottom">
+                                    <text-style ref="ts33">So it's conflicting
+and therefore that's where</text-style>
+                                </text>
+                                <text-style-def id="ts33">
+                                    <text-style font=".AppleSystemUIFont" fontSize="13" fontFace="Regular" fontColor="1 1 1 1" backgroundColor="0 0 0 1"/>
+                                </text-style-def>
+                            </caption>
+                            <caption lane="1" offset="2241239/24000s" name="we're actually turning the gaze away from our clear intention." start="3600s" duration="83083/24000s" role="SRT?captionFormat=SRT.en">
+                                <text placement="bottom">
+                                    <text-style ref="ts34">we're actually turning the gaze
+away from our clear intention.</text-style>
+                                </text>
+                                <text-style-def id="ts34">
+                                    <text-style font=".AppleSystemUIFont" fontSize="13" fontFace="Regular" fontColor="1 1 1 1" backgroundColor="0 0 0 1"/>
+                                </text-style-def>
+                            </caption>
+                            <caption lane="1" offset="59059/600s" name="And so one thing that I work with people is in terms" start="3600s" duration="58058/24000s" role="SRT?captionFormat=SRT.en">
+                                <text placement="bottom">
+                                    <text-style ref="ts35">And so one thing that I work
+with people is in terms</text-style>
+                                </text>
+                                <text-style-def id="ts35">
+                                    <text-style font=".AppleSystemUIFont" fontSize="13" fontFace="Regular" fontColor="1 1 1 1" backgroundColor="0 0 0 1"/>
+                                </text-style-def>
+                            </caption>
+                            <caption lane="1" offset="1210209/12000s" name="of identifying that space so they actually realize oh" start="3600s" duration="73073/24000s" role="SRT?captionFormat=SRT.en">
+                                <text placement="bottom">
+                                    <text-style ref="ts36">of identifying that space
+so they actually realize oh</text-style>
+                                </text>
+                                <text-style-def id="ts36">
+                                    <text-style font=".AppleSystemUIFont" fontSize="13" fontFace="Regular" fontColor="1 1 1 1" backgroundColor="0 0 0 1"/>
+                                </text-style-def>
+                            </caption>
+                            <caption lane="1" offset="2493491/24000s" name="wow ok I can see and I understand" start="3600s" duration="47047/24000s" role="SRT?captionFormat=SRT.en">
+                                <text placement="bottom">
+                                    <text-style ref="ts37">wow ok I can see
+and I understand</text-style>
+                                </text>
+                                <text-style-def id="ts37">
+                                    <text-style font=".AppleSystemUIFont" fontSize="13" fontFace="Regular" fontColor="1 1 1 1" backgroundColor="0 0 0 1"/>
+                                </text-style-def>
+                            </caption>
+                            <caption lane="1" offset="1270269/12000s" name="that and then it's important that as you start to get" start="3600s" duration="66066/24000s" role="SRT?captionFormat=SRT.en">
+                                <text placement="bottom">
+                                    <text-style ref="ts38">that and then it's important
+that as you start to get</text-style>
+                                </text>
+                                <text-style-def id="ts38">
+                                    <text-style font=".AppleSystemUIFont" fontSize="13" fontFace="Regular" fontColor="1 1 1 1" backgroundColor="0 0 0 1"/>
+                                </text-style-def>
+                            </caption>
+                            <caption lane="1" offset="651651/6000s" name="more awareness around your intentions that you really know" start="3600s" duration="90090/24000s" role="SRT?captionFormat=SRT.en">
+                                <text placement="bottom">
+                                    <text-style ref="ts39">more awareness around your
+intentions that you really know</text-style>
+                                </text>
+                                <text-style-def id="ts39">
+                                    <text-style font=".AppleSystemUIFont" fontSize="13" fontFace="Regular" fontColor="1 1 1 1" backgroundColor="0 0 0 1"/>
+                                </text-style-def>
+                            </caption>
+                            <caption lane="1" offset="1348347/12000s" name="that you're clear in your mind." start="3600s" duration="27027/24000s" role="SRT?captionFormat=SRT.en">
+                                <text placement="bottom">
+                                    <text-style ref="ts40">that you're clear in your mind.</text-style>
+                                </text>
+                                <text-style-def id="ts40">
+                                    <text-style font=".AppleSystemUIFont" fontSize="13" fontFace="Regular" fontColor="1 1 1 1" backgroundColor="0 0 0 1"/>
+                                </text-style-def>
+                            </caption>
+                            <caption lane="1" offset="2723721/24000s" name="So your thoughts are aligned with what your" start="3600s" duration="44044/24000s" role="SRT?captionFormat=SRT.en">
+                                <text placement="bottom">
+                                    <text-style ref="ts41">So your thoughts are aligned
+with what your</text-style>
+                                </text>
+                                <text-style-def id="ts41">
+                                    <text-style font=".AppleSystemUIFont" fontSize="13" fontFace="Regular" fontColor="1 1 1 1" backgroundColor="0 0 0 1"/>
+                                </text-style-def>
+                            </caption>
+                            <caption lane="1" offset="553553/4800s" name="heart is feeling good morning." start="3600s" duration="32032/24000s" role="SRT?captionFormat=SRT.en">
+                                <text placement="bottom">
+                                    <text-style ref="ts42">heart is feeling good morning.</text-style>
+                                </text>
+                                <text-style-def id="ts42">
+                                    <text-style font=".AppleSystemUIFont" fontSize="13" fontFace="Regular" fontColor="1 1 1 1" backgroundColor="0 0 0 1"/>
+                                </text-style-def>
+                            </caption>
+                            <caption lane="1" offset="2799797/24000s" name="And then also that your actions relate to that space" start="3600s" duration="54054/24000s" role="SRT?captionFormat=SRT.en">
+                                <text placement="bottom">
+                                    <text-style ref="ts43">And then also that your
+actions relate to that space</text-style>
+                                </text>
+                                <text-style-def id="ts43">
+                                    <text-style font=".AppleSystemUIFont" fontSize="13" fontFace="Regular" fontColor="1 1 1 1" backgroundColor="0 0 0 1"/>
+                                </text-style-def>
+                            </caption>
+                            <caption lane="1" offset="2853851/24000s" name="as well." start="3600s" duration="22022/24000s" role="SRT?captionFormat=SRT.en">
+                                <text placement="bottom">
+                                    <text-style ref="ts44">as well.</text-style>
+                                </text>
+                                <text-style-def id="ts44">
+                                    <text-style font=".AppleSystemUIFont" fontSize="13" fontFace="Regular" fontColor="1 1 1 1" backgroundColor="0 0 0 1"/>
+                                </text-style-def>
+                            </caption>
+                            <caption lane="1" offset="2875873/24000s" name="So you're able to execute your your intended goal." start="3600s" duration="97097/24000s" role="SRT?captionFormat=SRT.en">
+                                <text placement="bottom">
+                                    <text-style ref="ts45">So you're able to execute
+your your intended goal.</text-style>
+                                </text>
+                                <text-style-def id="ts45">
+                                    <text-style font=".AppleSystemUIFont" fontSize="13" fontFace="Regular" fontColor="1 1 1 1" backgroundColor="0 0 0 1"/>
+                                </text-style-def>
+                            </caption>
+                        </asset-clip>
+                    </spine>
+                </sequence>
+            </project>
+        </event>
+        <smart-collection name="Projects" match="all">
+            <match-clip rule="is" type="project"/>
+        </smart-collection>
+        <smart-collection name="All Video" match="any">
+            <match-media rule="is" type="videoOnly"/>
+            <match-media rule="is" type="videoWithAudio"/>
+        </smart-collection>
+        <smart-collection name="Audio Only" match="all">
+            <match-media rule="is" type="audioOnly"/>
+        </smart-collection>
+        <smart-collection name="Stills" match="all">
+            <match-media rule="is" type="stills"/>
+        </smart-collection>
+        <smart-collection name="Favorites" match="all">
+            <match-ratings value="favorites"/>
+        </smart-collection>
+    </library>
+</fcpxml>

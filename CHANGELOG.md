@@ -7,6 +7,25 @@ Pipeline Neo uses **New Features**, **Improvements**, and **Bug Fixes** for each
 
 ---
 
+## [2.3.1](https://github.com/TheAcharya/pipeline-neo/releases/tag/2.3.1) - 2026-02-18
+
+### ✨ New Features
+
+- None in this release.
+
+### 🔧 Improvements
+
+- **Test suite:** Expanded to **638 tests** (from 587). Added comprehensive file tests for new FCPXML samples: `FCPXMLFileTest_360Video` (360 video features, color conform, bookmarks, smart collections), `FCPXMLFileTest_AuditionSample` (audition elements, conform-rate, keywords), `FCPXMLFileTest_ImageSample` (still image assets), `FCPXMLFileTest_Multicam` (multicam resources and clips), `FCPXMLFileTest_Photoshop` (Photoshop-specific FCPXML), `FCPXMLFileTest_SmartCollection` (smart collection parsing across multiple samples with match-clip, match-media, match-ratings). Updated existing file tests: `FCPXMLFileTest_CompoundClips` (CompoundClipSample), `FCPXMLFileTest_Keywords` (EventsWithKeywords, KeywordsWithinFolders), `CaptionTitleTests` (CaptionSample), `TimelineManipulationTests` (TimelineSample, TimelineWithSecondaryStoryline, TimelineWithSecondaryStorylineWithAudioKeyframes), `CutDetectionTests` (CutSample).
+- **Audio keyframe tests:** Added `AudioKeyframeTests` (10 tests) for comprehensive audio keyframe validation: parsing `adjust-volume > param name="amount" > keyframeAnimation > keyframe` structures from FCPXML samples; decibel value validation (-3dB, -37dB format); time value validation (FCPXML fractional format); fadeIn/fadeOut integration; multiple keyframes in sequence; secondary storyline and nested clip detection. File tests: `TimelineWithSecondaryStorylineWithAudioKeyframes`, `TimelineSample`.
+- **FCPXML samples:** Added 15 new sample files covering 360 video, auditions, conform-rate, still images, multicam, secondary storylines, audio keyframes, keyword collections/folders, and Photoshop integration. All samples verified for parsing and feature extraction.
+- **Documentation:** Updated `Tests/README.md` with new test files (including `AudioKeyframeTests`), expanded file tests table, updated test count to 638, and enhanced scope description to include new FCPXML features tested.
+
+### 🐛 Bug Fixes
+
+- None in this release.
+
+---
+
 ## [2.3.0](https://github.com/TheAcharya/pipeline-neo/releases/tag/2.3.0) - 2026-02-16
 
 ### ✨ New Features

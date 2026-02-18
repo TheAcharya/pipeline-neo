@@ -5,7 +5,7 @@
 //
 
 //
-//	Static package version for CLI and automated build tools.
+//  Static package version for CLI and automated build tools.
 //
 
 /// Package version exposed for the CLI (--version) and CI or other tooling.
