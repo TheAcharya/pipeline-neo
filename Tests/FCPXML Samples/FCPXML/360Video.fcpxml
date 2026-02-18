@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE fcpxml>
+
+<fcpxml version="1.13">
+    <resources>
+        <format id="r1" name="FFVideoFormat4096x2048p5994" frameDuration="1001/60000s" width="4096" height="2048" colorSpace="1-1-1 (Rec. 709)" projection="equirectangular" stereoscopic="mono"/>
+        <asset id="r2" name="meditate" uid="005999EEFDFD3D4EFAF03FF6E8279878" start="0s" duration="10564554/90000s" hasVideo="1" format="r1" hasAudio="1" videoSources="1" audioSources="1" audioChannels="2" audioRate="48000">
+            <media-rep kind="original-media" sig="005999EEFDFD3D4EFAF03FF6E8279878" src="file:///Users/user/Movies/meditate.mp4">
+                <bookmark>Ym9va6gEAAAAAAUQQAAAAM39TevJY7m10RZHuBi/oDn9NldkokKq6F74fFdPFLEpAAAAAAAAAAAAAAAAAAAAALgDAAAEAAAAAwMAAAAYACgHAAAAAQEAAFZvbHVtZXMAEAAAAAEBAABBbmNlc3RyYWwgUmVjYWxsDAAAAAEBAABBcHAgUHJvamVjdHMMAAAAAQEAAFBpcGVsaW5lIE5lbwMAAAABAQAARkNQAAUAAAABAQAATWVkaWEAAAAQAAAAAQEAADM2MCBWaWRlbyBBc3NldHMMAAAAAQEAAG1lZGl0YXRlLm1wNCAAAAABBgAAEAAAACAAAAA4AAAATAAAAGAAAABsAAAAfAAAAJQAAAAIAAAABAMAAHpJAAAAAAAACAAAAAQDAAACAAAAAAAAAAgAAAAEAwAAXQMCAAAAAAAIAAAABAMAAAw4CwAAAAAACAAAAAQDAADcbgsAAAAAAAgAAAAEAwAAxv8LAAAAAAAIAAAABAMAANt7CwAAAAAACAAAAAQDAADcewsAAAAAACAAAAABBgAA0AAAAOAAAADwAAAAAAEAABABAAAgAQAAMAEAAEABAAAIAAAAAAQAAEHA7/M9AAAAGAAAAAECAAABAAAAAAAAAA8AAAAAAAAAAAAAAAAAAAAjAAAAAQkAAGZpbGU6Ly8vVm9sdW1lcy9BbmNlc3RyYWwlMjBSZWNhbGwvAAgAAAAEAwAAAMBa1OgAAAAIAAAAAAQAAEHEyF4pGtlhJAAAAAEBAABGNEFBMUY3OS0wMDVDLTREMDItOTBFRS0zMTQwODE1ODIxQzMYAAAAAQIAAAEBAAABAAAA7xMAAAEAAAAAAAAAAAAAABkAAAABAQAAL1ZvbHVtZXMvQW5jZXN0cmFsIFJlY2FsbAAAAAgAAAABCQAAZmlsZTovLy8MAAAAAQEAAE1hY2ludG9zaCBIRAgAAAAEAwAAAFChG3MAAAAIAAAAAAQAAEHHaK2cAAAAJAAAAAEBAAAyOEE1RjA3Qi1DQ0FBLTQ0NzktODJGQy1BMTBDNzZCRjRGODAYAAAAAQIAAIEAAAABAAAA7xMAAAEAAAAAAAAAAAAAAAEAAAABAQAALwAAAGAAAAD+////APAAAAAAAAAHAAAAAiAAAPQCAAAAAAAABSAAAGQCAAAAAAAAECAAAHQCAAAAAAAAESAAAKgCAAAAAAAAEiAAAIgCAAAAAAAAEyAAAJgCAAAAAAAAICAAANQCAAAAAAAABAAAAAMDAAAA8AAABAAAAAMDAAAAAAAABAAAAAMDAAABAAAAJAAAAAEGAABoAwAAdAMAAIADAAB0AwAAdAMAAHQDAAB0AwAAdAMAAHQDAACoAAAA/v///wEAAAAAAwAADQAAAAQQAACoAAAAAAAAAAUQAABQAQAAAAAAABAQAACIAQAAAAAAAEAQAAB4AQAAAAAAAAAgAACMAwAAAAAAAAIgAABAAgAAAAAAAAUgAACoAQAAAAAAABAgAAAgAAAAAAAAABEgAAD0AQAAAAAAABIgAADUAQAAAAAAABMgAADkAQAAAAAAACAgAAAgAgAAAAAAABDQAAAEAAAAAAAAAA==</bookmark>
+            </media-rep>
+            <metadata>
+                <md key="com.apple.proapps.studio.rawToLogConversion" value="0"/>
+                <md key="com.apple.proapps.spotlight.kMDItemProfileName" value="HD (1-1-1)"/>
+                <md key="com.apple.proapps.studio.cameraISO" value="0"/>
+                <md key="com.apple.proapps.studio.cameraColorTemperature" value="0"/>
+                <md key="com.apple.proapps.spotlight.kMDItemCodecs">
+                    <array>
+                        <string>AVC Coding</string>
+                        <string>MPEG-4 AAC</string>
+                    </array>
+                </md>
+                <md key="com.apple.proapps.mio.ingestDate" value="2026-02-18 10:37:42 +0800"/>
+            </metadata>
+        </asset>
+    </resources>
+    <library location="file:///Users/user/Movies/FCPX%20Essential%20Training.fcpbundle/">
+        <event name="360 Clips" uid="D000813A-951D-4867-BE59-893D5C05E4E7">
+            <project name="360 Video" uid="F9237A58-0D28-4380-A0DB-4470D5B72293" modDate="2026-02-18 14:52:09 +0800">
+                <sequence format="r1" duration="7042035/60000s" tcStart="0s" tcFormat="NDF" audioLayout="stereo" audioRate="48k">
+                    <spine>
+                        <clip offset="0s" name="meditate" duration="7042035/60000s" tcFormat="NDF">
+                            <adjust-colorConform enabled="1" autoOrManual="manual" conformType="conformNone" peakNitsOfPQSource="1000" peakNitsOfSDRToPQSource="203"/>
+                            <video ref="r2" offset="0s" duration="7043036/60000s">
+                                <adjust-stabilization enabled="0" type="automatic"/>
+                                <adjust-colorConform enabled="1" autoOrManual="manual" conformType="conformNone" peakNitsOfPQSource="1000" peakNitsOfSDRToPQSource="203"/>
+                                <audio ref="r2" lane="-1" offset="0s" duration="84516432/720000s" role="dialogue.dialogue-1" srcCh="1, 2"/>
+                            </video>
+                        </clip>
+                    </spine>
+                </sequence>
+            </project>
+        </event>
+        <smart-collection name="Projects" match="all">
+            <match-clip rule="is" type="project"/>
+        </smart-collection>
+        <smart-collection name="All Video" match="any">
+            <match-media rule="is" type="videoOnly"/>
+            <match-media rule="is" type="videoWithAudio"/>
+        </smart-collection>
+        <smart-collection name="Audio Only" match="all">
+            <match-media rule="is" type="audioOnly"/>
+        </smart-collection>
+        <smart-collection name="Stills" match="all">
+            <match-media rule="is" type="stills"/>
+        </smart-collection>
+        <smart-collection name="Favorites" match="all">
+            <match-ratings value="favorites"/>
+        </smart-collection>
+    </library>
+</fcpxml>

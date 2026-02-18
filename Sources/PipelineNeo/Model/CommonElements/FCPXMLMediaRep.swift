@@ -76,10 +76,20 @@ extension FinalCutPro.FCPXML.MediaRep {
         self.sig = sig
         self.src = src
         self.suggestedFilename = suggestedFilename
-        // Use lossy UTF-8 encoding for the bookmark string. In the extremely unlikely event that
-        // conversion fails, fall back to empty `Data` to represent the absence of a bookmark while
-        // preserving the existing behavior of this initializer.
-        self.bookmarkData = bookmark.data(using: .utf8, allowLossyConversion: true) ?? Data()
+        // Convert bookmark string to Data using lossy UTF-8 encoding. This initializer assumes
+        // the provided bookmark is a textual, UTF-8–compatible representation (for example, a string
+        // that was previously created from bookmark `Data`). If any code points cannot be encoded,
+        // they may be replaced during conversion, which can result in an unusable bookmark. In that
+        // case, or if conversion fails entirely, we fall back to empty `Data` to represent the
+        // absence of a bookmark, preserving the initializer's existing semantics that a malformed
+        // string is treated the same as "no bookmark".
+        if let data = bookmark.data(using: .utf8, allowLossyConversion: true) {
+            self.bookmarkData = data
+        } else {
+            // Log a warning so the failure is not completely silent, but preserve existing behavior
+            NSLog("FCPXML.MediaRep: Failed to convert bookmark string to UTF-8 Data; falling back to empty Data(). Bookmark may be unusable.")
+            self.bookmarkData = Data()
+        }
     }
 }
 
@@ -117,7 +127,7 @@ extension FinalCutPro.FCPXML.MediaRep {
 extension FinalCutPro.FCPXML.MediaRep {
     /// The kind of media representation.
     /// Default: `original-media`
-    public var kind: Kind { // only used in `media-rep`
+    public var kind: Kind {
         get {
             let defaultValue: Kind = .originalMedia
             

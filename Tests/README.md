@@ -2,8 +2,8 @@
 
 This directory contains the test suite for Pipeline Neo, a Swift 6 framework for Final Cut Pro FCPXML processing with SwiftTimecode integration.
 
-- **Test count:** 587 tests  
-- **Scope:** Parsing, timecode, document operations, file loading, timeline export, validation, timeline manipulation, media processing, typed models (adjustments, filters, captions/titles, keyframe animation), CMTime Codable, collections, Live Drawing (1.11+), HiddenClipMarker (1.13+), Format/Asset 1.13+ (heroEye, heroEyeOverride, mediaReps), SmartCollection match rules, and all supported FCPXML versions and frame rates  
+- **Test count:** 628 tests  
+- **Scope:** Parsing, timecode, document operations, file loading, timeline export, validation, timeline manipulation, media processing, typed models (adjustments, filters, captions/titles, keyframe animation), CMTime Codable, collections, Live Drawing (1.11+), HiddenClipMarker (1.13+), Format/Asset 1.13+ (heroEye, heroEyeOverride, mediaReps), SmartCollection match rules, 360 video (projection, stereoscopic), auditions, conform-rate, still images, multicam, secondary storylines, audio keyframes, keyword collections/folders, and all supported FCPXML versions and frame rates  
 - **Layout:** Shared utilities for sample paths; file tests per sample; logic/parsing tests for model types and structure  
 
 ---
@@ -54,16 +54,22 @@ Tests/
     ├── FCPXMLTestUtilities.swift  # loadFCPXMLSampleData, loadFCPXMLSample, fcpxmlFrameRateSampleNames, allFCPXMLSampleNames
     ├── FileTests/
     │   ├── FCPXMLFileTest_24.swift
-    │   ├── FCPXMLFileTest_Complex.swift
-    │   ├── FCPXMLFileTest_BasicMarkers.swift
-    │   ├── FCPXMLFileTest_FrameRates.swift
+    │   ├── FCPXMLFileTest_360Video.swift
     │   ├── FCPXMLFileTest_AllSamples.swift
     │   ├── FCPXMLFileTest_Annotations.swift
-    │   ├── FCPXMLFileTest_StandaloneAssetClip.swift
-    │   ├── FCPXMLFileTest_SyncClip.swift
+    │   ├── FCPXMLFileTest_AuditionSample.swift
+    │   ├── FCPXMLFileTest_BasicMarkers.swift
+    │   ├── FCPXMLFileTest_Complex.swift
     │   ├── FCPXMLFileTest_CompoundClips.swift
+    │   ├── FCPXMLFileTest_FrameRates.swift
+    │   ├── FCPXMLFileTest_ImageSample.swift
     │   ├── FCPXMLFileTest_Keywords.swift
-    │   └── FCPXMLFileTest_Occlusion.swift
+    │   ├── FCPXMLFileTest_Multicam.swift
+    │   ├── FCPXMLFileTest_Occlusion.swift
+    │   ├── FCPXMLFileTest_Photoshop.swift
+    │   ├── FCPXMLFileTest_SmartCollection.swift
+    │   ├── FCPXMLFileTest_StandaloneAssetClip.swift
+    │   └── FCPXMLFileTest_SyncClip.swift
     ├── LogicAndParsing/
     │   ├── FCPXMLRootVersionTests.swift
     │   ├── FCPXMLStructureTests.swift
@@ -167,7 +173,7 @@ Tests are discoverable via **XCTestManifests.swift**. Run `swift test` in an env
 
 **Timeline & manipulation**
 
-- **TimelineManipulationTests** — Ripple insert (immutable/mutating, lane options); auto lane (findAvailableLane, insertingClipAutoLane, insertClipAutoLane); clip queries (onLane, inRange, withAssetRef, laneRange); metadata (markers, chapters, keywords, ratings); timestamps (createdAt, modifiedAt). Timeline, TimelineClip, RippleInsertResult, ClipPlacement, TimelineError.
+- **TimelineManipulationTests** — Ripple insert (immutable/mutating, lane options); auto lane (findAvailableLane, insertingClipAutoLane, insertClipAutoLane); clip queries (onLane, inRange, withAssetRef, laneRange); metadata (markers, chapters, keywords, ratings); timestamps (createdAt, modifiedAt); file tests for TimelineSample, TimelineWithSecondaryStoryline, TimelineWithSecondaryStorylineWithAudioKeyframes. Timeline, TimelineClip, RippleInsertResult, ClipPlacement, TimelineError.
 
 **Timecode & timing**
 
@@ -181,13 +187,17 @@ Tests are discoverable via **XCTestManifests.swift**. Run `swift test` in an env
 - **AssetDurationMeasurementTests** — Duration for audio/video/images; media type; sync/async; image (no duration). AssetDurationMeasurer, DurationMeasurementResult, MediaType.
 - **ParallelFileIOTests** — Parallel read/write; success/failure counts; maxConcurrentOperations, useFileHandleOptimization. ParallelFileIOExecutor, ParallelFileIOResult.
 
+**Analysis & detection**
+
+- **CutDetectionTests** — Edit points (hardCut, transition, gapCut); source relationship (sameClip, differentClips); empty spine; single clip; same ref transitions; different refs; CutSample.fcpxml file test. EditPoint, CutDetectionResult.
+
 **Typed models**
 
 - **AdjustmentTests** — Crop, Transform, Blend, Stabilization, Volume, Loudness; init, properties, Codable, Clip integration; XML round-trip.
 - **AudioEnhancementTests** — NoiseReduction, HumReduction, Equalization, MatchEqualization; init, Codable, Clip integration.
 - **Transform360Tests** — Transform360Adjustment (spherical/cartesian, auto-orient, convergence, interaxial); Codable, Clip integration.
 - **FilterTests** — VideoFilter, AudioFilter, VideoFilterMask, FilterParameter (keyframe animation, param auxValue 1.11+); Codable, clip integration.
-- **CaptionTitleTests** — Caption, Title, TextStyle, TextStyleDefinition; typedTextStyleDefinitions; XML parse/serialization.
+- **CaptionTitleTests** — Caption, Title, TextStyle, TextStyleDefinition; typedTextStyleDefinitions; XML parse/serialization; CaptionSample.fcpxml file test.
 - **KeyframeAnimationTests** — KeyframeAnimation, Keyframe (interpolation), FadeIn/FadeOut (fade types); FilterParameter integration; CMTime Codable.
 - **CMTimeCodableTests** — CMTime encode/decode as FCPXML time strings; round-trip; edge cases.
 - **CollectionTests** — CollectionFolder, KeywordCollection; nested folders; Codable.
@@ -209,16 +219,22 @@ File tests live under **PipelineNeoTests/FileTests/** and use samples from **Tes
 | Test class | Sample(s) | Asserts |
 |------------|-----------|---------|
 | **FCPXMLFileTest_24** | 24.fcpxml | Root, version ver1_11, events, project, sequence format "r1", spine story elements; load via FCPXMLFileLoader + FCPXMLService |
-| **FCPXMLFileTest_Complex** | Complex.fcpxml | Root, ver1_11, events, projects; version attribute; resources exist |
-| **FCPXMLFileTest_BasicMarkers** | BasicMarkers.fcpxml | Root, ver1_9, root equality, resources, library; allEvents, allProjects |
-| **FCPXMLFileTest_FrameRates** | Frame-rate samples | Each existing frame-rate sample parses; root, version ≥ 1.5; 24, 29.97, 60 called out |
+| **FCPXMLFileTest_360Video** | 360Video.fcpxml | Root, ver1_13, format projection/stereoscopic, adjust-colorConform, bookmarks, smart collections, round-trip |
 | **FCPXMLFileTest_AllSamples** | All .fcpxml in dir | Each loads via FCPXMLFileLoader and as FinalCutPro.FCPXML; root name "fcpxml"; skips if dir missing/empty |
 | **FCPXMLFileTest_Annotations** | Annotations.fcpxml | Root, events, projects |
+| **FCPXMLFileTest_AuditionSample** | AuditionSample.fcpxml | Root, ver1_13, audition element, active/inactive clips, adjust-colorConform, conform-rate, keywords |
+| **FCPXMLFileTest_BasicMarkers** | BasicMarkers.fcpxml | Root, ver1_9, root equality, resources, library; allEvents, allProjects |
+| **FCPXMLFileTest_Complex** | Complex.fcpxml | Root, ver1_11, events, projects; version attribute; resources exist |
+| **FCPXMLFileTest_CompoundClips** | CompoundClips.fcpxml, CompoundClipSample.fcpxml | Root, non-empty projects; compound clip resources |
+| **FCPXMLFileTest_FrameRates** | Frame-rate samples | Each existing frame-rate sample parses; root, version ≥ 1.5; 24, 29.97, 60 called out |
+| **FCPXMLFileTest_ImageSample** | ImageSample.fcpxml | Root, ver1_13, still image asset (duration=0s), video element references still |
+| **FCPXMLFileTest_Keywords** | Keywords.fcpxml, EventsWithKeywords.fcpxml, KeywordsWithinFolders.fcpxml | Root name; keywords in events; keyword collections and folders in events |
+| **FCPXMLFileTest_Multicam** | MulticamSample.fcpxml, MulticamSampleWithCuts.fcpxml | Root, ver1_13, multicam resources, multicam clips in timeline |
+| **FCPXMLFileTest_Occlusion** | Occlusion, Occlusion2, Occlusion3 | Root name for each |
+| **FCPXMLFileTest_Photoshop** | PhotoshopSample1.fcpxml, PhotoshopSample2.fcpxml | Root, ver1_13, events, projects |
+| **FCPXMLFileTest_SmartCollection** | Multiple samples (360Video, TimelineSample, etc.) | Smart collections parsing, match-clip, match-media, match-ratings, match attributes (all/any), library integration, round-trip |
 | **FCPXMLFileTest_StandaloneAssetClip** | StandaloneAssetClip.fcpxml | Root, ≥1 resource |
 | **FCPXMLFileTest_SyncClip** | SyncClip.fcpxml | Root, non-empty projects |
-| **FCPXMLFileTest_CompoundClips** | CompoundClips.fcpxml | Root, non-empty projects |
-| **FCPXMLFileTest_Keywords** | Keywords.fcpxml | Root name |
-| **FCPXMLFileTest_Occlusion** | Occlusion, Occlusion2, Occlusion3 | Root name for each |
 
 Tests that require a sample use `loadFCPXMLSample(named:)` or `loadFCPXMLSampleData(named:)`, which throw **XCTSkip** when the file is missing so the suite can run with a subset of samples.
 

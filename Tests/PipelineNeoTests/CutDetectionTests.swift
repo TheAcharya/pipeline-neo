@@ -238,6 +238,32 @@ final class CutDetectionTests: XCTestCase, @unchecked Sendable {
         XCTAssertGreaterThanOrEqual(result.totalEditPoints, 0)
     }
 
+    // MARK: - File Tests
+    
+    func testCutSample() throws {
+        let fcpxml = try loadFCPXMLSample(named: "CutSample")
+        XCTAssertEqual(fcpxml.root.element.name, "fcpxml")
+        XCTAssertEqual(fcpxml.version, .ver1_13)
+        let projects = fcpxml.allProjects()
+        XCTAssertFalse(projects.isEmpty, "Expected at least one project")
+        
+        guard let project = projects.first else {
+            XCTFail("No project found")
+            return
+        }
+        
+        let sequence = try XCTUnwrap(project.sequence)
+        let spine = sequence.spine
+        let storyElements = Array(spine.storyElements)
+        XCTAssertGreaterThan(storyElements.count, 1, "CutSample should have multiple clips for cut detection")
+        
+        // Test cut detection on this sample
+        let data = try Data(contentsOf: urlForFCPXMLSample(named: "CutSample"))
+        let document = try service.parseFCPXML(from: data)
+        let result = service.detectCuts(in: document)
+        XCTAssertGreaterThan(result.totalEditPoints, 0, "CutSample should have edit points")
+    }
+
     // MARK: - Helpers
 
     private func firstProjectSpine(in element: XMLElement) -> XMLElement? {

@@ -1148,4 +1148,93 @@ final class TimelineManipulationTests: XCTestCase {
         XCTAssertEqual(timeline1.createdAt, timeline2.createdAt)
         XCTAssertEqual(timeline1.modifiedAt, timeline2.modifiedAt)
     }
+    
+    // MARK: - File Tests
+    
+    func testTimelineSample() throws {
+        let fcpxml = try loadFCPXMLSample(named: "TimelineSample")
+        XCTAssertEqual(fcpxml.root.element.name, "fcpxml")
+        XCTAssertEqual(fcpxml.version, .ver1_13)
+        let projects = fcpxml.allProjects()
+        XCTAssertFalse(projects.isEmpty, "Expected at least one project")
+        
+        guard let project = projects.first else {
+            XCTFail("No project found")
+            return
+        }
+        
+        let sequence = try XCTUnwrap(project.sequence)
+        let spine = sequence.spine
+        let storyElements = Array(spine.storyElements)
+        XCTAssertFalse(storyElements.isEmpty, "Expected story elements in timeline")
+    }
+
+    func testTimelineWithSecondaryStoryline() throws {
+        let fcpxml = try loadFCPXMLSample(named: "TimelineWithSecondaryStoryline")
+        XCTAssertEqual(fcpxml.root.element.name, "fcpxml")
+        XCTAssertEqual(fcpxml.version, .ver1_13)
+        let projects = fcpxml.allProjects()
+        XCTAssertFalse(projects.isEmpty, "Expected at least one project")
+        
+        guard let project = projects.first else {
+            XCTFail("No project found")
+            return
+        }
+        
+        let sequence = try XCTUnwrap(project.sequence)
+        let spine = sequence.spine
+        
+        // Check for secondary storylines (spine elements within clips)
+        var foundSecondaryStoryline = false
+        for element in Array(spine.storyElements) {
+            if element.name == "clip" || element.name == "asset-clip" {
+                let nestedSpines = element.childElements.filter { $0.name == "spine" }
+                if !nestedSpines.isEmpty {
+                    foundSecondaryStoryline = true
+                    break
+                }
+            }
+        }
+        XCTAssertTrue(foundSecondaryStoryline, "Should find secondary storyline")
+    }
+
+    func testTimelineWithSecondaryStorylineWithAudioKeyframes() throws {
+        let fcpxml = try loadFCPXMLSample(named: "TimelineWithSecondaryStorylineWithAudioKeyframes")
+        XCTAssertEqual(fcpxml.root.element.name, "fcpxml")
+        XCTAssertEqual(fcpxml.version, .ver1_13)
+        let projects = fcpxml.allProjects()
+        XCTAssertFalse(projects.isEmpty, "Expected at least one project")
+        
+        guard let project = projects.first else {
+            XCTFail("No project found")
+            return
+        }
+        
+        let sequence = try XCTUnwrap(project.sequence)
+        let spine = sequence.spine
+        
+        // Check for audio keyframes (adjust-volume with keyframeAnimation) in clips
+        var foundAudioKeyframes = false
+        func checkForAudioKeyframes(in element: XMLElement) {
+            // Check if this element has adjust-volume with keyframeAnimation
+            if let adjustVolume = element.firstChildElement(named: "adjust-volume") {
+                let param = adjustVolume.firstChildElement(named: "param")
+                if param?.firstChildElement(named: "keyframeAnimation") != nil {
+                    foundAudioKeyframes = true
+                    return
+                }
+            }
+            // Recursively check children (including nested clips and spines)
+            for child in element.childElements {
+                checkForAudioKeyframes(in: child)
+                if foundAudioKeyframes { return }
+            }
+        }
+        
+        for element in Array(spine.storyElements) {
+            checkForAudioKeyframes(in: element)
+            if foundAudioKeyframes { break }
+        }
+        XCTAssertTrue(foundAudioKeyframes, "Should find audio keyframes with keyframeAnimation")
+    }
 }

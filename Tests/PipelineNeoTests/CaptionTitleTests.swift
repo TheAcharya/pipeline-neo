@@ -206,4 +206,42 @@ final class CaptionTitleTests: XCTestCase {
         let styleDefElements = title.element.childElements.filter { $0.name == "text-style-def" }
         XCTAssertEqual(styleDefElements.count, 1)
     }
+    
+    // MARK: - File Tests
+    
+    func testCaptionSample() throws {
+        let fcpxml = try loadFCPXMLSample(named: "CaptionSample")
+        XCTAssertEqual(fcpxml.root.element.name, "fcpxml")
+        XCTAssertEqual(fcpxml.version, .ver1_13)
+        let projects = fcpxml.allProjects()
+        XCTAssertFalse(projects.isEmpty, "Expected at least one project")
+        
+        guard let project = projects.first else {
+            XCTFail("No project found")
+            return
+        }
+        
+        let sequence = try XCTUnwrap(project.sequence)
+        let spine = sequence.spine
+        let storyElements = Array(spine.storyElements)
+        
+        // Find captions in the spine
+        var foundCaptions = false
+        for element in storyElements {
+            if element.name == "asset-clip" {
+                let captions = element.childElements.filter { $0.name == "caption" }
+                if !captions.isEmpty {
+                    foundCaptions = true
+                    // Verify caption has text and text-style-def
+                    for caption in captions {
+                        let textElements = caption.childElements.filter { $0.name == "text" }
+                        let styleDefElements = caption.childElements.filter { $0.name == "text-style-def" }
+                        XCTAssertFalse(textElements.isEmpty || styleDefElements.isEmpty, "Caption should have text and style definition")
+                    }
+                    break
+                }
+            }
+        }
+        XCTAssertTrue(foundCaptions, "Should find captions in CaptionSample")
+    }
 }
