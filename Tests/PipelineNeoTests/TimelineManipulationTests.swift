@@ -12,21 +12,42 @@ import XCTest
 import CoreMedia
 @testable import PipelineNeo
 
-/// Thread-safe mutable box for injectable "now" in timestamp tests. Synchronized so it can be captured by a @Sendable nowProvider closure.
-private final class NowBox: @unchecked Sendable {
-    private let lock = NSLock()
+/// Thread-safe mutable box for injectable "now" in timestamp tests, implemented as an actor for safe concurrent access.
+private actor NowBox {
     private var _value: Date
-    init(_ value: Date) { _value = value }
-    func getValue() -> Date {
-        lock.lock()
-        defer { lock.unlock() }
-        return _value
-    }
-    func setValue(_ value: Date) {
-        lock.lock()
-        defer { lock.unlock() }
+    init(_ value: Date) {
         _value = value
     }
+    func getValue() -> Date {
+        _value
+    }
+    func setValue(_ value: Date) {
+        _value = value
+    }
+}
+
+/// Returns a synchronous closure that fetches the current time from the actor (used when Timeline's nowProvider is invoked).
+private func makeSyncNowProvider(nowBox: NowBox) -> @Sendable () -> Date {
+    return {
+        let semaphore = DispatchSemaphore(value: 0)
+        var value: Date!
+        Task {
+            value = await nowBox.getValue()
+            semaphore.signal()
+        }
+        semaphore.wait()
+        return value
+    }
+}
+
+/// Synchronously sets the actor's value from synchronous test code.
+private func syncSetNow(_ value: Date, on nowBox: NowBox) {
+    let semaphore = DispatchSemaphore(value: 0)
+    Task {
+        await nowBox.setValue(value)
+        semaphore.signal()
+    }
+    semaphore.wait()
 }
 
 @available(macOS 12.0, *)
@@ -93,8 +114,8 @@ final class TimelineManipulationTests: XCTestCase {
         let newClip = TimelineClip(assetRef: "r3", offset: .zero, duration: CMTime(value: 5, timescale: 1), lane: 0)
         let result = timeline.insertClipWithRipple(newClip, at: CMTime(value: 15, timescale: 1))
         
-        // clip2 starts at 10, which is before 15, but since it starts before the insert point,
-        // it won't be shifted (only clips at or after the insert point are shifted)
+        // clip2 starts at 10, which is before 15, so under this behavior only clips whose *start time*
+        // is at or after the insert point are shifted; overlapping clips that start before 15 are not.
         XCTAssertEqual(result.shiftedClips.count, 0)
         
         // Verify new clip was inserted
@@ -453,7 +474,7 @@ final class TimelineManipulationTests: XCTestCase {
         // Find available lane starting from 0
         let availableLane = timelineWithClips.findAvailableLane(at: .zero, duration: CMTime(value: 10, timescale: 1), startingFrom: 0)
         
-        // Should find lane 2 or -1 (prefers positive)
+        // Should find an available lane: 2 (positive) or -1 (negative); implementation alternates by distance.
         XCTAssertTrue(availableLane == 2 || availableLane == -1)
     }
     
@@ -530,7 +551,7 @@ final class TimelineManipulationTests: XCTestCase {
             return
         }
         
-        // Should be placed on lane 3 or -1
+        // With lanes 0–2 filled, auto-lane assignment returns the next free lane (3 or -1 depending on search order).
         XCTAssertTrue(placement.lane == 3 || placement.lane == -1)
     }
     
@@ -995,7 +1016,7 @@ final class TimelineManipulationTests: XCTestCase {
             name: "Test",
             createdAt: createdAt,
             modifiedAt: createdAt,
-            nowProvider: { nowBox.getValue() }
+            nowProvider: makeSyncNowProvider(nowBox: nowBox)
         )
         
         let clip = TimelineClip(
@@ -1005,7 +1026,7 @@ final class TimelineManipulationTests: XCTestCase {
             lane: 0
         )
         
-        nowBox.setValue(createdAt.addingTimeInterval(1))
+        syncSetNow(createdAt.addingTimeInterval(1), on: nowBox)
         _ = timeline.insertClipWithRipple(clip, at: .zero)
         
         XCTAssertEqual(timeline.createdAt, createdAt)
@@ -1019,7 +1040,7 @@ final class TimelineManipulationTests: XCTestCase {
             name: "Test",
             createdAt: createdAt,
             modifiedAt: createdAt,
-            nowProvider: { nowBox.getValue() }
+            nowProvider: makeSyncNowProvider(nowBox: nowBox)
         )
         
         let clip = TimelineClip(
@@ -1029,7 +1050,7 @@ final class TimelineManipulationTests: XCTestCase {
             lane: 0
         )
         
-        nowBox.setValue(createdAt.addingTimeInterval(1))
+        syncSetNow(createdAt.addingTimeInterval(1), on: nowBox)
         _ = try timeline.insertClipAutoLane(clip, at: .zero)
         
         XCTAssertEqual(timeline.createdAt, createdAt)
@@ -1043,12 +1064,12 @@ final class TimelineManipulationTests: XCTestCase {
             name: "Test",
             createdAt: createdAt,
             modifiedAt: createdAt,
-            nowProvider: { nowBox.getValue() }
+            nowProvider: makeSyncNowProvider(nowBox: nowBox)
         )
         
         let marker = Marker(start: CMTime(value: 5, timescale: 1), value: "Test")
         
-        nowBox.setValue(createdAt.addingTimeInterval(1))
+        syncSetNow(createdAt.addingTimeInterval(1), on: nowBox)
         timeline.addMarker(marker)
         
         XCTAssertEqual(timeline.createdAt, createdAt)
@@ -1064,10 +1085,10 @@ final class TimelineManipulationTests: XCTestCase {
             markers: [marker],
             createdAt: createdAt,
             modifiedAt: createdAt,
-            nowProvider: { nowBox.getValue() }
+            nowProvider: makeSyncNowProvider(nowBox: nowBox)
         )
         
-        nowBox.setValue(createdAt.addingTimeInterval(1))
+        syncSetNow(createdAt.addingTimeInterval(1), on: nowBox)
         _ = timeline.removeMarker(marker)
         
         XCTAssertEqual(timeline.createdAt, createdAt)
@@ -1081,12 +1102,12 @@ final class TimelineManipulationTests: XCTestCase {
             name: "Test",
             createdAt: createdAt,
             modifiedAt: createdAt,
-            nowProvider: { nowBox.getValue() }
+            nowProvider: makeSyncNowProvider(nowBox: nowBox)
         )
         
         let chapterMarker = ChapterMarker(start: CMTime(value: 5, timescale: 1), value: "Chapter 1")
         
-        nowBox.setValue(createdAt.addingTimeInterval(1))
+        syncSetNow(createdAt.addingTimeInterval(1), on: nowBox)
         timeline.addChapterMarker(chapterMarker)
         
         XCTAssertEqual(timeline.createdAt, createdAt)
@@ -1100,7 +1121,7 @@ final class TimelineManipulationTests: XCTestCase {
             name: "Test",
             createdAt: createdAt,
             modifiedAt: createdAt,
-            nowProvider: { nowBox.getValue() }
+            nowProvider: makeSyncNowProvider(nowBox: nowBox)
         )
         
         let keyword = Keyword(
@@ -1109,7 +1130,7 @@ final class TimelineManipulationTests: XCTestCase {
             value: "Action"
         )
         
-        nowBox.setValue(createdAt.addingTimeInterval(1))
+        syncSetNow(createdAt.addingTimeInterval(1), on: nowBox)
         timeline.addKeyword(keyword)
         
         XCTAssertEqual(timeline.createdAt, createdAt)
@@ -1123,7 +1144,7 @@ final class TimelineManipulationTests: XCTestCase {
             name: "Test",
             createdAt: createdAt,
             modifiedAt: createdAt,
-            nowProvider: { nowBox.getValue() }
+            nowProvider: makeSyncNowProvider(nowBox: nowBox)
         )
         
         let rating = Rating(
@@ -1132,7 +1153,7 @@ final class TimelineManipulationTests: XCTestCase {
             value: .favorite
         )
         
-        nowBox.setValue(createdAt.addingTimeInterval(1))
+        syncSetNow(createdAt.addingTimeInterval(1), on: nowBox)
         timeline.addRating(rating)
         
         XCTAssertEqual(timeline.createdAt, createdAt)
@@ -1201,6 +1222,17 @@ final class TimelineManipulationTests: XCTestCase {
         let spine = sequence.spine
         let storyElements = Array(spine.storyElements)
         XCTAssertFalse(storyElements.isEmpty, "Expected story elements in timeline")
+
+        // Validate that the loaded timeline contains at least one primary clip-like element
+        let clipLikeElements = storyElements.filter { element in
+            element.name == "clip" || element.name == "asset-clip"
+        }
+        XCTAssertFalse(clipLikeElements.isEmpty, "Expected at least one clip or asset-clip in primary storyline")
+
+        // Ensure each clip-like element has a duration attribute, which is required for timeline manipulation
+        for element in clipLikeElements {
+            XCTAssertNotNil(element.attribute(forName: "duration")?.stringValue, "Clip \(element.name ?? "?") should have a duration attribute")
+        }
     }
 
     func testTimelineWithSecondaryStoryline() throws {
