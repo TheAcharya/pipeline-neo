@@ -66,6 +66,17 @@ CLI uses it for `--media-copy` and `--validate`; progress is hidden when `--quie
 
 ---
 
+## FCPXML-style UIDs
+
+**FCPXMLUID** generates and validates FCPXML-style unique identifiers (uppercase UUID with hyphens, e.g. `D71600AB-2F01-4850-8DBD-E9F0594BD004`) used by Final Cut Pro for `event` and `project` `uid` attributes.
+
+- **FCPXMLUID.random()** — Returns a new UID string. Use when creating new FCPXML documents so event/project identity matches FCP export.
+- **FCPXMLUID.isValid(_:)** — Returns whether a string is a valid 36-character, hyphenated, uppercase-hex UUID.
+
+When exporting with **FCPXMLExporter**, pass `eventUid` and `projectUid` (or omit for auto-generated UIDs). See [07 — Timeline & Export](07-Timeline-Export.md).
+
+---
+
 ## Next
 
 - [16 — CLI](16-CLI.md) — Experimental command-line interface.

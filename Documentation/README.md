@@ -18,7 +18,7 @@ The manual is split into **chapters** for easier navigation and maintenance:
 | [04 — Pipeline & Logging](Manual/04-Pipeline-Logging.md) | FCPXMLService, ModularUtilities, logging |
 | [05 — Validation & Cut Detection](Manual/05-Validation-CutDetection.md) | Semantic and DTD validation, cut detection API |
 | [06 — Version Conversion & Export](Manual/06-Version-Conversion-Export.md) | Version conversion, save as .fcpxml / .fcpxmld |
-| [07 — Timeline & Export](Manual/07-Timeline-Export.md) | Timeline, TimelineClip, TimelineFormat, exporters |
+| [07 — Timeline & Export](Manual/07-Timeline-Export.md) | Timeline, TimelineClip, TimelineFormat, custom/preset dimensions and frame rate, zero-clip export, FCPXMLExporter options |
 | [08 — Timeline Manipulation](Manual/08-Timeline-Manipulation.md) | Ripple insert, auto lane, clip queries, lane range |
 | [09 — Timeline Metadata](Manual/09-Timeline-Metadata.md) | Markers, chapter markers, keywords, ratings, timestamps |
 | [10 — Extraction & Media](Manual/10-Extraction-Media.md) | Extraction scope and presets, media extraction and copy |
@@ -26,7 +26,7 @@ The manual is split into **chapters** for easier navigation and maintenance:
 | [12 — Typed Models](Manual/12-Typed-Models.md) | Adjustments, filters, captions/titles, keyframe animation, Live Drawing, collections |
 | [13 — XML Extensions](Manual/13-XML-Extensions.md) | XMLDocument and XMLElement FCPXML extensions |
 | [14 — High-Level Model](Manual/14-High-Level-Model.md) | FinalCutPro.FCPXML, Root, events, projects |
-| [15 — Errors & Utilities](Manual/15-Errors-Utilities.md) | Error types, ErrorHandling, ProgressBar |
+| [15 — Errors & Utilities](Manual/15-Errors-Utilities.md) | Error types, ErrorHandling, ProgressBar, FCPXMLUID |
 | [16 — CLI](Manual/16-CLI.md) | Experimental command-line interface (pipeline-neo) |
 | [17 — Examples](Manual/17-Examples.md) | End-to-end workflows and code examples |
 

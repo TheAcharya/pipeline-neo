@@ -7,6 +7,25 @@ Pipeline Neo uses **New Features**, **Improvements**, and **Bug Fixes** for each
 
 ---
 
+## [2.4.0](https://github.com/TheAcharya/pipeline-neo/releases/tag/2.4.0) - 2026-02-23
+
+### ✨ New Features
+
+- **CLI `--create-project`:** Create a new empty FCPXML project from the command line. Under the TIMELINE section: `--create-project` with `--width`, `--height`, `--rate`, optional `--version` (default 1.14), and a single positional output directory. Project name is derived from format (e.g. `1920x1080@25p`). Mandatory DTD validation after build and before write; FCP-style output with DOCTYPE, format `colorSpace`, and optional default smart collections. Logging options (`--log`, `--log-level`, `--quiet`) apply to create-project output.
+- **FCPXMLExporter:** New `includeDefaultSmartCollections` parameter (default `false`). When `true`, adds five FCP-style default smart collections under the library (Projects, All Video, Audio Only, Stills, Favorites). Exported document includes DOCTYPE; format elements always include `name` and `colorSpace` for compatibility with Final Cut Pro.
+
+### 🔧 Improvements
+
+- **Test suite:** Expanded to **648 tests**. Added `testEmptyTimelineCreationAtDifferentSizesAndFrameRates` (barebone empty `Timeline` at multiple sizes and frame rates: 720p, 1080p, 4K UHD, DCI 4K, custom 640×480; asserts name, clips, duration, format, aspectRatio). Added `testProjectCreationStyleExportValidatesAgainstDTD` (empty timeline export with `includeDefaultSmartCollections`, parse, and DTD validation). Added `testProjectCreationAtDifferentSizesAndFrameRates` (export at multiple sizes and frame rates, then parse and validate against DTD).
+- **Documentation:** Updated `.cursorrules`, `AGENT.md`, `Tests/README.md`, and `README.md` with CLI create-project, test count 648, and empty timeline / project-creation test coverage. Manual (Timeline & Export, CLI, Examples) and `Sources/PipelineNeoCLI/README.md` updated for create-project usage and TIMELINE options.
+
+### 🐛 Bug Fixes
+
+- **FCP import:** Resolved "No declaration for attribute name of element library" by no longer writing a `name` attribute on the `library` element (FCPXML DTD allows only `location` and `colorProcessing`).
+- **FCP import:** Resolved "unexpected value" for `format="r1"` by always writing a format `name` (e.g. `FFVideoFormatRateUndefined` for custom dimensions) and `colorSpace` on format elements in exported FCPXML.
+
+---
+
 ## [2.3.1](https://github.com/TheAcharya/pipeline-neo/releases/tag/2.3.1) - 2026-02-18
 
 ### ✨ New Features

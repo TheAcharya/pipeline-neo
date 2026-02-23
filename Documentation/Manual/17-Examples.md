@@ -93,6 +93,47 @@ do {
 
 ---
 
+## Create an empty project from the CLI
+
+Use `--create-project` with width, height, frame rate, and output directory. The project file name is derived from the format (e.g. `1920x1080@25p.fcpxml`). The output is validated against the FCPXML DTD before writing.
+
+```bash
+pipeline-neo --create-project --width 1920 --height 1080 --rate 25 /path/to/output-dir
+pipeline-neo --create-project --width 640 --height 480 --rate 29.97 --version 1.13 /path/to/output-dir
+```
+
+---
+
+## Create an empty project with custom format (dimensions and frame rate)
+
+```swift
+import PipelineNeo
+import CoreMedia
+
+// Custom 500×500 at 25 fps
+let frameDuration = CMTime(value: 1, timescale: 25)
+let format = TimelineFormat(
+    width: 500,
+    height: 500,
+    frameDuration: frameDuration,
+    colorSpace: .rec709
+)
+let timeline = Timeline(name: "Custom 500×500 25fps", format: format, clips: [])
+let exporter = FCPXMLExporter(version: .v1_13)
+let xmlString = try exporter.export(
+    timeline: timeline,
+    assets: [],
+    eventUid: FCPXMLUID.random(),
+    projectUid: FCPXMLUID.random(),
+    libraryLocation: "file:///Users/user/Movies/MyLibrary.fcpbundle/"
+)
+// xmlString is valid FCPXML with empty spine, format width="500" height="500", frameDuration for 25 fps
+```
+
+Use **TimelineFormat** presets (e.g. `hd1080p(frameDuration:colorSpace:)`) with any `frameDuration` for standard resolutions at different frame rates (23.976, 24, 25, 29.97, 30, 50, 59.94, 60 fps).
+
+---
+
 ## Complete timeline workflow
 
 ```swift

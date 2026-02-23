@@ -143,6 +143,9 @@ public struct Timeline: Sendable, Equatable {
     /// When this timeline was last modified.
     public var modifiedAt: Date
 
+    /// Optional provider for "current" time (used when updating modifiedAt). Internal for testing; when nil, `Date()` is used.
+    internal var nowProvider: (@Sendable () -> Date)?
+
     public init(
         name: String,
         format: TimelineFormat? = nil,
@@ -153,7 +156,8 @@ public struct Timeline: Sendable, Equatable {
         ratings: [Rating] = [],
         metadata: Metadata? = nil,
         createdAt: Date = Date(),
-        modifiedAt: Date = Date()
+        modifiedAt: Date = Date(),
+        nowProvider: (@Sendable () -> Date)? = nil
     ) {
         self.name = name
         self.format = format
@@ -165,8 +169,27 @@ public struct Timeline: Sendable, Equatable {
         self.metadata = metadata
         self.createdAt = createdAt
         self.modifiedAt = modifiedAt
+        self.nowProvider = nowProvider
     }
-    
+
+    /// Current time for modifiedAt updates (injected for tests when nowProvider is set).
+    private func modifiedNow() -> Date {
+        nowProvider?() ?? Date()
+    }
+
+    public static func == (lhs: Timeline, rhs: Timeline) -> Bool {
+        lhs.name == rhs.name
+            && lhs.format == rhs.format
+            && lhs.clips == rhs.clips
+            && lhs.markers == rhs.markers
+            && lhs.chapterMarkers == rhs.chapterMarkers
+            && lhs.keywords == rhs.keywords
+            && lhs.ratings == rhs.ratings
+            && lhs.metadata == rhs.metadata
+            && lhs.createdAt == rhs.createdAt
+            && lhs.modifiedAt == rhs.modifiedAt
+    }
+
     // MARK: - Format Helpers
     
     /// Whether the timeline format is HD.
@@ -290,7 +313,8 @@ public struct Timeline: Sendable, Equatable {
             ratings: ratings,
             metadata: metadata,
             createdAt: createdAt,
-            modifiedAt: Date()
+            modifiedAt: modifiedNow(),
+            nowProvider: nowProvider
         )
         
         let placement = ClipPlacement(
@@ -415,7 +439,7 @@ public struct Timeline: Sendable, Equatable {
             newClip.lane = preferredLane
             var newClips = clips
             newClips.append(newClip)
-            let newTimeline = Timeline(name: name, format: format, clips: newClips, markers: markers, chapterMarkers: chapterMarkers, keywords: keywords, ratings: ratings, metadata: metadata, createdAt: createdAt, modifiedAt: Date())
+            let newTimeline = Timeline(name: name, format: format, clips: newClips, markers: markers, chapterMarkers: chapterMarkers, keywords: keywords, ratings: ratings, metadata: metadata, createdAt: createdAt, modifiedAt: modifiedNow(), nowProvider: nowProvider)
             let placement = ClipPlacement(offset: newClip.offset, duration: newClip.duration, lane: newClip.lane)
             return (newTimeline, placement)
         }
@@ -431,11 +455,11 @@ public struct Timeline: Sendable, Equatable {
         newClip.lane = assignedLane
         var newClips = clips
         newClips.append(newClip)
-        let newTimeline = Timeline(name: name, format: format, clips: newClips, markers: markers, chapterMarkers: chapterMarkers, keywords: keywords, ratings: ratings, metadata: metadata, createdAt: createdAt, modifiedAt: Date())
+        let newTimeline = Timeline(name: name, format: format, clips: newClips, markers: markers, chapterMarkers: chapterMarkers, keywords: keywords, ratings: ratings, metadata: metadata, createdAt: createdAt, modifiedAt: modifiedNow(), nowProvider: nowProvider)
         let placement = ClipPlacement(offset: newClip.offset, duration: newClip.duration, lane: newClip.lane)
         return (newTimeline, placement)
     }
-    
+
     /// Inserts a clip at a specific timecode, automatically assigning a lane if needed (mutating version).
     ///
     /// This is a convenience method that mutates `self`. For immutable operations,
@@ -563,7 +587,7 @@ public struct Timeline: Sendable, Equatable {
     /// - Parameter marker: The marker to add.
     public mutating func addMarker(_ marker: Marker) {
         markers.append(marker)
-        modifiedAt = Date()
+        modifiedAt = modifiedNow()
     }
     
     /// Removes a marker from the timeline.
@@ -574,7 +598,7 @@ public struct Timeline: Sendable, Equatable {
     public mutating func removeMarker(_ marker: Marker) -> Bool {
         if let index = markers.firstIndex(of: marker) {
             markers.remove(at: index)
-            modifiedAt = Date()
+            modifiedAt = modifiedNow()
             return true
         }
         return false
@@ -585,7 +609,7 @@ public struct Timeline: Sendable, Equatable {
     /// - Parameter chapterMarker: The chapter marker to add.
     public mutating func addChapterMarker(_ chapterMarker: ChapterMarker) {
         chapterMarkers.append(chapterMarker)
-        modifiedAt = Date()
+        modifiedAt = modifiedNow()
     }
     
     /// Removes a chapter marker from the timeline.
@@ -596,7 +620,7 @@ public struct Timeline: Sendable, Equatable {
     public mutating func removeChapterMarker(_ chapterMarker: ChapterMarker) -> Bool {
         if let index = chapterMarkers.firstIndex(of: chapterMarker) {
             chapterMarkers.remove(at: index)
-            modifiedAt = Date()
+            modifiedAt = modifiedNow()
             return true
         }
         return false
@@ -607,7 +631,7 @@ public struct Timeline: Sendable, Equatable {
     /// - Parameter keyword: The keyword to add.
     public mutating func addKeyword(_ keyword: Keyword) {
         keywords.append(keyword)
-        modifiedAt = Date()
+        modifiedAt = modifiedNow()
     }
     
     /// Removes a keyword from the timeline.
@@ -618,7 +642,7 @@ public struct Timeline: Sendable, Equatable {
     public mutating func removeKeyword(_ keyword: Keyword) -> Bool {
         if let index = keywords.firstIndex(of: keyword) {
             keywords.remove(at: index)
-            modifiedAt = Date()
+            modifiedAt = modifiedNow()
             return true
         }
         return false
@@ -629,7 +653,7 @@ public struct Timeline: Sendable, Equatable {
     /// - Parameter rating: The rating to add.
     public mutating func addRating(_ rating: Rating) {
         ratings.append(rating)
-        modifiedAt = Date()
+        modifiedAt = modifiedNow()
     }
     
     /// Removes a rating from the timeline.
@@ -640,7 +664,7 @@ public struct Timeline: Sendable, Equatable {
     public mutating func removeRating(_ rating: Rating) -> Bool {
         if let index = ratings.firstIndex(of: rating) {
             ratings.remove(at: index)
-            modifiedAt = Date()
+            modifiedAt = modifiedNow()
             return true
         }
         return false
