@@ -9,7 +9,7 @@ A modern Swift 6 framework for working with Final Cut Pro's FCPXML with full con
 
 Pipeline Neo provides a comprehensive API for parsing, creating, and manipulating FCPXML files with advanced timecode operations, async/await patterns, and robust error handling. Built with Swift 6.0 and targeting macOS 12+, it offers type-safe operations, comprehensive test coverage, and seamless integration with SwiftTimecode for professional video editing workflows.
 
-Pipeline Neo is currently in an experimental stage and does not yet cover the full range of FCPXML attributes and parameters. It focuses on core functionality while providing a foundation for future expansion and feature completeness.
+Pipeline Neo is currently in an experimental stage. It covers most core FCPXML attributes and parameters and provides a solid foundation for parsing, creation, and manipulation—with room for future expansion and additional feature coverage.
 
 This codebase is developed using AI agents.
 
@@ -39,15 +39,15 @@ This codebase is developed using AI agents.
 ## Core Features
 
 - **FCPXML I/O**: Read, create, modify documents (.fcpxml/.fcpxmld bundles); load via `FCPXMLFileLoader` (sync/async); create FCPXML from scratch with events, projects, resources, and clips.
-- **Parsing & Validation**: Parse and validate against bundled DTDs (1.5–1.14); structural/reference and DTD schema validation; comprehensive test coverage with 628+ tests across 15+ FCPXML sample files.
+- **Parsing & Validation**: Parse and validate against bundled DTDs (1.5–1.14); structural/reference and DTD schema validation; comprehensive test coverage with 648 tests across 15+ FCPXML sample files (including empty timeline creation and project-creation export at multiple sizes and frame rates).
 - **Timecode Operations**: SwiftTimecode integration (`CMTime`, `Timecode`, FCPXML time strings); `FCPXMLTimecode` custom type (arithmetic, frame alignment, conversion); all FCP frame rates (23.976, 24, 25, 29.97, 30, 50, 59.94, 60 fps).
 - **Typed Models**: Resources, events, clips, projects, adjustments (Crop, Transform, Blend, Stabilization, Volume, Loudness, NoiseReduction, HumReduction, Equalization, MatchEqualization, Transform360, ColorConform, Stereo3D, VoiceIsolation), filters (VideoFilter, AudioFilter, VideoFilterMask with FilterParameter), transitions, multicam (Media.Multicam, Angle, MulticamSource, MCClip), captions/titles (Caption, Title with TextStyle/TextStyleDefinition), smart collections (SmartCollection with match-clip, match-media, match-ratings, match-text, match-usage, match-representation, match-markers, match-analysis-type), collections (CollectionFolder, KeywordCollection).
-- **Timeline Operations**: Build `Timeline`; export to FCPXML/.fcpxmld; ripple insert, auto lane assignment, clip queries (lane/time range/asset ID), lane range computation; metadata (markers, chapter markers, keywords, ratings, custom metadata, timestamps); secondary storylines; `TimelineFormat` presets and computed properties.
+- **Timeline Operations**: Build `Timeline`; create valid projects with custom or preset dimensions and frame rate (via `TimelineFormat`); export to FCPXML/.fcpxmld (including zero-clip/empty timelines); optional event/project UIDs and library location (`FCPXMLUID`); ripple insert, auto lane assignment, clip queries (lane/time range/asset ID), lane range computation; metadata (markers, chapter markers, keywords, ratings, custom metadata, timestamps); secondary storylines; `TimelineFormat` presets and computed properties.
 - **Media Operations**: Extract asset/locator URLs; copy with deduplication; MIME type detection (`UTType`/`AVFoundation`); asset validation (existence, lane compatibility); silence detection; duration measurement; parallel file I/O; still image asset support.
 - **Analysis & Conversion**: Cut detection (edit points, transitions, gaps); typed element filtering (`FCPXMLElementType`); version conversion (strip elements, validate, save as .fcpxml/.fcpxmld); per-version DTD validation; element stripping based on target version DTDs.
 - **Animation**: KeyframeAnimation, Keyframe with interpolation, FadeIn/FadeOut; integrated with FilterParameter; auxValue support (FCPXML 1.11+).
 - **Extensions**: CMTime Codable (FCPXML time string encoding/decoding); CollectionFolder and KeywordCollection for organization; Live Drawing (FCPXML 1.11+); HiddenClipMarker (FCPXML 1.13+); Format/Asset 1.13+ (heroEye, heroEyeOverride, mediaReps).
-- **CLI**: `pipeline-neo` with `--check-version`, `--convert-version`, `--validate`, `--media-copy`, logging options (see CLI README).
+- **CLI**: `pipeline-neo` with `--check-version`, `--convert-version`, `--validate`, `--media-copy`, `--create-project` (new empty FCPXML project with width/height/rate/version), logging options (see CLI README).
 - **Architecture**: Protocol-oriented, dependency-injected; sync/async APIs; Swift 6 concurrency-safe design; comprehensive test suite with file-based and logic tests.
 
 ## Requirements
@@ -161,11 +161,11 @@ OVERVIEW: Experimental tool to read and validate Final Cut Pro FCPXML/FCPXMLD.
 
 https://github.com/TheAcharya/pipeline-neo
 
-USAGE: [<options>] <fcpxml-path> [<output-dir>]
+USAGE: [<options>] [<fcpxml-path>] [<output-dir>]
 
 ARGUMENTS:
-  <fcpxml-path>           Input FCPXML file / FCPXMLD bundle.
-  <output-dir>            Output directory.
+  <fcpxml-path>           Input FCPXML file / FCPXMLD bundle; or output directory when using --create-project.
+  <output-dir>            Output directory (for --convert-version, --media-copy, etc.).
 
 GENERAL:
   --check-version         Check and print FCPXML document version.
@@ -176,6 +176,14 @@ GENERAL:
                           For target versions 1.5–1.9, .fcpxml is used regardless. (values: fcpxml, fcpxmld; default:
                           fcpxmld)
   --validate              Perform robust check and validation of FCPXML/FCPXMLD (semantic + DTD).
+
+TIMELINE:
+  --create-project        Create a new empty FCPXML project (requires --width, --height, --rate, and <output-dir>
+                          positional).
+  --width <width>         Project width in pixels (used with --create-project).
+  --height <height>       Project height in pixels (used with --create-project).
+  --rate <rate>           Frame rate (e.g. 24, 25, 29.97) (used with --create-project).
+  --version <version>     FCPXML version for the new project (e.g. 1.10, 1.14). Default: 1.14. (used with --create-project).
 
 EXTRACTION:
   --media-copy            Scan FCPXML/FCPXMLD and copy all referenced media files to output-dir.
@@ -196,7 +204,7 @@ OPTIONS:
 Complete manual, usage guide, and examples are in the [Documentation](Documentation/) folder:
 
 - [Manual](Documentation/Manual.md) — Full user manual: loading, modular operations, time conversions, logging, error handling, async/await, task groups, extensions, validation, version conversion, and step-by-step examples.
-- [CLI](Sources/PipelineNeoCLI/README.md) — Experimental command-line interface: `--check-version`, `--convert-version`, `--validate`, `--media-copy`, building and extending.
+- [CLI](Sources/PipelineNeoCLI/README.md) — Experimental command-line interface: `--check-version`, `--convert-version`, `--validate`, `--media-copy`, `--create-project`, building and extending.
 
 ## FCPXML Version Support
 

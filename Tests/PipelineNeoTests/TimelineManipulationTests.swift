@@ -12,9 +12,15 @@ import XCTest
 import CoreMedia
 @testable import PipelineNeo
 
+/// Mutable box for injectable "now" in timestamp tests (Sendable so nowProvider closure can capture it).
+private final class NowBox: @unchecked Sendable {
+    var value: Date
+    init(_ value: Date) { self.value = value }
+}
+
 @available(macOS 12.0, *)
 final class TimelineManipulationTests: XCTestCase {
-    
+
     // MARK: - Ripple Insert Basic Tests
     
     func testRippleInsertShiftsSubsequentClips() {
@@ -952,10 +958,12 @@ final class TimelineManipulationTests: XCTestCase {
     
     func testTimelineModifiedAtUpdatesOnRippleInsert() throws {
         let createdAt = Date(timeIntervalSince1970: 1000)
+        let nowBox = NowBox(createdAt)
         var timeline = Timeline(
             name: "Test",
             createdAt: createdAt,
-            modifiedAt: createdAt
+            modifiedAt: createdAt,
+            nowProvider: { nowBox.value }
         )
         
         let clip = TimelineClip(
@@ -965,23 +973,21 @@ final class TimelineManipulationTests: XCTestCase {
             lane: 0
         )
         
-        // Wait a small amount to ensure timestamp difference
-        Thread.sleep(forTimeInterval: 0.01)
-        
+        nowBox.value = createdAt.addingTimeInterval(1)
         _ = timeline.insertClipWithRipple(clip, at: .zero)
         
-        // createdAt should be preserved
         XCTAssertEqual(timeline.createdAt, createdAt)
-        // modifiedAt should be updated
         XCTAssertGreaterThan(timeline.modifiedAt, createdAt)
     }
     
     func testTimelineModifiedAtUpdatesOnAutoLaneInsert() throws {
         let createdAt = Date(timeIntervalSince1970: 1000)
+        let nowBox = NowBox(createdAt)
         var timeline = Timeline(
             name: "Test",
             createdAt: createdAt,
-            modifiedAt: createdAt
+            modifiedAt: createdAt,
+            nowProvider: { nowBox.value }
         )
         
         let clip = TimelineClip(
@@ -991,30 +997,26 @@ final class TimelineManipulationTests: XCTestCase {
             lane: 0
         )
         
-        // Wait a small amount to ensure timestamp difference
-        Thread.sleep(forTimeInterval: 0.01)
-        
+        nowBox.value = createdAt.addingTimeInterval(1)
         _ = try timeline.insertClipAutoLane(clip, at: .zero)
         
-        // createdAt should be preserved
         XCTAssertEqual(timeline.createdAt, createdAt)
-        // modifiedAt should be updated
         XCTAssertGreaterThan(timeline.modifiedAt, createdAt)
     }
     
     func testTimelineModifiedAtUpdatesOnAddMarker() {
         let createdAt = Date(timeIntervalSince1970: 1000)
+        let nowBox = NowBox(createdAt)
         var timeline = Timeline(
             name: "Test",
             createdAt: createdAt,
-            modifiedAt: createdAt
+            modifiedAt: createdAt,
+            nowProvider: { nowBox.value }
         )
         
         let marker = Marker(start: CMTime(value: 5, timescale: 1), value: "Test")
         
-        // Wait a small amount to ensure timestamp difference
-        Thread.sleep(forTimeInterval: 0.01)
-        
+        nowBox.value = createdAt.addingTimeInterval(1)
         timeline.addMarker(marker)
         
         XCTAssertEqual(timeline.createdAt, createdAt)
@@ -1023,17 +1025,17 @@ final class TimelineManipulationTests: XCTestCase {
     
     func testTimelineModifiedAtUpdatesOnRemoveMarker() {
         let createdAt = Date(timeIntervalSince1970: 1000)
+        let nowBox = NowBox(createdAt)
         let marker = Marker(start: CMTime(value: 5, timescale: 1), value: "Test")
         var timeline = Timeline(
             name: "Test",
             markers: [marker],
             createdAt: createdAt,
-            modifiedAt: createdAt
+            modifiedAt: createdAt,
+            nowProvider: { nowBox.value }
         )
         
-        // Wait a small amount to ensure timestamp difference
-        Thread.sleep(forTimeInterval: 0.01)
-        
+        nowBox.value = createdAt.addingTimeInterval(1)
         _ = timeline.removeMarker(marker)
         
         XCTAssertEqual(timeline.createdAt, createdAt)
@@ -1042,17 +1044,17 @@ final class TimelineManipulationTests: XCTestCase {
     
     func testTimelineModifiedAtUpdatesOnAddChapterMarker() {
         let createdAt = Date(timeIntervalSince1970: 1000)
+        let nowBox = NowBox(createdAt)
         var timeline = Timeline(
             name: "Test",
             createdAt: createdAt,
-            modifiedAt: createdAt
+            modifiedAt: createdAt,
+            nowProvider: { nowBox.value }
         )
         
         let chapterMarker = ChapterMarker(start: CMTime(value: 5, timescale: 1), value: "Chapter 1")
         
-        // Wait a small amount to ensure timestamp difference
-        Thread.sleep(forTimeInterval: 0.01)
-        
+        nowBox.value = createdAt.addingTimeInterval(1)
         timeline.addChapterMarker(chapterMarker)
         
         XCTAssertEqual(timeline.createdAt, createdAt)
@@ -1061,10 +1063,12 @@ final class TimelineManipulationTests: XCTestCase {
     
     func testTimelineModifiedAtUpdatesOnAddKeyword() {
         let createdAt = Date(timeIntervalSince1970: 1000)
+        let nowBox = NowBox(createdAt)
         var timeline = Timeline(
             name: "Test",
             createdAt: createdAt,
-            modifiedAt: createdAt
+            modifiedAt: createdAt,
+            nowProvider: { nowBox.value }
         )
         
         let keyword = Keyword(
@@ -1073,9 +1077,7 @@ final class TimelineManipulationTests: XCTestCase {
             value: "Action"
         )
         
-        // Wait a small amount to ensure timestamp difference
-        Thread.sleep(forTimeInterval: 0.01)
-        
+        nowBox.value = createdAt.addingTimeInterval(1)
         timeline.addKeyword(keyword)
         
         XCTAssertEqual(timeline.createdAt, createdAt)
@@ -1084,10 +1086,12 @@ final class TimelineManipulationTests: XCTestCase {
     
     func testTimelineModifiedAtUpdatesOnAddRating() {
         let createdAt = Date(timeIntervalSince1970: 1000)
+        let nowBox = NowBox(createdAt)
         var timeline = Timeline(
             name: "Test",
             createdAt: createdAt,
-            modifiedAt: createdAt
+            modifiedAt: createdAt,
+            nowProvider: { nowBox.value }
         )
         
         let rating = Rating(
@@ -1096,9 +1100,7 @@ final class TimelineManipulationTests: XCTestCase {
             value: .favorite
         )
         
-        // Wait a small amount to ensure timestamp difference
-        Thread.sleep(forTimeInterval: 0.01)
-        
+        nowBox.value = createdAt.addingTimeInterval(1)
         timeline.addRating(rating)
         
         XCTAssertEqual(timeline.createdAt, createdAt)
@@ -1107,10 +1109,12 @@ final class TimelineManipulationTests: XCTestCase {
     
     func testTimelineCreatedAtPreservedOnImmutableOperations() {
         let createdAt = Date(timeIntervalSince1970: 1000)
+        let modifiedNow = createdAt.addingTimeInterval(1)
         let timeline = Timeline(
             name: "Test",
             createdAt: createdAt,
-            modifiedAt: createdAt
+            modifiedAt: createdAt,
+            nowProvider: { modifiedNow }
         )
         
         let clip = TimelineClip(
@@ -1122,9 +1126,7 @@ final class TimelineManipulationTests: XCTestCase {
         
         let (newTimeline, _) = timeline.insertingClipWithRipple(clip, at: .zero)
         
-        // createdAt should be preserved
         XCTAssertEqual(newTimeline.createdAt, createdAt)
-        // modifiedAt should be updated
         XCTAssertGreaterThan(newTimeline.modifiedAt, createdAt)
     }
     

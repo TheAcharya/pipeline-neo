@@ -124,6 +124,44 @@ final class TimelineExportValidationTests: XCTestCase {
         XCTAssertEqual(timelineWithFormat.aspectRatio, 1920.0 / 1080.0, accuracy: 0.001)
     }
 
+    /// Barebone empty timeline creation at different sizes and frame rates (no export); asserts model properties only.
+    func testEmptyTimelineCreationAtDifferentSizesAndFrameRates() {
+        let configurations: [(width: Int, height: Int, timescale: Int32)] = [
+            (1280, 720, 24),
+            (1280, 720, 25),
+            (1920, 1080, 24),
+            (1920, 1080, 25),
+            (1920, 1080, 30),
+            (3840, 2160, 24),
+            (3840, 2160, 25),
+            (4096, 2160, 24),  // DCI 4K
+            (640, 480, 30),
+        ]
+        for config in configurations {
+            let format = TimelineFormat(
+                width: config.width,
+                height: config.height,
+                frameDuration: CMTime(value: 1, timescale: config.timescale),
+                colorSpace: .rec709
+            )
+            let name = "\(config.width)x\(config.height)@\(config.timescale)p"
+            let timeline = Timeline(name: name, format: format, clips: [])
+            XCTAssertEqual(timeline.name, name, "\(name): name")
+            XCTAssertTrue(timeline.clips.isEmpty, "\(name): empty clips")
+            XCTAssertEqual(CMTimeCompare(timeline.duration, .zero), 0, "\(name): duration zero")
+            XCTAssertEqual(timeline.sortedClips.count, 0, "\(name): sortedClips empty")
+            guard let f = timeline.format else {
+                XCTFail("\(name): format non-nil")
+                continue
+            }
+            XCTAssertEqual(f.width, config.width, "\(name): width")
+            XCTAssertEqual(f.height, config.height, "\(name): height")
+            XCTAssertEqual(f.frameDuration.timescale, config.timescale, "\(name): frame timescale")
+            XCTAssertEqual(f.frameDuration.value, 1, "\(name): frame value")
+            XCTAssertEqual(timeline.aspectRatio, Double(config.width) / Double(config.height), accuracy: 0.001, "\(name): aspectRatio")
+        }
+    }
+
     // MARK: - FCPXMLExporter
 
     func testFCPXMLExporterExportMinimal() throws {
@@ -165,14 +203,122 @@ final class TimelineExportValidationTests: XCTestCase {
         }
     }
 
-    func testFCPXMLExporterEmptyTimelineThrows() {
+    func testFCPXMLExporterEmptyTimelineSucceeds() throws {
         let timeline = Timeline(name: "Empty", clips: [])
         let exporter = FCPXMLExporter(version: .default)
-        XCTAssertThrowsError(try exporter.export(timeline: timeline, assets: [])) { err in
-            guard case FCPXMLExportError.invalidTimeline = err else {
-                XCTFail("Expected invalidTimeline, got \(err)"); return
-            }
+        let xml = try exporter.export(timeline: timeline, assets: [])
+        XCTAssertTrue(xml.contains("<fcpxml"))
+        XCTAssertTrue(xml.contains("<spine/>") || xml.contains("</spine>"))
+        XCTAssertTrue(xml.contains("uid="))
+        XCTAssertTrue(xml.contains("modDate="))
+        XCTAssertTrue(xml.contains("duration=\"0s\""))
+    }
+
+    func testFCPXMLExporterEmptyTimelineWithCustomUIDsAndLocation() throws {
+        let timeline = Timeline(name: "Custom", clips: [])
+        let exporter = FCPXMLExporter(version: .default)
+        let eventUid = FCPXMLUID.random()
+        let projectUid = FCPXMLUID.random()
+        let xml = try exporter.export(
+            timeline: timeline,
+            assets: [],
+            eventUid: eventUid,
+            projectUid: projectUid,
+            libraryLocation: "file:///Users/user/Movies/Sample%20Projects.fcpbundle/"
+        )
+        XCTAssertTrue(xml.contains("uid=\"\(eventUid)\""))
+        XCTAssertTrue(xml.contains("uid=\"\(projectUid)\""))
+        XCTAssertTrue(xml.contains("location=\"file:///Users/user/Movies/Sample%20Projects.fcpbundle/\""))
+    }
+
+    /// Covers the export path used by CLI --create-project: empty timeline, custom format, default smart collections, DTD validation.
+    func testProjectCreationStyleExportValidatesAgainstDTD() throws {
+        let format = TimelineFormat(
+            width: 1920,
+            height: 1080,
+            frameDuration: CMTime(value: 1, timescale: 25),
+            colorSpace: .rec709
+        )
+        let timeline = Timeline(name: "1920x1080@25p", format: format, clips: [])
+        let exporter = FCPXMLExporter(version: .v1_13)
+        let xmlString = try exporter.export(
+            timeline: timeline,
+            assets: [],
+            libraryName: "Library",
+            eventName: "Event",
+            projectName: timeline.name,
+            includeDefaultSmartCollections: true
+        )
+        XCTAssertTrue(xmlString.contains("<!DOCTYPE fcpxml>"))
+        XCTAssertTrue(xmlString.contains("colorSpace="))
+        XCTAssertTrue(xmlString.contains("smart-collection"))
+        XCTAssertTrue(xmlString.contains("match-clip"))
+        XCTAssertTrue(xmlString.contains("match-media"))
+        XCTAssertTrue(xmlString.contains("match-ratings"))
+        guard let data = xmlString.data(using: .utf8) else {
+            XCTFail("FCPXML string encoding failed")
+            return
         }
+        let service = FCPXMLService(logger: NoOpPipelineLogger())
+        let document = try service.parseFCPXML(from: data)
+        let result = service.validateDocumentAgainstDTD(document, version: .v1_13)
+        XCTAssertTrue(result.isValid, "Project-creation style export must validate against DTD: \(result.detailedDescription)")
+    }
+
+    /// Project creation (empty timeline export) at multiple sizes and frame rates; each export parses and validates against DTD.
+    func testProjectCreationAtDifferentSizesAndFrameRates() throws {
+        // (width, height, timescale) — Final Cut Pro–compatible frame rates
+        let configurations: [(width: Int, height: Int, timescale: Int32)] = [
+            (1280, 720, 24),   // 720p @ 24
+            (1280, 720, 25),   // 720p @ 25
+            (1920, 1080, 24),  // 1080p @ 24
+            (1920, 1080, 25),  // 1080p @ 25
+            (1920, 1080, 30),  // 1080p @ 30
+            (1920, 1080, 60000), // 1080p @ 59.94 (1001/60000s would be exact; 1/60 for test)
+            (3840, 2160, 24),  // 4K UHD @ 24
+            (3840, 2160, 25),  // 4K UHD @ 25
+            (640, 480, 30),    // Custom size @ 30
+        ]
+        let service = FCPXMLService(logger: NoOpPipelineLogger())
+        let exporter = FCPXMLExporter(version: .v1_13)
+
+        for config in configurations {
+            let format = TimelineFormat(
+                width: config.width,
+                height: config.height,
+                frameDuration: CMTime(value: 1, timescale: config.timescale),
+                colorSpace: .rec709
+            )
+            let name = "\(config.width)x\(config.height)@\(config.timescale)p"
+            let timeline = Timeline(name: name, format: format, clips: [])
+            let xmlString = try exporter.export(
+                timeline: timeline,
+                assets: [],
+                libraryName: "Library",
+                eventName: "Event",
+                projectName: name,
+                includeDefaultSmartCollections: true
+            )
+            XCTAssertTrue(xmlString.contains("width=\"\(config.width)\""), "\(name): width in output")
+            XCTAssertTrue(xmlString.contains("height=\"\(config.height)\""), "\(name): height in output")
+            guard let data = xmlString.data(using: .utf8) else {
+                XCTFail("\(name): FCPXML string encoding failed")
+                continue
+            }
+            let document = try service.parseFCPXML(from: data)
+            let result = service.validateDocumentAgainstDTD(document, version: .v1_13)
+            XCTAssertTrue(result.isValid, "\(name): export must validate against DTD: \(result.detailedDescription)")
+        }
+    }
+
+    func testFCPXMLUIDRandomAndIsValid() {
+        let uid = FCPXMLUID.random()
+        XCTAssertTrue(FCPXMLUID.isValid(uid))
+        XCTAssertEqual(uid.count, 36)
+        XCTAssertTrue(uid.contains("-"))
+        XCTAssertFalse(FCPXMLUID.isValid("short"))
+        XCTAssertFalse(FCPXMLUID.isValid("xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"))
+        XCTAssertTrue(FCPXMLUID.isValid("D71600AB-2F01-4850-8DBD-E9F0594BD004"))
     }
 
     // MARK: - FCPXMLBundleExporter

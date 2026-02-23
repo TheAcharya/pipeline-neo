@@ -22,7 +22,7 @@ Complete manual and usage guide for **Pipeline Neo**, a Swift 6 framework for Fi
 | [12 — Typed Models](12-Typed-Models.md) | Adjustments, filters, captions/titles, keyframe animation, Live Drawing, collections |
 | [13 — XML Extensions](13-XML-Extensions.md) | XMLDocument and XMLElement FCPXML extensions |
 | [14 — High-Level Model](14-High-Level-Model.md) | FinalCutPro.FCPXML, Root, events, projects |
-| [15 — Errors & Utilities](15-Errors-Utilities.md) | Error types, ErrorHandling, ProgressBar |
+| [15 — Errors & Utilities](15-Errors-Utilities.md) | Error types, ErrorHandling, ProgressBar, FCPXMLUID |
 | [16 — CLI](16-CLI.md) | Experimental command-line interface (pipeline-neo) |
 | [17 — Examples](17-Examples.md) | End-to-end workflows and code examples |
 

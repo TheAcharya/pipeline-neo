@@ -8,8 +8,8 @@ Command-line interface for the Pipeline Neo library. Use it to inspect and proce
 
 - **Executable name:** `pipeline-neo`
 - **Entry point:** `PipelineNeoCLI.swift` (root command; no subcommands)
-- **Arguments:** `<fcpxml-path>` (required), `<output-dir>` (optional for `--check-version` and `--validate`; required for `--convert-version`, `--media-copy`, and for default process)
-- **Options:** Grouped under **GENERAL**, **EXTRACTION**, **LOG**, and standard **OPTIONS** (`--version`, `--help`)
+- **Arguments:** `<fcpxml-path>` (required when not using `--create-project`), `<output-dir>` (optional for `--check-version` and `--validate`; required for `--convert-version`, `--media-copy`, and default process; when using `--create-project`, the single positional argument is the output directory).
+- **Options:** Grouped under **GENERAL**, **TIMELINE**, **EXTRACTION**, **LOG**, and standard **OPTIONS** (`--version`, `--help`)
 
 ---
 
@@ -41,6 +41,11 @@ pipeline-neo --convert-version 1.14 --extension-type fcpxml /path/to/project.fcp
 pipeline-neo --media-copy /path/to/project.fcpxml /path/to/output-dir
 pipeline-neo --media-copy /path/to/project.fcpxmld /path/to/output-dir
 
+# Create a new empty FCPXML project (requires --width, --height, --rate; optional --version; output-dir as single positional)
+# Project file name is derived from dimensions and rate (e.g. 1920x1080@25p.fcpxml). Output is DTD-validated before writing.
+pipeline-neo --create-project --width 1920 --height 1080 --rate 25 /path/to/output-dir
+pipeline-neo --create-project --width 640 --height 480 --rate 29.97 --version 1.13 /path/to/output-dir
+
 # Process: input + output (output-dir required)
 pipeline-neo /path/to/project.fcpxml /path/to/output-dir
 
@@ -52,7 +57,7 @@ pipeline-neo --log-level debug --convert-version 1.10 /path/to/project.fcpxml /p
 pipeline-neo --quiet --media-copy /path/to/project.fcpxml /path/to/media
 ```
 
-**Validation:** Use only one of `--check-version`, `--convert-version`, `--validate`, or `--media-copy`. When using `--convert-version` or `--media-copy`, or when running the default process, you must provide `<output-dir>`. If `--log` is set and the file exists, it must be writable. Invalid `--log-level` values produce an error.
+**Validation:** Use only one of `--check-version`, `--convert-version`, `--validate`, `--media-copy`, or `--create-project`. When using `--convert-version` or `--media-copy`, or when running the default process, you must provide `<output-dir>`. When using `--create-project`, you must provide `--width`, `--height`, `--rate`, and the output directory as the single positional argument. If `--log` is set and the file exists, it must be writable. Invalid `--log-level` or `--version` (for create-project) values produce an error.
 
 ---
 
@@ -80,13 +85,15 @@ Log messages include parsing, version conversion, validation, save, and media ex
 
 | Path | Purpose |
 |------|--------|
-| `PipelineNeoCLI.swift` | Root command: configuration, GENERAL and LOG option groups, arguments, validation, and `run()` dispatch. |
-| `Options/` | Option groups for help sections. `GeneralOptions` supplies **GENERAL** flags and `--extension-type`; `LogOptions` supplies **LOG** options (`--log`, `--log-level`, `--quiet`). |
+| `PipelineNeoCLI.swift` | Root command: configuration, GENERAL, TIMELINE, EXTRACTION, and LOG option groups, arguments, validation, and `run()` dispatch. |
+| `Options/` | Option groups for help sections. `GeneralOptions` supplies **GENERAL** flags and `--extension-type`; `TimelineOptions` supplies **TIMELINE** options for `--create-project`; `LogOptions` supplies **LOG** options (`--log`, `--log-level`, `--quiet`). |
 | `Commands/` | Feature modules. Each feature has its own subfolder and a `run(...)` entry point called from the root command (e.g. **CheckVersion** for `--check-version`). |
 | `Commands/CheckVersion/` | Implements `--check-version`: loads FCPXML and prints the document version. |
 | `Commands/ConvertVersion/` | Implements `--convert-version`: loads FCPXML, converts to target version (1.5–1.14), saves to output-dir as .fcpxmld (default) or .fcpxml per `--extension-type`; 1.5–1.9 always .fcpxml. |
 | `Commands/Validate/` | Implements `--validate`: loads FCPXML/FCPXMLD and runs robust validation (semantic + DTD). |
 | `Commands/ExtractMedia/` | Implements `--media-copy`: loads FCPXML/FCPXMLD and copies all referenced media files to output-dir. |
+| `Commands/CreateProject/` | Implements `--create-project`: creates an empty FCPXML project with given width, height, frame rate, and version; runs DTD validation before writing; outputs FCP-style document (DOCTYPE, colorSpace, default smart collections). |
+| `Options/TimelineOptions.swift` | **TIMELINE** option group: `--create-project`, `--width`, `--height`, `--rate`, `--version`. |
 | `Generated/` | Generated source; `EmbeddedDTDs.swift` contains hardcoded DTD data (from `GenerateEmbeddedDTDs`). |
 
 All Swift in `Sources/PipelineNeoCLI/` is a single module; no extra imports are needed between these files.

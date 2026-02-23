@@ -2,8 +2,8 @@
 
 This directory contains the test suite for Pipeline Neo, a Swift 6 framework for Final Cut Pro FCPXML processing with SwiftTimecode integration.
 
-- **Test count:** 638 tests  
-- **Scope:** Parsing, timecode, document operations, file loading, timeline export, validation, timeline manipulation, media processing, typed models (adjustments, filters, captions/titles, keyframe animation), CMTime Codable, collections, Live Drawing (1.11+), HiddenClipMarker (1.13+), Format/Asset 1.13+ (heroEye, heroEyeOverride, mediaReps), SmartCollection match rules, 360 video (projection, stereoscopic), auditions, conform-rate, still images, multicam, secondary storylines, audio keyframes, keyword collections/folders, and all supported FCPXML versions and frame rates  
+- **Test count:** 648 tests  
+- **Scope:** Parsing, timecode, document operations, file loading, timeline export, validation, timeline manipulation, media processing, typed models (adjustments, filters, captions/titles, keyframe animation), CMTime Codable, collections, Live Drawing (1.11+), HiddenClipMarker (1.13+), Format/Asset 1.13+ (heroEye, heroEyeOverride, mediaReps), SmartCollection match rules, 360 video (projection, stereoscopic), auditions, conform-rate, still images, multicam, secondary storylines, audio keyframes, keyword collections/folders, empty timeline creation at different sizes and frame rates, project-creation export at different sizes and frame rates (with DTD validation), and all supported FCPXML versions and frame rates  
 - **Layout:** Shared utilities for sample paths; file tests per sample; logic/parsing tests for model types and structure  
 
 ---
@@ -61,6 +61,7 @@ Tests/
     │   ├── FCPXMLFileTest_BasicMarkers.swift
     │   ├── FCPXMLFileTest_Complex.swift
     │   ├── FCPXMLFileTest_CompoundClips.swift
+    │   ├── FCPXMLFileTest_EmptyFormatProjects.swift   # Empty projects: 1920x1080, 4096x2160, 5120x2160, Custom500x500
     │   ├── FCPXMLFileTest_FrameRates.swift
     │   ├── FCPXMLFileTest_ImageSample.swift
     │   ├── FCPXMLFileTest_Keywords.swift
@@ -258,9 +259,9 @@ Tests that require a sample use `loadFCPXMLSample(named:)` or `loadFCPXMLSampleD
 
 **TimelineExportValidationTests** covers timeline model, exporters, validators, and file loader.
 
-**Timeline & TimelineClip** — endTime; duration from primary lane; sortedClips order; TimelineFormat (hd1080p, uhd4K, presets, computed properties, equality); helpers on Timeline.
+**Timeline & TimelineClip** — endTime; duration from primary lane; sortedClips order; TimelineFormat (hd1080p, uhd4K, presets, computed properties, equality); helpers on Timeline; **empty timeline creation** — testEmptyTimelineCreationAtDifferentSizesAndFrameRates: barebone `Timeline(name:format:clips: [])` at multiple sizes (720p, 1080p, 4K UHD, DCI 4K, custom 640×480) and frame rates (24, 25, 30); asserts name, clips empty, duration zero, format dimensions and frame duration, aspectRatio.
 
-**FCPXMLExporter** — Export minimal timeline (fcpxml, resources, refs); missingAsset throws; empty timeline throws invalidTimeline.
+**FCPXMLExporter** — Export minimal timeline (fcpxml, resources, refs); missingAsset throws when clips present; empty timeline (zero clips) succeeds with empty spine, event/project uid, modDate; optional eventUid, projectUid, libraryLocation; **project-creation style** — testProjectCreationStyleExportValidatesAgainstDTD: empty timeline with custom format (e.g. 1920×1080@25p), export with includeDefaultSmartCollections: true, assert output contains DOCTYPE, colorSpace, smart-collection; parse with FCPXMLService and validate against DTD (same flow as CLI --create-project); **project creation at different sizes and frame rates** — testProjectCreationAtDifferentSizesAndFrameRates: export empty timeline at multiple sizes (720p, 1080p, 4K, custom 640×480) and frame rates (24, 25, 30, 60), then parse and validate against DTD; **FCPXMLUID** — random() and isValid() for FCPXML-style UIDs.
 
 **FCPXMLBundleExporter** — Creates bundle (Out.fcpxmld, Info.fcpxml, Info.plist); with includeMedia copies files and references in Info.fcpxml.
 
