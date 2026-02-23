@@ -12,10 +12,21 @@ import XCTest
 import CoreMedia
 @testable import PipelineNeo
 
-/// Mutable box for injectable "now" in timestamp tests (Sendable so nowProvider closure can capture it).
+/// Thread-safe mutable box for injectable "now" in timestamp tests. Synchronized so it can be captured by a @Sendable nowProvider closure.
 private final class NowBox: @unchecked Sendable {
-    var value: Date
-    init(_ value: Date) { self.value = value }
+    private let lock = NSLock()
+    private var _value: Date
+    init(_ value: Date) { _value = value }
+    func getValue() -> Date {
+        lock.lock()
+        defer { lock.unlock() }
+        return _value
+    }
+    func setValue(_ value: Date) {
+        lock.lock()
+        defer { lock.unlock() }
+        _value = value
+    }
 }
 
 @available(macOS 12.0, *)
@@ -378,7 +389,12 @@ final class TimelineManipulationTests: XCTestCase {
         
         // Insert overlapping clip with auto lane
         let clip2 = TimelineClip(assetRef: "r2", offset: .zero, duration: CMTime(value: 10, timescale: 1), lane: 0)
-        let placement = try! timeline.insertClipAutoLane(clip2, at: CMTime(value: 5, timescale: 1), preferredLane: 0)
+        var placement: ClipPlacement?
+        XCTAssertNoThrow(placement = try timeline.insertClipAutoLane(clip2, at: CMTime(value: 5, timescale: 1), preferredLane: 0))
+        guard let placement = placement else {
+            XCTFail("insertClipAutoLane returned no placement")
+            return
+        }
         
         // Should be placed on lane 1 (first available)
         XCTAssertEqual(placement.lane, 1)
@@ -394,7 +410,13 @@ final class TimelineManipulationTests: XCTestCase {
         
         // Insert non-overlapping clip on lane 0
         let clip2 = TimelineClip(assetRef: "r2", offset: .zero, duration: CMTime(value: 5, timescale: 1), lane: 0)
-        let placement = try! timeline.insertClipAutoLane(clip2, at: CMTime(value: 15, timescale: 1), preferredLane: 0)
+        let placement: ClipPlacement
+        do {
+            placement = try timeline.insertClipAutoLane(clip2, at: CMTime(value: 15, timescale: 1), preferredLane: 0)
+        } catch {
+            XCTFail("insertClipAutoLane threw unexpectedly: \(error)")
+            return
+        }
         
         // Should use preferred lane 0
         XCTAssertEqual(placement.lane, 0)
@@ -472,7 +494,12 @@ final class TimelineManipulationTests: XCTestCase {
         
         // Insert overlapping clip
         let clip2 = TimelineClip(assetRef: "r2", offset: .zero, duration: CMTime(value: 10, timescale: 1), lane: 0)
-        let (newTimeline, placement) = try! timelineWithClip.insertingClipAutoLane(clip2, at: CMTime(value: 5, timescale: 1))
+        var insertionResult: (Timeline, ClipPlacement)?
+        XCTAssertNoThrow(insertionResult = try timelineWithClip.insertingClipAutoLane(clip2, at: CMTime(value: 5, timescale: 1)))
+        guard let (newTimeline, placement) = insertionResult else {
+            XCTFail("insertingClipAutoLane returned no result")
+            return
+        }
         
         // Original timeline should be unchanged
         XCTAssertEqual(timelineWithClip.clips.count, 1)
@@ -496,7 +523,12 @@ final class TimelineManipulationTests: XCTestCase {
         
         // Insert overlapping clip
         let newClip = TimelineClip(assetRef: "r3", offset: .zero, duration: CMTime(value: 10, timescale: 1), lane: 0)
-        let placement = try! timeline.insertClipAutoLane(newClip, at: .zero, preferredLane: 0)
+        var placement: ClipPlacement?
+        XCTAssertNoThrow(placement = try timeline.insertClipAutoLane(newClip, at: .zero, preferredLane: 0))
+        guard let placement = placement else {
+            XCTFail("Expected insertClipAutoLane to return a placement")
+            return
+        }
         
         // Should be placed on lane 3 or -1
         XCTAssertTrue(placement.lane == 3 || placement.lane == -1)
@@ -963,7 +995,7 @@ final class TimelineManipulationTests: XCTestCase {
             name: "Test",
             createdAt: createdAt,
             modifiedAt: createdAt,
-            nowProvider: { nowBox.value }
+            nowProvider: { nowBox.getValue() }
         )
         
         let clip = TimelineClip(
@@ -973,7 +1005,7 @@ final class TimelineManipulationTests: XCTestCase {
             lane: 0
         )
         
-        nowBox.value = createdAt.addingTimeInterval(1)
+        nowBox.setValue(createdAt.addingTimeInterval(1))
         _ = timeline.insertClipWithRipple(clip, at: .zero)
         
         XCTAssertEqual(timeline.createdAt, createdAt)
@@ -987,7 +1019,7 @@ final class TimelineManipulationTests: XCTestCase {
             name: "Test",
             createdAt: createdAt,
             modifiedAt: createdAt,
-            nowProvider: { nowBox.value }
+            nowProvider: { nowBox.getValue() }
         )
         
         let clip = TimelineClip(
@@ -997,7 +1029,7 @@ final class TimelineManipulationTests: XCTestCase {
             lane: 0
         )
         
-        nowBox.value = createdAt.addingTimeInterval(1)
+        nowBox.setValue(createdAt.addingTimeInterval(1))
         _ = try timeline.insertClipAutoLane(clip, at: .zero)
         
         XCTAssertEqual(timeline.createdAt, createdAt)
@@ -1011,12 +1043,12 @@ final class TimelineManipulationTests: XCTestCase {
             name: "Test",
             createdAt: createdAt,
             modifiedAt: createdAt,
-            nowProvider: { nowBox.value }
+            nowProvider: { nowBox.getValue() }
         )
         
         let marker = Marker(start: CMTime(value: 5, timescale: 1), value: "Test")
         
-        nowBox.value = createdAt.addingTimeInterval(1)
+        nowBox.setValue(createdAt.addingTimeInterval(1))
         timeline.addMarker(marker)
         
         XCTAssertEqual(timeline.createdAt, createdAt)
@@ -1032,10 +1064,10 @@ final class TimelineManipulationTests: XCTestCase {
             markers: [marker],
             createdAt: createdAt,
             modifiedAt: createdAt,
-            nowProvider: { nowBox.value }
+            nowProvider: { nowBox.getValue() }
         )
         
-        nowBox.value = createdAt.addingTimeInterval(1)
+        nowBox.setValue(createdAt.addingTimeInterval(1))
         _ = timeline.removeMarker(marker)
         
         XCTAssertEqual(timeline.createdAt, createdAt)
@@ -1049,12 +1081,12 @@ final class TimelineManipulationTests: XCTestCase {
             name: "Test",
             createdAt: createdAt,
             modifiedAt: createdAt,
-            nowProvider: { nowBox.value }
+            nowProvider: { nowBox.getValue() }
         )
         
         let chapterMarker = ChapterMarker(start: CMTime(value: 5, timescale: 1), value: "Chapter 1")
         
-        nowBox.value = createdAt.addingTimeInterval(1)
+        nowBox.setValue(createdAt.addingTimeInterval(1))
         timeline.addChapterMarker(chapterMarker)
         
         XCTAssertEqual(timeline.createdAt, createdAt)
@@ -1068,7 +1100,7 @@ final class TimelineManipulationTests: XCTestCase {
             name: "Test",
             createdAt: createdAt,
             modifiedAt: createdAt,
-            nowProvider: { nowBox.value }
+            nowProvider: { nowBox.getValue() }
         )
         
         let keyword = Keyword(
@@ -1077,7 +1109,7 @@ final class TimelineManipulationTests: XCTestCase {
             value: "Action"
         )
         
-        nowBox.value = createdAt.addingTimeInterval(1)
+        nowBox.setValue(createdAt.addingTimeInterval(1))
         timeline.addKeyword(keyword)
         
         XCTAssertEqual(timeline.createdAt, createdAt)
@@ -1091,7 +1123,7 @@ final class TimelineManipulationTests: XCTestCase {
             name: "Test",
             createdAt: createdAt,
             modifiedAt: createdAt,
-            nowProvider: { nowBox.value }
+            nowProvider: { nowBox.getValue() }
         )
         
         let rating = Rating(
@@ -1100,7 +1132,7 @@ final class TimelineManipulationTests: XCTestCase {
             value: .favorite
         )
         
-        nowBox.value = createdAt.addingTimeInterval(1)
+        nowBox.setValue(createdAt.addingTimeInterval(1))
         timeline.addRating(rating)
         
         XCTAssertEqual(timeline.createdAt, createdAt)
