@@ -68,11 +68,20 @@ extension XMLDocument {
 	/// The FCPXML document as a properly formatted string.
 	public var fcpxmlString: String {
 		let formattedData = self.xmlData(options: [.nodePreserveWhitespace, .nodePrettyPrint, .nodeCompactEmptyElement])
-		if let formattedString = String(data: formattedData, encoding: .utf8) {
-			return formattedString
-		} else {
+		guard var formattedString = String(data: formattedData, encoding: .utf8) else {
 			return ""
 		}
+
+		// Remove standalone="yes" from XML declaration if present
+		// Foundation's XMLDocument.xmlData() doesn't always respect isStandalone setting
+		if formattedString.hasPrefix("<?xml") {
+			formattedString = formattedString.replacingOccurrences(
+				of: #"<?xml version="1.0" encoding="UTF-8" standalone="yes"?>"#,
+				with: #"<?xml version="1.0" encoding="UTF-8"?>"#
+			)
+		}
+
+		return formattedString
 	}
 	
 	/// The "fcpxml" element at the root of the XMLDocument
