@@ -220,6 +220,7 @@ public struct FCPXMLExporter: Sendable {
         doc.documentContentKind = .xml
         doc.characterEncoding = "UTF-8"
         doc.version = "1.0"
+        doc.isStandalone = false  // Required for DTD validation with whitespace nodes
         doc.setRootElement(root)
         doc.fcpxmlVersion = version.stringValue
         let dtd = XMLDTD()
