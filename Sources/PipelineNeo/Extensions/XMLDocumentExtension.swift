@@ -68,11 +68,23 @@ extension XMLDocument {
 	/// The FCPXML document as a properly formatted string.
 	public var fcpxmlString: String {
 		let formattedData = self.xmlData(options: [.nodePreserveWhitespace, .nodePrettyPrint, .nodeCompactEmptyElement])
-		if let formattedString = String(data: formattedData, encoding: .utf8) {
-			return formattedString
-		} else {
+		guard var formattedString = String(data: formattedData, encoding: .utf8) else {
 			return ""
 		}
+
+		// Replace standalone="yes" with standalone="no" for DTD validation compatibility.
+		// Foundation's XMLDocument.xmlData() often outputs standalone="yes" regardless of isStandalone.
+		// With standalone="yes", xmllint reports: "standalone: fcpxml declared in the external subset contains white space nodes"
+		// (pretty-printed whitespace violates standalone). Explicit standalone="no" declares the document
+		// depends on an external DTD, so whitespace is allowed and xmllint --dtdvalid does not warn.
+		if formattedString.hasPrefix("<?xml") {
+			formattedString = formattedString.replacingOccurrences(
+				of: #"<?xml version="1.0" encoding="UTF-8" standalone="yes"?>"#,
+				with: #"<?xml version="1.0" encoding="UTF-8" standalone="no"?>"#
+			)
+		}
+
+		return formattedString
 	}
 	
 	/// The "fcpxml" element at the root of the XMLDocument

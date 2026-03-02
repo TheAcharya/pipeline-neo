@@ -7,6 +7,24 @@ Pipeline Neo uses **New Features**, **Improvements**, and **Bug Fixes** for each
 
 ---
 
+## [2.4.1](https://github.com/TheAcharya/pipeline-neo/releases/tag/2.4.1) - 2026-03-02
+
+### ✨ New Features
+
+- None in this release.
+
+### 🔧 Improvements
+
+- **Test suite:** Expanded to **655 tests**. Added in TimelineExportValidationTests: testFCPXMLExporterExportsClipMarkers, testFCPXMLExporterExportsClipChapterMarkers, testFCPXMLExporterExportsClipKeywords, testFCPXMLExporterExportsClipRatings, testFCPXMLExporterExportsClipMetadata, testFCPXMLExporterClipMetadataAllTypesValidatesAgainstDTD (export with all metadata types then DTD validate), testFCPXMLExporterXmlDeclarationStandaloneNo (assert exported XML uses standalone="no" for DTD/xmllint compatibility).
+- **PR #14 (clip-level metadata export):** Test coverage for FCPXMLExporter exporting clip-level metadata (markers, chapter-markers, keywords, ratings, custom metadata) as children of `<asset-clip>` per FCPXML DTD; tests in TimelineExportValidationTests; Tests/README.md updated with coverage and XML declaration standalone note. Thanks @stovak!
+- **TimelineManipulationTests:** Addressed GitHub Code Scan findings: replaced actor-based `NowBox` + `DispatchSemaphore` with a lock-based class (`NSLock`) to avoid thread exhaustion and deadlock risk when providing injectable "now" in timestamp tests; replaced `XCTAssertNoThrow` with do-catch and non-optional bindings for `insertClipAutoLane` and `insertingClipAutoLane` to properly verify success and handle thrown errors.
+
+### 🐛 Bug Fixes
+
+- **xmllint / DTD validation:** Resolved "standalone" warnings when validating exported FCPXML with `xmllint --dtdvalid`. XML declaration now outputs `standalone="no"` instead of removing the attribute, so libxml2 treats the document as dependent on an external DTD and no longer warns about whitespace nodes from pretty-printing. Change in XMLDocumentExtension.fcpxmlString.
+
+---
+
 ## [2.4.0](https://github.com/TheAcharya/pipeline-neo/releases/tag/2.4.0) - 2026-02-23
 
 ### ✨ New Features

@@ -57,7 +57,7 @@ let asset = FCPXMLExportAsset(
 
 ## Export to FCPXML string
 
-**FCPXMLExporter** produces an FCPXML string. Supports timelines with **zero clips** (empty spine) or with clips; when clips are present, every `assetRef` must match an asset `id`. The output includes a **DOCTYPE** declaration, **format** `colorSpace` (e.g. `1-1-1 (Rec. 709)`), and optionally FCP-style default smart collections.
+**FCPXMLExporter** produces an FCPXML string. Supports timelines with **zero clips** (empty spine) or with clips; when clips are present, every `assetRef` must match an asset `id`. The output includes a **DOCTYPE** declaration, **format** `colorSpace` (e.g. `1-1-1 (Rec. 709)`), and optionally FCP-style default smart collections. **Timeline-level and clip-level metadata** (markers, chapter markers, keywords, ratings, custom metadata) are included when present — see [09 — Timeline Metadata](09-Timeline-Metadata.md) for setting metadata on timelines and clips. The XML declaration uses `standalone="no"` for compatibility with external DTD validation (e.g. xmllint).
 
 ```swift
 let exporter = FCPXMLExporter(version: .default)

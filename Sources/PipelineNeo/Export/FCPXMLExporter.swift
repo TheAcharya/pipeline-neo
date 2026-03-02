@@ -172,6 +172,24 @@ public struct FCPXMLExporter: Sendable {
             if clip.isVideoDisabled {
                 clipEl.addStringAttribute(name: "enabled", value: "0")
             }
+
+            // Add clip-level metadata as children of asset-clip
+            for marker in clip.markers {
+                clipEl.addChild(Self._markerElement(marker, utility: utility))
+            }
+            for chapterMarker in clip.chapterMarkers {
+                clipEl.addChild(Self._chapterMarkerElement(chapterMarker, utility: utility))
+            }
+            for keyword in clip.keywords {
+                clipEl.addChild(Self._keywordElement(keyword, utility: utility))
+            }
+            for rating in clip.ratings {
+                clipEl.addChild(Self._ratingElement(rating, utility: utility))
+            }
+            if let metadata = clip.metadata {
+                clipEl.addChild(Self._metadataElement(metadata))
+            }
+
             spine.addChild(clipEl)
         }
         sequence.addChild(spine)
@@ -202,6 +220,7 @@ public struct FCPXMLExporter: Sendable {
         doc.documentContentKind = .xml
         doc.characterEncoding = "UTF-8"
         doc.version = "1.0"
+        doc.isStandalone = false  // Required for DTD validation with whitespace nodes
         doc.setRootElement(root)
         doc.fcpxmlVersion = version.stringValue
         let dtd = XMLDTD()
@@ -263,5 +282,72 @@ public struct FCPXMLExporter: Sendable {
         formatter.timeZone = TimeZone.current
         formatter.locale = Locale(identifier: "en_US_POSIX")
         return formatter.string(from: date)
+    }
+
+    // MARK: - Metadata Element Generators
+
+    /// Generates a `<marker>` XML element from a Marker.
+    private static func _markerElement(_ marker: Marker, utility: FCPXMLUtility) -> XMLElement {
+        let el = XMLElement(name: "marker")
+        el.addStringAttribute(name: "start", value: utility.fcpxmlTime(fromCMTime: marker.start))
+        el.addStringAttribute(name: "duration", value: utility.fcpxmlTime(fromCMTime: marker.duration))
+        el.addStringAttribute(name: "value", value: marker.value)
+        if let note = marker.note, !note.isEmpty {
+            el.addStringAttribute(name: "note", value: note)
+        }
+        if marker.completed {
+            el.addStringAttribute(name: "completed", value: "1")
+        }
+        return el
+    }
+
+    /// Generates a `<chapter-marker>` XML element from a ChapterMarker.
+    private static func _chapterMarkerElement(_ chapterMarker: ChapterMarker, utility: FCPXMLUtility) -> XMLElement {
+        let el = XMLElement(name: "chapter-marker")
+        el.addStringAttribute(name: "start", value: utility.fcpxmlTime(fromCMTime: chapterMarker.start))
+        el.addStringAttribute(name: "value", value: chapterMarker.value)
+        if let posterOffset = chapterMarker.posterOffset {
+            el.addStringAttribute(name: "posterOffset", value: utility.fcpxmlTime(fromCMTime: posterOffset))
+        }
+        if let note = chapterMarker.note, !note.isEmpty {
+            el.addStringAttribute(name: "note", value: note)
+        }
+        return el
+    }
+
+    /// Generates a `<keyword>` XML element from a Keyword.
+    private static func _keywordElement(_ keyword: Keyword, utility: FCPXMLUtility) -> XMLElement {
+        let el = XMLElement(name: "keyword")
+        el.addStringAttribute(name: "start", value: utility.fcpxmlTime(fromCMTime: keyword.start))
+        el.addStringAttribute(name: "duration", value: utility.fcpxmlTime(fromCMTime: keyword.duration))
+        el.addStringAttribute(name: "value", value: keyword.value)
+        if let note = keyword.note, !note.isEmpty {
+            el.addStringAttribute(name: "note", value: note)
+        }
+        return el
+    }
+
+    /// Generates a `<rating>` XML element from a Rating.
+    private static func _ratingElement(_ rating: Rating, utility: FCPXMLUtility) -> XMLElement {
+        let el = XMLElement(name: "rating")
+        el.addStringAttribute(name: "start", value: utility.fcpxmlTime(fromCMTime: rating.start))
+        el.addStringAttribute(name: "duration", value: utility.fcpxmlTime(fromCMTime: rating.duration))
+        el.addStringAttribute(name: "value", value: rating.value.rawValue)
+        if let note = rating.note, !note.isEmpty {
+            el.addStringAttribute(name: "note", value: note)
+        }
+        return el
+    }
+
+    /// Generates a `<metadata>` XML element from a Metadata struct.
+    private static func _metadataElement(_ metadata: Metadata) -> XMLElement {
+        let el = XMLElement(name: "metadata")
+        for (key, value) in metadata.entries.sorted(by: { $0.key < $1.key }) {
+            let mdEl = XMLElement(name: "md")
+            mdEl.addStringAttribute(name: "key", value: key)
+            mdEl.addStringAttribute(name: "value", value: value)
+            el.addChild(mdEl)
+        }
+        return el
     }
 }
