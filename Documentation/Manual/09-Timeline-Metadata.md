@@ -77,7 +77,7 @@ timeline.metadata = metadata
 
 ## Clip metadata
 
-Clips can have markers, keywords, ratings, etc.:
+Clips can have markers, keywords, ratings, and custom metadata. This metadata is included when exporting to FCPXML — see [07 — Timeline & Export](07-Timeline-Export.md).
 
 ```swift
 var clip = TimelineClip(
