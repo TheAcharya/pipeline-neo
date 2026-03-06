@@ -1009,7 +1009,7 @@ final class TimelineManipulationTests: XCTestCase {
         XCTAssertEqual(timeline.modifiedAt, modifiedAt)
     }
     
-    func testTimelineModifiedAtUpdatesOnRippleInsert() throws {
+    func testTimelineModifiedAtUpdatesOnRippleInsert() {
         let createdAt = Date(timeIntervalSince1970: 1000)
         let nowBox = NowBox(createdAt)
         var timeline = Timeline(

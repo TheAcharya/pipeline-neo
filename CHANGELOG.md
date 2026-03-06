@@ -7,6 +7,22 @@ Pipeline Neo uses **New Features**, **Improvements**, and **Bug Fixes** for each
 
 ---
 
+## [2.4.2](https://github.com/TheAcharya/pipeline-neo/releases/tag/2.4.2) - 2026-03-06
+
+### ✨ New Features
+
+- None in this release.
+
+### 🔧 Improvements
+
+- **Test quality:** Cleaned up `TimelineManipulationTests` by removing an unnecessary `throws` from `testTimelineModifiedAtUpdatesOnRippleInsert`, aligning the signature with actual non-throwing behavior and reducing static analysis noise.
+
+### 🐛 Bug Fixes
+
+- None in this release.
+
+---
+
 ## [2.4.1](https://github.com/TheAcharya/pipeline-neo/releases/tag/2.4.1) - 2026-03-02
 
 ### ✨ New Features
