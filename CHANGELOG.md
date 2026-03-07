@@ -21,6 +21,7 @@ Pipeline Neo uses **New Features**, **Improvements**, and **Bug Fixes** for each
 
 ### 🐛 Bug Fixes
 
+- **Xcode 26 dynamic linking compatibility (PR #16):** Added `swift-log` as an explicit package dependency and `Logging` as a direct target dependency in `Package.swift` to resolve undefined `Logging.Logger` symbols when building Pipeline Neo as a dynamic framework under Xcode 26's stricter transitive dependency linking rules. Thanks @stovak!
 - **CLI `--version` conflict:** Resolved option-name collision between the built-in `--version` flag and create-project's timeline version option by renaming the create-project option from `--version` to `--project-version`. `pipeline-neo --version` now correctly prints the CLI tool version.
 
 ---
