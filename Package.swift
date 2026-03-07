@@ -23,14 +23,16 @@ let package = Package(
     dependencies: [
         .package(url: "https://github.com/apple/swift-argument-parser", from: "1.6.0"),
         .package(url: "https://github.com/orchetect/swift-timecode", from: "3.0.0"),
-        .package(url: "https://github.com/orchetect/swift-extensions", from: "2.0.0")
+        .package(url: "https://github.com/orchetect/swift-extensions", from: "2.0.0"),
+        .package(url: "https://github.com/apple/swift-log.git", from: "1.0.0"),
     ],
     targets: [
         .target(
             name: "PipelineNeo",
             dependencies: [
                 .product(name: "SwiftTimecode", package: "swift-timecode"),
-                .product(name: "SwiftExtensions", package: "swift-extensions")
+                .product(name: "SwiftExtensions", package: "swift-extensions"),
+                .product(name: "Logging", package: "swift-log"),
             ],
             resources: [
                 .process("FCPXML DTDs")
