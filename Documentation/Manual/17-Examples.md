@@ -99,7 +99,7 @@ Use `--create-project` with width, height, frame rate, and output directory. The
 
 ```bash
 pipeline-neo --create-project --width 1920 --height 1080 --rate 25 /path/to/output-dir
-pipeline-neo --create-project --width 640 --height 480 --rate 29.97 --version 1.13 /path/to/output-dir
+pipeline-neo --create-project --width 640 --height 480 --rate 29.97 --project-version 1.13 /path/to/output-dir
 ```
 
 ---

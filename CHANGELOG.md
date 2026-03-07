@@ -7,6 +7,24 @@ Pipeline Neo uses **New Features**, **Improvements**, and **Bug Fixes** for each
 
 ---
 
+## [2.4.3](https://github.com/TheAcharya/pipeline-neo/releases/tag/2.4.3) - 2026-03-07
+
+### ✨ New Features
+
+- None in this release.
+
+### 🔧 Improvements
+
+- **Documentation alignment:** Normalized `AGENT.md` and `.cursorrules` so both files reflect the same architecture guidance, section coverage, and documentation-sync checklist terminology.
+- **CLI documentation:** Updated `Sources/PipelineNeoCLI/README.md` and manual pages (`Documentation/Manual/16-CLI.md`, `Documentation/Manual/17-Examples.md`) to use `--project-version` for create-project examples and option descriptions.
+- **Test consistency:** Updated `TimelineManipulationTests.testTimelineModifiedAtUpdatesOnAutoLaneInsert` to remove an unnecessary `throws` signature and use explicit `do/catch` + `XCTFail` for clearer failure reporting.
+
+### 🐛 Bug Fixes
+
+- **CLI `--version` conflict:** Resolved option-name collision between the built-in `--version` flag and create-project's timeline version option by renaming the create-project option from `--version` to `--project-version`. `pipeline-neo --version` now correctly prints the CLI tool version.
+
+---
+
 ## [2.4.2](https://github.com/TheAcharya/pipeline-neo/releases/tag/2.4.2) - 2026-03-06
 
 ### ✨ New Features

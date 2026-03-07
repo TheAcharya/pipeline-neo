@@ -1033,7 +1033,7 @@ final class TimelineManipulationTests: XCTestCase {
         XCTAssertGreaterThan(timeline.modifiedAt, createdAt)
     }
     
-    func testTimelineModifiedAtUpdatesOnAutoLaneInsert() throws {
+    func testTimelineModifiedAtUpdatesOnAutoLaneInsert() {
         let createdAt = Date(timeIntervalSince1970: 1000)
         let nowBox = NowBox(createdAt)
         var timeline = Timeline(
@@ -1051,7 +1051,12 @@ final class TimelineManipulationTests: XCTestCase {
         )
         
         syncSetNow(createdAt.addingTimeInterval(1), on: nowBox)
-        _ = try timeline.insertClipAutoLane(clip, at: .zero)
+        do {
+            _ = try timeline.insertClipAutoLane(clip, at: .zero)
+        } catch {
+            XCTFail("Auto lane insert should not throw, got error: \(error)")
+            return
+        }
         
         XCTAssertEqual(timeline.createdAt, createdAt)
         XCTAssertGreaterThan(timeline.modifiedAt, createdAt)

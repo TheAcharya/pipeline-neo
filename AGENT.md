@@ -10,21 +10,26 @@ Keep this file in sync with `.cursorrules`. Both should describe the same overvi
 
 - [Project Overview](#project-overview)
 - [Codebase Rewrite and Refactor](#codebase-rewrite-and-refactor)
-- [Architecture](#architecture)
+- [Architecture Guidelines](#architecture-guidelines)
 - [Modularity and Safety](#modularity-and-safety)
-- [Development Guidelines](#development-guidelines)
 - [Code Style and Formatting](#code-style-and-formatting)
 - [File Organisation](#file-organisation)
 - [Test Structure](#test-structure)
 - [Dependencies](#dependencies)
-- [Common Patterns](#common-patterns)
+- [Development Patterns](#development-patterns)
+- [Testing Requirements](#testing-requirements)
 - [Error Handling](#error-handling)
-- [Performance](#performance)
-- [Documentation](#documentation)
+- [Performance Considerations](#performance-considerations)
+- [Documentation Standards](#documentation-standards)
 - [Changelog](#changelog)
 - [Git Workflow](#git-workflow)
+- [Quality Assurance](#quality-assurance)
+- [Project-Specific Rules](#project-specific-rules)
+- [Common Tasks](#common-tasks)
+- [Code Generation Guidelines](#code-generation-guidelines)
 - [Documentation Sync](#documentation-sync)
-- [References](#references)
+- [External References](#external-references)
+- [Maintenance](#maintenance)
 
 ---
 
@@ -34,7 +39,7 @@ Pipeline Neo targets macOS 12+, Xcode 16+, and Swift 6.0 with full concurrency s
 
 **Backward compatibility:** The entire codebase must remain backward compatible with FCPXML 1.5. Optional attributes and elements introduced in later versions (e.g. 1.11, 1.13) must be omitted or ignored when reading/writing or converting to 1.5; mark such features in code comments with the minimum FCPXML version (e.g. `FCPXML 1.13+`).
 
-Current status: 655 tests passing; FCPXML versions 1.5–1.14 supported (DTDs included, full parsing, typed element-type coverage for all DTD elements via FCPXMLElementType); Final Cut Pro frame rates (23.976, 24, 25, 29.97, 30, 50, 59.94, 60); thread-safe and concurrency-compliant with comprehensive async/await support; no known security vulnerabilities. Version conversion (FCPXMLVersionConverter) automatically strips elements not in the target version’s DTD (e.g. adjust-colorConform, adjust-stereo-3D); per-version DTD validation via FCPXMLService.validateDocumentAgainstDTD(_:version:) and validateDocumentAgainstDeclaredVersion(_:); CLI convert runs DTD validation after conversion. FCPXMLVersion.supportsBundleFormat is true for 1.10+ (.fcpxmld bundle); 1.5–1.9 support only single-file .fcpxml. FCPXML creation: create FCPXML documents from scratch with events, projects, resources, and clips via XMLDocumentManager, XMLDocument initializers, or FCPXMLService. Timeline manipulation: ripple insert (shifts subsequent clips), auto lane assignment, clip queries (by lane, time range, asset ID), lane range computation, secondary storylines. Timeline metadata: markers, chapter markers, keywords, ratings, custom metadata, timestamps (createdAt, modifiedAt). FCPXMLTimecode: custom timecode type (arithmetic, frame alignment, CMTime conversion, FCPXML string parsing). MIME type detection, asset validation, silence detection, asset duration measurement, parallel file I/O, still image asset support. TimelineFormat enhancements: presets (hd720p, dci4K, hd1080i, hd720i), computed properties (aspectRatio, isHD, isUHD, interlaced). Typed adjustment models: Crop, Transform, Blend, Stabilization, Volume, Loudness, NoiseReduction, HumReduction, Equalization, MatchEqualization, Transform360, ColorConform, Stereo3D, VoiceIsolation with full clip integration. Typed effect/filter models: VideoFilter, AudioFilter, VideoFilterMask with FilterParameter support and keyframe animation (auxValue support FCPXML 1.11+). Typed caption/title models: Caption and Title with TextStyle and TextStyleDefinition for full text formatting. SmartCollection models: SmartCollection with match-clip, match-media, match-ratings, match-text, match-usage (1.9+), match-representation (1.10+), match-markers (1.10+), match-analysis-type (1.14). Live Drawing (FCPXML 1.11+): LiveDrawing model for live-drawing story elements. HiddenClipMarker (FCPXML 1.13+): HiddenClipMarker model for hidden clip markers. Format/Asset 1.13+: Format heroEye, Asset heroEyeOverride, Asset mediaReps (multiple media-rep). Comprehensive test coverage: 655 tests across 15+ FCPXML sample files including 360 video, auditions, conform-rate, still images, multicam, secondary storylines, audio keyframes (AudioKeyframeTests: 10 tests for adjust-volume param keyframeAnimation parsing, decibel/time validation, fadeIn/fadeOut integration, secondary storyline detection), keyword collections/folders, Photoshop integration, smart collections. Experimental CLI (pipeline-neo): single binary with embedded DTDs; --check-version, --convert-version (stripping + DTD validation), --extension-type (fcpxmld | fcpxml; default fcpxmld; 1.5–1.9 always .fcpxml), --validate, --media-copy, --create-project (new empty FCPXML project: --width, --height, --rate, --version, output-dir; mandatory DTD validation; FCP-style DOCTYPE, format colorSpace, default smart collections); --log writes user-visible output for all commands to the log file; see Sources/PipelineNeoCLI/README.md.
+Current status: 655 tests passing; FCPXML versions 1.5–1.14 supported (DTDs included, full parsing, typed element-type coverage for all DTD elements via FCPXMLElementType); Final Cut Pro frame rates (23.976, 24, 25, 29.97, 30, 50, 59.94, 60); thread-safe and concurrency-compliant with comprehensive async/await support; no known security vulnerabilities. Version conversion automatically drops elements not in the target version’s DTD (e.g. adjust-colorConform, adjust-stereo-3D); DTD validation runs per version (validateDocumentAgainstDTD, validateDocumentAgainstDeclaredVersion) and after CLI convert. FCPXMLVersion.supportsBundleFormat is true for 1.10+ (.fcpxmld bundle); 1.5–1.9 support only single-file .fcpxml. FCPXML creation: create FCPXML documents from scratch with events, projects, resources, and clips via XMLDocumentManager, XMLDocument initializers, or FCPXMLService. Timeline manipulation: ripple insert (shifts subsequent clips), auto lane assignment, clip queries (by lane, time range, asset ID), lane range computation, secondary storylines. Timeline metadata: markers, chapter markers, keywords, ratings, custom metadata, timestamps (createdAt, modifiedAt). FCPXMLTimecode: custom timecode type (arithmetic, frame alignment, CMTime conversion, FCPXML string parsing). MIME type detection, asset validation, silence detection, asset duration measurement, parallel file I/O, still image asset support. TimelineFormat enhancements: presets (hd720p, dci4K, hd1080i, hd720i), computed properties (aspectRatio, isHD, isUHD, interlaced). Typed adjustment models: Crop, Transform, Blend, Stabilization, Volume, Loudness, NoiseReduction, HumReduction, Equalization, MatchEqualization, Transform360, ColorConform, Stereo3D, VoiceIsolation with full clip integration. Typed effect/filter models: VideoFilter, AudioFilter, VideoFilterMask with FilterParameter support and keyframe animation (auxValue support FCPXML 1.11+). Typed caption/title models: Caption and Title with TextStyle and TextStyleDefinition for full text formatting. SmartCollection models: SmartCollection with match-clip, match-media, match-ratings, match-text, match-usage (1.9+), match-representation (1.10+), match-markers (1.10+), match-analysis-type (1.14). Keyframe animation: KeyframeAnimation, Keyframe with interpolation types, FadeIn/FadeOut with fade types, integrated with FilterParameter. CMTime Codable extension: Direct CMTime encoding/decoding as FCPXML time strings. Collection organization: CollectionFolder and KeywordCollection models for organizing clips and media. Live Drawing (FCPXML 1.11+): LiveDrawing model for live-drawing story elements. HiddenClipMarker (FCPXML 1.13+): HiddenClipMarker model for hidden clip markers. Format/Asset 1.13+: Format heroEye, Asset heroEyeOverride, Asset mediaReps (multiple media-rep). Comprehensive test coverage: 655 tests across 15+ FCPXML sample files including 360 video, auditions, conform-rate, still images, multicam, secondary storylines, audio keyframes (AudioKeyframeTests: 10 tests for adjust-volume param keyframeAnimation parsing, decibel/time validation, fadeIn/fadeOut integration, secondary storyline detection), keyword collections/folders, Photoshop integration, smart collections. Experimental CLI (pipeline-neo): single binary with embedded DTDs; --check-version, --convert-version (stripping + DTD validation), --extension-type (fcpxmld | fcpxml; default fcpxmld; 1.5–1.9 always .fcpxml), --validate, --media-copy, --create-project (new empty FCPXML project: --width, --height, --rate, --version, output-dir; DTD validation before write; FCP-style output with DOCTYPE, colorSpace, default smart collections); --log writes user-visible output for all commands to the log file; see Sources/PipelineNeoCLI/README.md.
 
 ---
 
@@ -51,7 +56,7 @@ Foundation XML types (XMLDocument, XMLElement) and SwiftTimecode types are not S
 
 ---
 
-## Architecture
+## Architecture Guidelines
 
 - Protocols: Core operations are defined as protocols with both sync and async/await methods. Default implementations are provided; components can be swapped via dependency injection. Protocols include: FCPXMLParsing, TimecodeConversion, XMLDocumentOperations, ErrorHandling (sync-only, pure formatting), MIMETypeDetection, AssetValidation, SilenceDetection, AssetDurationMeasurement, ParallelFileIO, CutDetection, FCPXMLVersionConverting, MediaExtraction.
 - Implementations: FCPXMLParser, TimecodeConverter, XMLDocumentManager, ErrorHandler, CutDetector, FCPXMLVersionConverter, MediaExtractor, MIMETypeDetector, AssetValidator, SilenceDetector, AssetDurationMeasurer, ParallelFileIOExecutor implement the protocols.
@@ -75,7 +80,7 @@ Foundation XML types (XMLDocument, XMLElement) and SwiftTimecode types are not S
 
 ---
 
-## Development Guidelines
+## Development Patterns
 
 Use Swift 6.0 syntax and features. Use async/await for asynchronous operations; all major operations have async/await APIs. Use structured concurrency (Task, TaskGroup) only where types are Sendable; for Foundation XML and SwiftTimecode types, provide async APIs without Task-based concurrency. Use @unchecked Sendable for classes that cannot be made final; avoid capturing non-Sendable types in concurrent contexts.
 
@@ -193,17 +198,15 @@ SwiftTimecode usage: use `Timecode(.realTime(seconds: seconds), at: frameRate)` 
 
 ---
 
-## Common Patterns
+## Testing Requirements
 
-Async operations: async methods return Timecode? or throw as appropriate; Task-based concurrency only when element types are Sendable. Example:
+Test coverage: unit tests for all public APIs; integration tests for complex workflows; performance tests for time-critical operations; concurrency tests for async operations; test all supported frame rates (Final Cut Pro compatible). Current: 655 comprehensive tests covering all functionality including async/await, timeline manipulation, metadata, timestamps, FCPXMLTimecode, MIME type detection, asset validation, silence detection, asset duration measurement, parallel file I/O, version conversion, DTD validation, extract-then-copy flow, synchronized clip matching, secondary storyline traversal, clip identification, URL resolution, version conversion edge cases, typed adjustment models (including Transform360, ColorConform, Stereo3D, VoiceIsolation), typed effect/filter models, typed caption/title models, smart collections (match-clip, match-media, match-ratings, match-text, match-usage, match-representation, match-markers, match-analysis-type), keyframe animation, audio keyframes (AudioKeyframeTests: adjust-volume param keyframeAnimation parsing, decibel/time validation, fadeIn/fadeOut integration), CMTime Codable extension, collection organization, Live Drawing (1.11+), HiddenClipMarker (1.13+), Format/Asset 1.13+ (heroEye, heroEyeOverride, mediaReps), FCPXMLExporter clip-level metadata export and XML declaration standalone="no", TimelineManipulationTests (lock-based NowBox, do-catch), 360 video features, auditions, conform-rate, still images, multicam, secondary storylines, audio keyframes, keyword collections/folders, and Photoshop integration.
 
-```swift
-public func timecode(from time: CMTime, frameRate: TimecodeFrameRate) async -> Timecode? {
-    // Implementation
-}
-```
+Test data: use realistic FCPXML samples; include edge cases and error conditions; test all supported frame rates; validate against actual Final Cut Pro output where applicable.
 
-Error handling: sync APIs use Result<_, FCPXMLError>; async APIs throw and propagate FCPXMLError (e.g. parsingFailed(Error)). FCPXMLError cases: invalidFormat, parsingFailed(Error), unsupportedVersion, validationFailed(String), timecodeConversionFailed(String), documentOperationFailed(String). See Errors/FCPXMLError.swift.
+Test organisation: descriptive test method names; group related tests logically; proper setup and teardown; meaningful assertions.
+
+Supported frame rates for testing: 23.976, 24, 25, 29.97, 30, 50, 59.94, 60 fps only.
 
 ---
 
@@ -213,13 +216,13 @@ Use Swift Result for sync; do-catch and throw for async. Provide meaningful mess
 
 ---
 
-## Performance
+## Performance Considerations
 
 Use value types where appropriate; avoid retain cycles; use weak references for delegates. Use appropriate concurrency levels and task cancellation; avoid blocking the main thread. For XML: stream when possible, use efficient parsing, cache frequently accessed data.
 
 ---
 
-## Documentation
+## Documentation Standards
 
 Public APIs: comprehensive header comments, ///, parameters/return values/exceptions, usage examples. README: project overview, installation, usage, API/modularity notes. Inline comments: explain non-obvious logic and reference external specs. Update README and Tests/README.md when adding features or changing test layout.
 
@@ -242,20 +245,64 @@ Branches: main (production-ready), dev, feature/*, bugfix/*. Commits: clear, des
 
 ---
 
+## Quality Assurance
+
+Code review checklist: all tests passing; documentation updated; error handling implemented; performance considerations addressed; concurrency requirements met.
+
+Build requirements: Swift build successful; all tests passing; no warnings or errors; proper dependency resolution.
+
+---
+
+## Project-Specific Rules
+
+FCPXML handling: support FCPXML versions 1.5 through 1.14 (DTDs included; full parsing; typed element-type coverage via FCPXMLElementType for all DTD elements); validate against DTD schemas (FCPXMLDTDValidator, FCPXMLService.validateDocumentAgainstDTD/validateDocumentAgainstDeclaredVersion); version conversion (FCPXMLVersionConverter) sets root version and automatically strips elements not in the target version’s DTD (e.g. adjust-colorConform, adjust-stereo-3D); FCPXMLVersion.supportsBundleFormat is true for 1.10+ (save as .fcpxmld bundle); 1.5–1.9 support only .fcpxml; handle all supported frame rates (Final Cut Pro compatible); implement proper XML formatting. Media extraction: extract media references (asset media-rep src, locator url) and copy referenced file URLs to a destination directory (MediaExtraction protocol, MediaExtractor). Timeline manipulation: ripple insert (shifts subsequent clips), auto lane assignment (finds available lanes), clip queries (by lane, time range, asset ID), lane range computation, secondary storylines. Timeline metadata: markers, chapter markers, keywords, ratings, custom metadata on timeline and clips; timestamps (createdAt, modifiedAt) updated on all mutating operations. TimelineFormat: presets (hd720p, dci4K, hd1080i, hd720i), computed properties (aspectRatio, isHD, isUHD, interlaced). FCPXMLTimecode: custom timecode type wrapping Fraction (arithmetic, frame alignment, CMTime conversion, FCPXML string parsing). MIME type detection: MIMETypeDetection protocol and MIMETypeDetector implementation (UTType, AVFoundation, file extension fallback). Asset validation: AssetValidation protocol and AssetValidator implementation (existence check, MIME type compatibility, lane rules: negative = audio only, non-negative = video/image/audio); still image asset support (duration=0s). Silence detection: SilenceDetection protocol and SilenceDetector implementation (configurable threshold and minimum duration). Asset duration measurement: AssetDurationMeasurement protocol and AssetDurationMeasurer implementation (AVFoundation-based for audio/video/images). Parallel file I/O: ParallelFileIO protocol and ParallelFileIOExecutor implementation (concurrent read/write operations). SmartCollection: SmartCollection model with match-clip, match-media, match-ratings, match-text, match-usage (1.9+), match-representation (1.10+), match-markers (1.10+), match-analysis-type (1.14); library and event integration. Live Drawing (1.11+): LiveDrawing model for live-drawing story elements. HiddenClipMarker (1.13+): HiddenClipMarker model for hidden clip markers. Format/Asset 1.13+: Format heroEye (left|right), Asset heroEyeOverride, Asset mediaReps (multiple media-rep). Experimental CLI: pipeline-neo single binary (embedded DTDs) with --check-version, --convert-version (stripping + DTD validation), --extension-type fcpxml|fcpxmld (default fcpxmld; 1.5–1.9 always .fcpxml), --validate, --media-copy, --create-project (width, height, rate, version, output-dir; mandatory DTD validation; FCP-style DOCTYPE, format colorSpace, default smart collections), and LOG options (--log, --log-level, --quiet; --log records user-visible output for all commands); see Sources/PipelineNeoCLI/README.md.
+
+Timecode operations: use SwiftTimecode for all timecode operations; support all FCPXML frame rates (Final Cut Pro compatible); implement proper frame rate conversions; handle drop frame and non-drop frame timecode. FCPXMLTimecode provides a custom timecode type for FCPXML-specific operations (arithmetic, frame alignment, CMTime conversion, FCPXML string parsing).
+
+Platform support: target macOS 12.0+; use Xcode 16.0+ features; implement Swift 6.0 concurrency; follow Apple platform guidelines.
+
+---
+
+## Common Tasks
+
+Adding new features: create feature branch; implement functionality with tests; update documentation; ensure all tests pass; create pull request.
+
+Bug fixes: create bugfix branch; implement fix with regression tests; update documentation if needed; ensure all tests pass; create pull request.
+
+Performance improvements: measure current performance; implement improvements; add performance tests; measure improvement; document changes.
+
+---
+
+## Code Generation Guidelines
+
+When generating code: follow existing patterns and conventions; include comprehensive tests; add proper documentation; ensure concurrency compliance; validate against project requirements.
+
+Code review process: review for Swift 6.0 compliance; check concurrency implementation; validate error handling; ensure test coverage; verify documentation quality.
+
+---
+
 ## Documentation Sync
 
 Keep AGENT.md and .cursorrules in sync. Both must reflect: changelog styling (CHANGELOG.md: Keep a Changelog format, version links to release tags, ✨ New Features / 🔧 Improvements / 🐛 Bug Fixes).
 
 - Project overview and codebase rewrite/refactor.
 - Architecture (protocols, implementations, extensions, service, utilities) and single injection point (FCPXMLUtility.defaultForExtensions).
-- Source layout (Analysis, Classes, Delegates, Errors, Extensions including +Modular, Implementations, Protocols, Services, Utilities, Annotations, Export, Timeline, Timing, Validation, FileIO, Logging, Format, Model, Parsing, Extraction, FCPXML DTDs).
-- Test structure (Tests/ layout, TestResources, FCPXMLTestUtilities, FileTests/ including FCPXMLFileTest_360Video, FCPXMLFileTest_AuditionSample, FCPXMLFileTest_ImageSample, FCPXMLFileTest_Multicam, FCPXMLFileTest_Photoshop, FCPXMLFileTest_SmartCollection, LogicAndParsing/ including FCPXMLFormatAssetTests, CutDetectionTests, VersionConversionTests, MediaExtractionTests, TimelineManipulationTests, FCPXMLTimecodeTests, MIMETypeDetectionTests, AssetValidationTests, SilenceDetectionTests, AssetDurationMeasurementTests, ParallelFileIOTests, AudioEnhancementTests, Transform360Tests, CaptionTitleTests, KeyframeAnimationTests, AudioKeyframeTests, CMTimeCodableTests, CollectionTests, SmartCollectionTests, PipelineNeoTests.swift, TimelineExportValidationTests (empty timeline creation, project-creation export at different sizes and frame rates, clip-level metadata export, XML declaration standalone="no"; DTD validation), APIAndEdgeCaseTests, FCPXMLPerformanceTests; 655 tests).
+- Source layout (Analysis, Classes, Delegates, Errors, Extensions including +Modular and +Codable, Implementations, Protocols, Services, Utilities, Annotations, Export, Timeline, Timing, Validation, FileIO, Logging, Format, Model including Adjustments, Animations, Filters, Clips with +Adjustments and +Typed, CommonElements with TextStyle/TextStyleDefinition, Structure with CollectionFolder/KeywordCollection/SmartCollection, Parsing, Extraction, FCPXML DTDs).
+- Test structure (Tests/ layout, TestResources, FCPXMLTestUtilities, FileTests/ including FCPXMLFileTest_360Video, FCPXMLFileTest_AuditionSample, FCPXMLFileTest_ImageSample, FCPXMLFileTest_Multicam, FCPXMLFileTest_Photoshop, FCPXMLFileTest_SmartCollection, LogicAndParsing/ including FCPXMLFormatAssetTests, CutDetectionTests, VersionConversionTests, MediaExtractionTests, TimelineManipulationTests, FCPXMLTimecodeTests, MIMETypeDetectionTests, AssetValidationTests, SilenceDetectionTests, AssetDurationMeasurementTests, ParallelFileIOTests, AudioEnhancementTests, Transform360Tests, CaptionTitleTests, KeyframeAnimationTests, AudioKeyframeTests, CMTimeCodableTests, CollectionTests, SmartCollectionTests, PipelineNeoTests.swift, TimelineExportValidationTests, APIAndEdgeCaseTests, FCPXMLPerformanceTests; empty timeline creation and project-creation export at different sizes and frame rates in TimelineExportValidationTests (clip-level metadata export, XML declaration standalone="no"); 655 tests).
 - FCPXML 1.5–1.14 and FCPXMLElementType; FCPXMLVersion.supportsBundleFormat (1.10+); version conversion with element stripping and per-version DTD validation; FCPXML creation from scratch; timeline manipulation (ripple insert, auto lane assignment, clip queries, lane range, secondary storylines); timeline metadata (markers, chapter markers, keywords, ratings, timestamps); FCPXMLTimecode custom type; MIME type detection; asset validation (including still images); silence detection; asset duration measurement; parallel file I/O; TimelineFormat enhancements; typed adjustment models (Crop, Transform, Blend, Stabilization, Volume, Loudness, NoiseReduction, HumReduction, Equalization, MatchEqualization, Transform360, ColorConform, Stereo3D, VoiceIsolation); typed effect/filter models (VideoFilter, AudioFilter, VideoFilterMask, FilterParameter with keyframe animation and auxValue 1.11+); typed caption/title models (Caption, Title with TextStyle, TextStyleDefinition); smart collections (SmartCollection with match-clip, match-media, match-ratings, match-text, match-usage, match-representation, match-markers, match-analysis-type); keyframe animation (KeyframeAnimation, Keyframe, FadeIn, FadeOut); audio keyframes (AudioKeyframeTests: adjust-volume param keyframeAnimation parsing, decibel/time validation, fadeIn/fadeOut integration); CMTime Codable extension; collection organization (CollectionFolder, KeywordCollection); Live Drawing (1.11+); HiddenClipMarker (1.13+); Format/Asset 1.13+ (heroEye, heroEyeOverride, mediaReps); experimental CLI (pipeline-neo, single binary, embedded DTDs, --check-version, --convert-version, --extension-type fcpxml|fcpxmld, --validate, --media-copy, --create-project with DTD validation and FCP-style output, --log/--log-level/--quiet with log file capturing all command output); Final Cut Pro frame rates; Swift 6 concurrency (Sendable, async/await, CI strict-concurrency job).
 
 When updating either file, apply the same information to both and keep terminology and examples consistent.
 
 ---
 
-## References
+## External References
 
 External: Final Cut Pro XML (fcp.cafe/developers/fcpxml/), SwiftTimecode (github.com/orchetect/swift-timecode), Swift Concurrency (docs.swift.org). Internal: Package.swift, README.md, .cursorrules, CHANGELOG.md, Tests/README.md, Documentation/Manual.md.
+
+---
+
+## Maintenance
+
+Regular tasks: update dependencies as needed; review and update documentation; monitor test coverage; address warnings or deprecations; keep build configuration current.
+
+Long-term: plan for future Swift versions; consider new FCPXML versions; monitor SwiftTimecode updates; plan for platform changes; maintain backward compatibility where possible.
