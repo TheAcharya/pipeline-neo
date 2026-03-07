@@ -20,13 +20,20 @@ let package = Package(
             name: "GenerateEmbeddedDTDs",
             targets: ["GenerateEmbeddedDTDs"]),
    ],
+    // Dependencies used by core library and CLI targets.
     dependencies: [
+        // CLI argument parsing
         .package(url: "https://github.com/apple/swift-argument-parser", from: "1.6.0"),
+        // Timecode operations
         .package(url: "https://github.com/orchetect/swift-timecode", from: "3.0.0"),
+        // Utility extensions
         .package(url: "https://github.com/orchetect/swift-extensions", from: "2.1.0"),
+        // Explicit logging dependency (Xcode 26 dynamic linking compatibility)
         .package(url: "https://github.com/apple/swift-log.git", from: "1.0.0"),
     ],
+    // Targets: core library, tests, user CLI, and DTD generator utility.
     targets: [
+        // Core framework target
         .target(
             name: "PipelineNeo",
             dependencies: [
@@ -37,6 +44,7 @@ let package = Package(
             resources: [
                 .process("FCPXML DTDs")
             ]),
+        // Package test suite
         .testTarget(
             name: "PipelineNeoTests",
             dependencies: ["PipelineNeo"],
@@ -44,6 +52,7 @@ let package = Package(
             exclude: ["README.md"],
             sources: ["PipelineNeoTests"],
             resources: [.process("FCPXML Samples/FCPXML")]),
+        // End-user CLI target
         .executableTarget(
             name: "PipelineNeoCLI",
             dependencies: [
@@ -51,6 +60,7 @@ let package = Package(
                 .product(name: "ArgumentParser", package: "swift-argument-parser"),
             ],
             exclude: ["README.md"]),
+        // Internal tool to generate embedded DTD source
         .executableTarget(
             name: "GenerateEmbeddedDTDs",
             path: "Sources/GenerateEmbeddedDTDs",
