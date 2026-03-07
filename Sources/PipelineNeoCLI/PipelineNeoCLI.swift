@@ -59,8 +59,8 @@ struct PipelineNeoCLI: ParsableCommand {
             if fcpxmlPath == nil {
                 throw ValidationError("output-dir is required when using --create-project (pass the output directory as the positional argument).")
             }
-            if let v = timeline.version, FCPXMLVersion(string: v) == nil {
-                throw ValidationError("Invalid --version for --create-project: '\(v)'. Use a version between 1.5 and 1.14 (e.g. 1.10, 1.14).")
+            if let v = timeline.projectVersion, FCPXMLVersion(string: v) == nil {
+                throw ValidationError("Invalid --project-version for --create-project: '\(v)'. Use a version between 1.5 and 1.14 (e.g. 1.10, 1.14).")
             }
             let modeCount = [general.checkVersion, general.convertVersion != nil, general.validate, extraction.mediaCopy].filter { $0 }.count
             if modeCount > 0 {
@@ -97,7 +97,7 @@ struct PipelineNeoCLI: ParsableCommand {
             guard w > 0 else { throw CreateProjectError.invalidWidth("\(w)") }
             guard h > 0 else { throw CreateProjectError.invalidHeight("\(h)") }
             let rate = try guardRate(rateStr, error: CreateProjectError.invalidRate)
-            let version = timeline.version.flatMap { FCPXMLVersion(string: $0) } ?? .default
+            let version = timeline.projectVersion.flatMap { FCPXMLVersion(string: $0) } ?? .default
             try CreateProject.run(width: w, height: h, rate: rate, outputDir: outDir, version: version, logger: logger)
             return
         }

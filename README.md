@@ -80,7 +80,7 @@ let package = Package(
         .macOS(.v12)
     ],
     dependencies: [
-        .package(url: "https://github.com/TheAcharya/pipeline-neo", from: "2.4.0")
+        .package(url: "https://github.com/TheAcharya/pipeline-neo", from: "2.4.3")
     ],
     targets: [
         .target(
@@ -143,7 +143,7 @@ sudo rm /usr/local/bin/pipeline-neo
 ### Compiled From Source
 
 ```shell
-VERSION=2.4.0 # replace this with the git tag of the version you need
+VERSION=2.4.3 # replace this with the git tag of the version you need
 git clone https://github.com/TheAcharya/pipeline-neo.git
 cd pipeline-neo
 git checkout "tags/$VERSION"
@@ -172,26 +172,28 @@ GENERAL:
   --convert-version <version>
                           Convert FCPXML to the given version (e.g. 1.10, 1.14) and write to output-dir.
   --extension-type <extension-type>
-                          Output format for --convert-version: fcpxmld (bundle) or fcpxml (single file). Default: fcpxmld.
-                          For target versions 1.5–1.9, .fcpxml is used regardless. (values: fcpxml, fcpxmld; default:
-                          fcpxmld)
+                          Output format for --convert-version: fcpxmld (bundle) or fcpxml (single file).
+                          Default: fcpxmld. For target versions 1.5–1.9, .fcpxml is used regardless. (values:
+                          fcpxml, fcpxmld; default: fcpxmld)
   --validate              Perform robust check and validation of FCPXML/FCPXMLD (semantic + DTD).
 
 TIMELINE:
-  --create-project        Create a new empty FCPXML project (requires --width, --height, --rate, and <output-dir>
-                          positional).
+  --create-project        Create a new empty FCPXML project (requires --width, --height, --rate, and
+                          <output-dir> positional).
   --width <width>         Project width in pixels (used with --create-project).
   --height <height>       Project height in pixels (used with --create-project).
   --rate <rate>           Frame rate (e.g. 24, 25, 29.97) (used with --create-project).
-  --version <version>     FCPXML version for the new project (e.g. 1.10, 1.14). Default: 1.14. (used with --create-project).
+  --project-version <project-version>
+                          FCPXML version for the new project (e.g. 1.10, 1.14). Default: 1.14. (used with
+                          --create-project).
 
 EXTRACTION:
   --media-copy            Scan FCPXML/FCPXMLD and copy all referenced media files to output-dir.
 
 LOG:
   --log <log>             Log file path.
-  --log-level <log-level> Log level. (values: trace, debug, info, notice, warning, error, critical; default: info) (default:
-                          info)
+  --log-level <log-level> Log level. (values: trace, debug, info, notice, warning, error, critical; default:
+                          info) (default: info)
   --quiet                 Disable log.
 
 OPTIONS:

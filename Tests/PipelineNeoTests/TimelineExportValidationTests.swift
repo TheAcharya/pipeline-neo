@@ -231,6 +231,216 @@ final class TimelineExportValidationTests: XCTestCase {
         XCTAssertTrue(xml.contains("location=\"file:///Users/user/Movies/Sample%20Projects.fcpbundle/\""))
     }
 
+    // MARK: - FCPXMLExporter clip-level metadata (PR #14)
+
+    func testFCPXMLExporterExportsClipMarkers() throws {
+        let marker = Marker(
+            start: CMTime(value: 0, timescale: 24),
+            duration: CMTime(value: 1, timescale: 24),
+            value: "My Marker",
+            note: "A note",
+            completed: true
+        )
+        let clip = TimelineClip(
+            assetRef: "r2",
+            offset: .zero,
+            duration: CMTime(value: 1001, timescale: 24000),
+            start: .zero,
+            lane: 0,
+            markers: [marker]
+        )
+        let timeline = Timeline(name: "WithMarkers", clips: [clip])
+        let asset = FCPXMLExportAsset(
+            id: "r2",
+            name: "Clip1",
+            src: URL(fileURLWithPath: "/tmp/sample.mov"),
+            duration: CMTime(value: 1001, timescale: 24000),
+            hasVideo: true,
+            hasAudio: true
+        )
+        let exporter = FCPXMLExporter(version: .default)
+        let xml = try exporter.export(timeline: timeline, assets: [asset])
+        XCTAssertTrue(xml.contains("<marker "))
+        XCTAssertTrue(xml.contains("value=\"My Marker\""))
+        XCTAssertTrue(xml.contains("note=\"A note\""))
+        XCTAssertTrue(xml.contains("completed=\"1\""))
+    }
+
+    func testFCPXMLExporterExportsClipChapterMarkers() throws {
+        let chapter = ChapterMarker(
+            start: CMTime(value: 0, timescale: 24),
+            value: "Chapter 1",
+            posterOffset: CMTime(value: 5, timescale: 24),
+            note: "Chapter note"
+        )
+        let clip = TimelineClip(
+            assetRef: "r2",
+            offset: .zero,
+            duration: CMTime(value: 1001, timescale: 24000),
+            start: .zero,
+            lane: 0,
+            chapterMarkers: [chapter]
+        )
+        let timeline = Timeline(name: "WithChapters", clips: [clip])
+        let asset = FCPXMLExportAsset(
+            id: "r2",
+            src: URL(fileURLWithPath: "/tmp/sample.mov"),
+            duration: CMTime(value: 1001, timescale: 24000),
+            hasVideo: true,
+            hasAudio: true
+        )
+        let exporter = FCPXMLExporter(version: .default)
+        let xml = try exporter.export(timeline: timeline, assets: [asset])
+        XCTAssertTrue(xml.contains("<chapter-marker "))
+        XCTAssertTrue(xml.contains("value=\"Chapter 1\""))
+        XCTAssertTrue(xml.contains("posterOffset="))
+        XCTAssertTrue(xml.contains("note=\"Chapter note\""))
+    }
+
+    func testFCPXMLExporterExportsClipKeywords() throws {
+        let keyword = Keyword(
+            start: CMTime(value: 0, timescale: 24),
+            duration: CMTime(value: 48, timescale: 24),
+            value: "B-Roll",
+            note: "Keyword note"
+        )
+        let clip = TimelineClip(
+            assetRef: "r2",
+            offset: .zero,
+            duration: CMTime(value: 1001, timescale: 24000),
+            start: .zero,
+            lane: 0,
+            keywords: [keyword]
+        )
+        let timeline = Timeline(name: "WithKeywords", clips: [clip])
+        let asset = FCPXMLExportAsset(
+            id: "r2",
+            src: URL(fileURLWithPath: "/tmp/sample.mov"),
+            duration: CMTime(value: 1001, timescale: 24000),
+            hasVideo: true,
+            hasAudio: true
+        )
+        let exporter = FCPXMLExporter(version: .default)
+        let xml = try exporter.export(timeline: timeline, assets: [asset])
+        XCTAssertTrue(xml.contains("<keyword "))
+        XCTAssertTrue(xml.contains("value=\"B-Roll\""))
+        XCTAssertTrue(xml.contains("note=\"Keyword note\""))
+    }
+
+    func testFCPXMLExporterExportsClipRatings() throws {
+        let rating = Rating(
+            start: CMTime(value: 0, timescale: 24),
+            duration: CMTime(value: 24, timescale: 24),
+            value: .favorite,
+            note: "Fav note"
+        )
+        let clip = TimelineClip(
+            assetRef: "r2",
+            offset: .zero,
+            duration: CMTime(value: 1001, timescale: 24000),
+            start: .zero,
+            lane: 0,
+            ratings: [rating]
+        )
+        let timeline = Timeline(name: "WithRatings", clips: [clip])
+        let asset = FCPXMLExportAsset(
+            id: "r2",
+            src: URL(fileURLWithPath: "/tmp/sample.mov"),
+            duration: CMTime(value: 1001, timescale: 24000),
+            hasVideo: true,
+            hasAudio: true
+        )
+        let exporter = FCPXMLExporter(version: .default)
+        let xml = try exporter.export(timeline: timeline, assets: [asset])
+        XCTAssertTrue(xml.contains("<rating "))
+        XCTAssertTrue(xml.contains("value=\"favorite\""))
+        XCTAssertTrue(xml.contains("note=\"Fav note\""))
+    }
+
+    func testFCPXMLExporterExportsClipMetadata() throws {
+        var meta = Metadata()
+        meta.entries["com.apple.proapps.studio.reel"] = "R1"
+        meta.entries["com.apple.proapps.studio.scene"] = "S2"
+        let clip = TimelineClip(
+            assetRef: "r2",
+            offset: .zero,
+            duration: CMTime(value: 1001, timescale: 24000),
+            start: .zero,
+            lane: 0,
+            metadata: meta
+        )
+        let timeline = Timeline(name: "WithMetadata", clips: [clip])
+        let asset = FCPXMLExportAsset(
+            id: "r2",
+            src: URL(fileURLWithPath: "/tmp/sample.mov"),
+            duration: CMTime(value: 1001, timescale: 24000),
+            hasVideo: true,
+            hasAudio: true
+        )
+        let exporter = FCPXMLExporter(version: .default)
+        let xml = try exporter.export(timeline: timeline, assets: [asset])
+        XCTAssertTrue(xml.contains("<metadata>") || xml.contains("<metadata "))
+        XCTAssertTrue(xml.contains("<md ") || xml.contains("<md "))
+        XCTAssertTrue(xml.contains("key=") && xml.contains("value="))
+    }
+
+    /// Export one clip with all clip-level metadata types; parse and validate against DTD (asset-clip children per FCPXML DTD).
+    func testFCPXMLExporterClipMetadataAllTypesValidatesAgainstDTD() throws {
+        let marker = Marker(start: .zero, duration: CMTime(value: 1, timescale: 24), value: "M1")
+        let chapter = ChapterMarker(start: .zero, value: "Ch1")
+        let keyword = Keyword(start: .zero, duration: CMTime(value: 1, timescale: 24), value: "K1")
+        let rating = Rating(start: .zero, duration: CMTime(value: 1, timescale: 24), value: .favorite)
+        var meta = Metadata()
+        meta.entries["custom.key"] = "custom.value"
+        let clip = TimelineClip(
+            assetRef: "r2",
+            offset: .zero,
+            duration: CMTime(value: 1001, timescale: 24000),
+            start: .zero,
+            lane: 0,
+            markers: [marker],
+            chapterMarkers: [chapter],
+            keywords: [keyword],
+            ratings: [rating],
+            metadata: meta
+        )
+        let timeline = Timeline(name: "FullMetadata", clips: [clip])
+        let asset = FCPXMLExportAsset(
+            id: "r2",
+            src: URL(fileURLWithPath: "/tmp/sample.mov"),
+            duration: CMTime(value: 1001, timescale: 24000),
+            hasVideo: true,
+            hasAudio: true
+        )
+        let exporter = FCPXMLExporter(version: .v1_13)
+        let xmlString = try exporter.export(timeline: timeline, assets: [asset])
+        XCTAssertTrue(xmlString.contains("<marker "))
+        XCTAssertTrue(xmlString.contains("<chapter-marker "))
+        XCTAssertTrue(xmlString.contains("<keyword "))
+        XCTAssertTrue(xmlString.contains("<rating "))
+        XCTAssertTrue(xmlString.contains("<metadata>") || xmlString.contains("<metadata "))
+        guard let data = xmlString.data(using: .utf8) else {
+            XCTFail("FCPXML string encoding failed")
+            return
+        }
+        let service = FCPXMLService(logger: NoOpPipelineLogger())
+        let document = try service.parseFCPXML(from: data)
+        let result = service.validateDocumentAgainstDTD(document, version: .v1_13)
+        XCTAssertTrue(result.isValid, "Export with clip metadata must validate against DTD: \(result.detailedDescription)")
+    }
+
+    /// XML declaration must use standalone="no" (or omit) so xmllint --dtdvalid does not warn about whitespace.
+    func testFCPXMLExporterXmlDeclarationStandaloneNo() throws {
+        let timeline = Timeline(name: "Empty", clips: [])
+        let exporter = FCPXMLExporter(version: .default)
+        let xml = try exporter.export(timeline: timeline, assets: [])
+        XCTAssertFalse(xml.contains("standalone=\"yes\""), "Exported FCPXML must not declare standalone=\"yes\" for DTD validation")
+        XCTAssertTrue(
+            xml.contains("standalone=\"no\"") || (xml.hasPrefix("<?xml") && !xml.contains("standalone=")),
+            "Exported FCPXML should declare standalone=\"no\" or omit standalone for xmllint compatibility"
+        )
+    }
+
     /// Covers the export path used by CLI --create-project: empty timeline, custom format, default smart collections, DTD validation.
     func testProjectCreationStyleExportValidatesAgainstDTD() throws {
         let format = TimelineFormat(

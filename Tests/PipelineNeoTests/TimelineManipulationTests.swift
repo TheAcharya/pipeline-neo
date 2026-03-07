@@ -12,42 +12,36 @@ import XCTest
 import CoreMedia
 @testable import PipelineNeo
 
-/// Thread-safe mutable box for injectable "now" in timestamp tests, implemented as an actor for safe concurrent access.
-private actor NowBox {
+/// Thread-safe mutable box for injectable "now" in timestamp tests, implemented as a class with explicit synchronization
+/// to avoid blocking on async actor operations from synchronous test code (and to avoid DispatchSemaphore deadlock risk).
+private final class NowBox: @unchecked Sendable {
     private var _value: Date
+    private let lock = NSLock()
     init(_ value: Date) {
         _value = value
     }
     func getValue() -> Date {
-        _value
+        lock.lock()
+        defer { lock.unlock() }
+        return _value
     }
     func setValue(_ value: Date) {
+        lock.lock()
         _value = value
+        lock.unlock()
     }
 }
 
-/// Returns a synchronous closure that fetches the current time from the actor (used when Timeline's nowProvider is invoked).
+/// Returns a synchronous closure that fetches the current time from the box (used when Timeline's nowProvider is invoked).
 private func makeSyncNowProvider(nowBox: NowBox) -> @Sendable () -> Date {
     return {
-        let semaphore = DispatchSemaphore(value: 0)
-        var value: Date!
-        Task {
-            value = await nowBox.getValue()
-            semaphore.signal()
-        }
-        semaphore.wait()
-        return value
+        nowBox.getValue()
     }
 }
 
-/// Synchronously sets the actor's value from synchronous test code.
+/// Synchronously sets the box's value from synchronous test code.
 private func syncSetNow(_ value: Date, on nowBox: NowBox) {
-    let semaphore = DispatchSemaphore(value: 0)
-    Task {
-        await nowBox.setValue(value)
-        semaphore.signal()
-    }
-    semaphore.wait()
+    nowBox.setValue(value)
 }
 
 @available(macOS 12.0, *)
@@ -410,13 +404,14 @@ final class TimelineManipulationTests: XCTestCase {
         
         // Insert overlapping clip with auto lane
         let clip2 = TimelineClip(assetRef: "r2", offset: .zero, duration: CMTime(value: 10, timescale: 1), lane: 0)
-        var placement: ClipPlacement?
-        XCTAssertNoThrow(placement = try timeline.insertClipAutoLane(clip2, at: CMTime(value: 5, timescale: 1), preferredLane: 0))
-        guard let placement = placement else {
-            XCTFail("insertClipAutoLane returned no placement")
+        let placement: ClipPlacement
+        do {
+            placement = try timeline.insertClipAutoLane(clip2, at: CMTime(value: 5, timescale: 1), preferredLane: 0)
+        } catch {
+            XCTFail("insertClipAutoLane threw unexpectedly: \(error)")
             return
         }
-        
+
         // Should be placed on lane 1 (first available)
         XCTAssertEqual(placement.lane, 1)
         XCTAssertEqual(CMTimeGetSeconds(placement.offset), 5.0, accuracy: 0.001)
@@ -515,13 +510,17 @@ final class TimelineManipulationTests: XCTestCase {
         
         // Insert overlapping clip
         let clip2 = TimelineClip(assetRef: "r2", offset: .zero, duration: CMTime(value: 10, timescale: 1), lane: 0)
-        var insertionResult: (Timeline, ClipPlacement)?
-        XCTAssertNoThrow(insertionResult = try timelineWithClip.insertingClipAutoLane(clip2, at: CMTime(value: 5, timescale: 1)))
-        guard let (newTimeline, placement) = insertionResult else {
-            XCTFail("insertingClipAutoLane returned no result")
+        let newTimeline: Timeline
+        let placement: ClipPlacement
+        do {
+            let result = try timelineWithClip.insertingClipAutoLane(clip2, at: CMTime(value: 5, timescale: 1))
+            newTimeline = result.0
+            placement = result.1
+        } catch {
+            XCTFail("insertingClipAutoLane threw unexpectedly: \(error)")
             return
         }
-        
+
         // Original timeline should be unchanged
         XCTAssertEqual(timelineWithClip.clips.count, 1)
         
@@ -544,13 +543,14 @@ final class TimelineManipulationTests: XCTestCase {
         
         // Insert overlapping clip
         let newClip = TimelineClip(assetRef: "r3", offset: .zero, duration: CMTime(value: 10, timescale: 1), lane: 0)
-        var placement: ClipPlacement?
-        XCTAssertNoThrow(placement = try timeline.insertClipAutoLane(newClip, at: .zero, preferredLane: 0))
-        guard let placement = placement else {
-            XCTFail("Expected insertClipAutoLane to return a placement")
+        let placement: ClipPlacement
+        do {
+            placement = try timeline.insertClipAutoLane(newClip, at: .zero, preferredLane: 0)
+        } catch {
+            XCTFail("insertClipAutoLane threw unexpectedly: \(error)")
             return
         }
-        
+
         // With lanes 0–2 filled, auto-lane assignment returns the next free lane (3 or -1 depending on search order).
         XCTAssertTrue(placement.lane == 3 || placement.lane == -1)
     }
@@ -1009,7 +1009,7 @@ final class TimelineManipulationTests: XCTestCase {
         XCTAssertEqual(timeline.modifiedAt, modifiedAt)
     }
     
-    func testTimelineModifiedAtUpdatesOnRippleInsert() throws {
+    func testTimelineModifiedAtUpdatesOnRippleInsert() {
         let createdAt = Date(timeIntervalSince1970: 1000)
         let nowBox = NowBox(createdAt)
         var timeline = Timeline(
@@ -1033,7 +1033,7 @@ final class TimelineManipulationTests: XCTestCase {
         XCTAssertGreaterThan(timeline.modifiedAt, createdAt)
     }
     
-    func testTimelineModifiedAtUpdatesOnAutoLaneInsert() throws {
+    func testTimelineModifiedAtUpdatesOnAutoLaneInsert() {
         let createdAt = Date(timeIntervalSince1970: 1000)
         let nowBox = NowBox(createdAt)
         var timeline = Timeline(
@@ -1051,7 +1051,12 @@ final class TimelineManipulationTests: XCTestCase {
         )
         
         syncSetNow(createdAt.addingTimeInterval(1), on: nowBox)
-        _ = try timeline.insertClipAutoLane(clip, at: .zero)
+        do {
+            _ = try timeline.insertClipAutoLane(clip, at: .zero)
+        } catch {
+            XCTFail("Auto lane insert should not throw, got error: \(error)")
+            return
+        }
         
         XCTAssertEqual(timeline.createdAt, createdAt)
         XCTAssertGreaterThan(timeline.modifiedAt, createdAt)

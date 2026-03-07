@@ -35,7 +35,7 @@ Use **one** of: `--check-version`, `--convert-version`, `--validate`, `--media-c
 | **--width &lt;n&gt;** | Project width in pixels (used with `--create-project`). |
 | **--height &lt;n&gt;** | Project height in pixels (used with `--create-project`). |
 | **--rate &lt;fps&gt;** | Frame rate, e.g. 24, 25, 29.97 (used with `--create-project`). |
-| **--version &lt;ver&gt;** | FCPXML version for the new project (e.g. 1.10, 1.14). Default: 1.14 (used with `--create-project`). |
+| **--project-version &lt;ver&gt;** | FCPXML version for the new project (e.g. 1.10, 1.14). Default: 1.14 (used with `--create-project`). |
 
 ### LOG
 
@@ -58,7 +58,7 @@ pipeline-neo --media-copy /path/to/project.fcpxmld /path/to/media-folder
 
 # Create a new empty project (e.g. 1920×1080 at 25 fps), write to output-dir; project file name is 1920x1080@25p.fcpxml
 pipeline-neo --create-project --width 1920 --height 1080 --rate 25 /path/to/output-dir
-pipeline-neo --create-project --width 640 --height 480 --rate 29.97 --version 1.13 /path/to/output-dir
+pipeline-neo --create-project --width 640 --height 480 --rate 29.97 --project-version 1.13 /path/to/output-dir
 
 pipeline-neo --log /tmp/pipeline.log --log-level debug --check-version /path/to/project.fcpxml
 ```

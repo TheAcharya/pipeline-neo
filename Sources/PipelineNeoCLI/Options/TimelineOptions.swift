@@ -23,6 +23,6 @@ struct TimelineOptions: ParsableArguments {
     @Option(name: .long, help: "Frame rate (e.g. 24, 25, 29.97) (used with --create-project).")
     var rate: String?
 
-    @Option(name: .long, help: "FCPXML version for the new project (e.g. 1.10, 1.14). Default: 1.14. (used with --create-project).")
-    var version: String?
+    @Option(name: .customLong("project-version"), help: "FCPXML version for the new project (e.g. 1.10, 1.14). Default: 1.14. (used with --create-project).")
+    var projectVersion: String?
 }

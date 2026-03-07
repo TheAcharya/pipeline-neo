@@ -7,6 +7,58 @@ Pipeline Neo uses **New Features**, **Improvements**, and **Bug Fixes** for each
 
 ---
 
+## [2.4.3](https://github.com/TheAcharya/pipeline-neo/releases/tag/2.4.3) - 2026-03-07
+
+### ✨ New Features
+
+- None in this release.
+
+### 🔧 Improvements
+
+- **Documentation alignment:** Normalized `AGENT.md` and `.cursorrules` so both files reflect the same architecture guidance, section coverage, and documentation-sync checklist terminology.
+- **CLI documentation:** Updated `Sources/PipelineNeoCLI/README.md` and manual pages (`Documentation/Manual/16-CLI.md`, `Documentation/Manual/17-Examples.md`) to use `--project-version` for create-project examples and option descriptions.
+- **Test consistency:** Updated `TimelineManipulationTests.testTimelineModifiedAtUpdatesOnAutoLaneInsert` to remove an unnecessary `throws` signature and use explicit `do/catch` + `XCTFail` for clearer failure reporting.
+
+### 🐛 Bug Fixes
+
+- **CLI `--version` conflict:** Resolved option-name collision between the built-in `--version` flag and create-project's timeline version option by renaming the create-project option from `--version` to `--project-version`. `pipeline-neo --version` now correctly prints the CLI tool version.
+
+---
+
+## [2.4.2](https://github.com/TheAcharya/pipeline-neo/releases/tag/2.4.2) - 2026-03-06
+
+### ✨ New Features
+
+- None in this release.
+
+### 🔧 Improvements
+
+- **Test quality:** Cleaned up `TimelineManipulationTests` by removing an unnecessary `throws` from `testTimelineModifiedAtUpdatesOnRippleInsert`, aligning the signature with actual non-throwing behavior and reducing static analysis noise.
+
+### 🐛 Bug Fixes
+
+- None in this release.
+
+---
+
+## [2.4.1](https://github.com/TheAcharya/pipeline-neo/releases/tag/2.4.1) - 2026-03-02
+
+### ✨ New Features
+
+- None in this release.
+
+### 🔧 Improvements
+
+- **Test suite:** Expanded to **655 tests**. Added in TimelineExportValidationTests: testFCPXMLExporterExportsClipMarkers, testFCPXMLExporterExportsClipChapterMarkers, testFCPXMLExporterExportsClipKeywords, testFCPXMLExporterExportsClipRatings, testFCPXMLExporterExportsClipMetadata, testFCPXMLExporterClipMetadataAllTypesValidatesAgainstDTD (export with all metadata types then DTD validate), testFCPXMLExporterXmlDeclarationStandaloneNo (assert exported XML uses standalone="no" for DTD/xmllint compatibility).
+- **PR #14 (clip-level metadata export):** Test coverage for FCPXMLExporter exporting clip-level metadata (markers, chapter-markers, keywords, ratings, custom metadata) as children of `<asset-clip>` per FCPXML DTD; tests in TimelineExportValidationTests; Tests/README.md updated with coverage and XML declaration standalone note. Thanks @stovak!
+- **TimelineManipulationTests:** Addressed GitHub Code Scan findings: replaced actor-based `NowBox` + `DispatchSemaphore` with a lock-based class (`NSLock`) to avoid thread exhaustion and deadlock risk when providing injectable "now" in timestamp tests; replaced `XCTAssertNoThrow` with do-catch and non-optional bindings for `insertClipAutoLane` and `insertingClipAutoLane` to properly verify success and handle thrown errors.
+
+### 🐛 Bug Fixes
+
+- **xmllint / DTD validation:** Resolved "standalone" warnings when validating exported FCPXML with `xmllint --dtdvalid`. XML declaration now outputs `standalone="no"` instead of removing the attribute, so libxml2 treats the document as dependent on an external DTD and no longer warns about whitespace nodes from pretty-printing. Change in XMLDocumentExtension.fcpxmlString.
+
+---
+
 ## [2.4.0](https://github.com/TheAcharya/pipeline-neo/releases/tag/2.4.0) - 2026-02-23
 
 ### ✨ New Features

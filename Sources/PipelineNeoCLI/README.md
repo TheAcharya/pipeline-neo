@@ -41,10 +41,10 @@ pipeline-neo --convert-version 1.14 --extension-type fcpxml /path/to/project.fcp
 pipeline-neo --media-copy /path/to/project.fcpxml /path/to/output-dir
 pipeline-neo --media-copy /path/to/project.fcpxmld /path/to/output-dir
 
-# Create a new empty FCPXML project (requires --width, --height, --rate; optional --version; output-dir as single positional)
+# Create a new empty FCPXML project (requires --width, --height, --rate; optional --project-version; output-dir as single positional)
 # Project file name is derived from dimensions and rate (e.g. 1920x1080@25p.fcpxml). Output is DTD-validated before writing.
 pipeline-neo --create-project --width 1920 --height 1080 --rate 25 /path/to/output-dir
-pipeline-neo --create-project --width 640 --height 480 --rate 29.97 --version 1.13 /path/to/output-dir
+pipeline-neo --create-project --width 640 --height 480 --rate 29.97 --project-version 1.13 /path/to/output-dir
 
 # Process: input + output (output-dir required)
 pipeline-neo /path/to/project.fcpxml /path/to/output-dir
@@ -57,7 +57,7 @@ pipeline-neo --log-level debug --convert-version 1.10 /path/to/project.fcpxml /p
 pipeline-neo --quiet --media-copy /path/to/project.fcpxml /path/to/media
 ```
 
-**Validation:** Use only one of `--check-version`, `--convert-version`, `--validate`, `--media-copy`, or `--create-project`. When using `--convert-version` or `--media-copy`, or when running the default process, you must provide `<output-dir>`. When using `--create-project`, you must provide `--width`, `--height`, `--rate`, and the output directory as the single positional argument. If `--log` is set and the file exists, it must be writable. Invalid `--log-level` or `--version` (for create-project) values produce an error.
+**Validation:** Use only one of `--check-version`, `--convert-version`, `--validate`, `--media-copy`, or `--create-project`. When using `--convert-version` or `--media-copy`, or when running the default process, you must provide `<output-dir>`. When using `--create-project`, you must provide `--width`, `--height`, `--rate`, and the output directory as the single positional argument. If `--log` is set and the file exists, it must be writable. Invalid `--log-level` or `--project-version` (for create-project) values produce an error.
 
 ---
 
@@ -93,7 +93,7 @@ Log messages include parsing, version conversion, validation, save, and media ex
 | `Commands/Validate/` | Implements `--validate`: loads FCPXML/FCPXMLD and runs robust validation (semantic + DTD). |
 | `Commands/ExtractMedia/` | Implements `--media-copy`: loads FCPXML/FCPXMLD and copies all referenced media files to output-dir. |
 | `Commands/CreateProject/` | Implements `--create-project`: creates an empty FCPXML project with given width, height, frame rate, and version; runs DTD validation before writing; outputs FCP-style document (DOCTYPE, colorSpace, default smart collections). |
-| `Options/TimelineOptions.swift` | **TIMELINE** option group: `--create-project`, `--width`, `--height`, `--rate`, `--version`. |
+| `Options/TimelineOptions.swift` | **TIMELINE** option group: `--create-project`, `--width`, `--height`, `--rate`, `--project-version`. |
 | `Generated/` | Generated source; `EmbeddedDTDs.swift` contains hardcoded DTD data (from `GenerateEmbeddedDTDs`). |
 
 All Swift in `Sources/PipelineNeoCLI/` is a single module; no extra imports are needed between these files.
