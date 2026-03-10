@@ -48,7 +48,7 @@ extension FinalCutPro.FCPXML {
     /// - the `fcpxml/library` element if it exists
     public func allEvents() -> [Event] {
         // there is no appreciable gain by using lazy sequences here
-        // so just return [XMLElement] array
+        // so just return [PNXMLElement] array
         
         var events: [Event] = []
         
@@ -75,7 +75,7 @@ extension FinalCutPro.FCPXML {
     /// - an `fcpxml/library/event` element
     public func allProjects() -> [Project] {
         // there is no appreciable gain by using lazy sequences here
-        // so just return [XMLElement] array
+        // so just return [PNXMLElement] array
         
         var projects: [Project] = []
         

@@ -17,19 +17,19 @@ extension FinalCutPro.FCPXML {
     /// Root `fcpxml` element in a FCPXML document.
     ///
     /// > Note: This struct conforms to `Codable` for JSON/PLIST conversion, but cannot be `Sendable`
-    /// > because it wraps `XMLElement` which is not `Sendable`. Use with caution in concurrent contexts.
+    /// > because it wraps `PNXMLElement` which is not `Sendable`. Use with caution in concurrent contexts.
     public struct Root: FCPXMLElement, Equatable, Hashable, Codable {
-        public let element: XMLElement
-        
+        public let element: any PNXMLElement
+
         public let elementType: ElementType = .fcpxml
-        
+
         public static let supportedElementTypes: Set<ElementType> = [.fcpxml]
-        
+
         public init() {
-            element = XMLElement(name: elementType.rawValue)
+            element = FoundationXMLFactory().makeElement(name: elementType.rawValue)
         }
-        
-        public init?(element: XMLElement) {
+
+        public init?(element: any PNXMLElement) {
             self.element = element
             guard _isElementTypeSupported(element: element) else { return nil }
         }
@@ -46,8 +46,8 @@ extension FinalCutPro.FCPXML {
         public func encode(to encoder: Encoder) throws {
             var container = encoder.container(keyedBy: CodingKeys.self)
             
-            // Convert XMLElement to XML string
-            let xmlString = element.xmlString(options: [.nodePreserveWhitespace, .nodePrettyPrint, .nodeCompactEmptyElement])
+            // Convert PNXMLElement to XML string
+            let xmlString = element.xmlString
             try container.encode(xmlString, forKey: .xmlString)
         }
         
@@ -60,17 +60,17 @@ extension FinalCutPro.FCPXML {
             // Decode XML string
             let xmlString = try container.decode(String.self, forKey: .xmlString)
             
-            // Convert XML string to XMLElement
+            // Convert XML string to PNXMLElement
             guard let xmlData = xmlString.data(using: .utf8) else {
                 throw FCPXMLCodableError.xmlStringConversionFailed
             }
-            
+
             do {
-                let document = try XMLDocument(data: xmlData)
+                let document = try FoundationXMLFactory().makeDocument(data: xmlData, options: [])
                 guard let rootElement = document.rootElement() else {
                     throw FCPXMLCodableError.xmlStringConversionFailed
                 }
-                
+
                 // Initialize self with the root element
                 self.element = rootElement
                 guard _isElementTypeSupported(element: rootElement) else {
@@ -121,7 +121,7 @@ extension FinalCutPro.FCPXML.Root {
 extension FinalCutPro.FCPXML.Root {
     /// Get or set the `resources` XML element.
     /// Exactly one of these elements is always required.
-    public var resources: XMLElement {
+    public var resources: any PNXMLElement {
         get {
             element.firstDefaultedChildElement(whereFCPElementType: .resources)
         }
@@ -135,7 +135,7 @@ extension FinalCutPro.FCPXML.Root {
     
     /// Access the contents of the `resources` XML element as a dictionary of elements
     /// keyed by resource ID.
-    public var resourcesDict: [String: XMLElement] {
+    public var resourcesDict: [String: any PNXMLElement] {
         get {
             resources
                 .childElements
@@ -149,8 +149,8 @@ extension FinalCutPro.FCPXML.Root {
                     .caseInsensitiveCompare(($1.fcpID ?? ""))
                     == .orderedAscending
             })
-            
-            let resourcesContainer = XMLElement(name: FinalCutPro.FCPXML.ElementType.resources.rawValue)
+
+            let resourcesContainer = FoundationXMLFactory().makeElement(name: FinalCutPro.FCPXML.ElementType.resources.rawValue)
             sortedElements.forEach { resourcesContainer.addChild($0) }
             resources = resourcesContainer
         }
@@ -204,11 +204,12 @@ extension FinalCutPro.FCPXML.Root {
             // Add new import-options element if provided
             guard let importOptions = newValue, !importOptions.options.isEmpty else { return }
             
-            let importOptionsElement = XMLElement(name: "import-options")
+            let factory = FoundationXMLFactory()
+            let importOptionsElement = factory.makeElement(name: "import-options")
             for option in importOptions.options {
-                let optionElement = XMLElement(name: "option")
-                optionElement.addAttribute(withName: "key", value: option.key)
-                optionElement.addAttribute(withName: "value", value: option.value)
+                let optionElement = factory.makeElement(name: "option")
+                optionElement.addAttribute(name: "key", value: option.key)
+                optionElement.addAttribute(name: "value", value: option.value)
                 importOptionsElement.addChild(optionElement)
             }
             
@@ -277,7 +278,7 @@ extension FinalCutPro.FCPXML.Root {
 // MARK: - Typing
 
 // `fcpxml`
-extension XMLElement {
+extension PNXMLElement {
     /// FCPXML: Returns the element wrapped in a ``FinalCutPro/FCPXML/Root`` model object.
     /// Call this on a `fcpxml` element only.
     public var fcpAsRoot: FinalCutPro.FCPXML.Root? {
