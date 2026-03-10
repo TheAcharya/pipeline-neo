@@ -31,7 +31,7 @@ public enum FCPXMLLoadError: Error, LocalizedError, Sendable {
 @available(macOS 12.0, *)
 public struct FCPXMLFileLoader: Sendable {
 
-    private let factory: any PNXMLFactory
+    private nonisolated(unsafe) let factory: any PNXMLFactory
 
     /// Creates a new file loader.
     /// - Parameter factory: XML factory for creating documents (default: `FoundationXMLFactory()`).

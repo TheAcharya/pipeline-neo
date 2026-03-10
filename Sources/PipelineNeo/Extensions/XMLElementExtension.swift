@@ -2198,19 +2198,10 @@ extension PNXMLElement {
 			throw FCPXMLElementError.notAnEvent(elementName: self.name ?? "unnamed")
 		}
 
-		// Find indices of matching items (by identity) and remove in reverse order
-		guard let children = self.children else { return }
-		var indicesToRemove: [Int] = []
-		for (idx, child) in children.enumerated() {
-			for item in items {
-				if child === item {
-					indicesToRemove.append(idx)
-					break
-				}
-			}
-		}
-		for index in indicesToRemove.sorted().reversed() {
-			self.removeChild(at: index)
+		// Remove matching items by comparing xmlString (identity comparison fails with wrapper types)
+		let itemXMLStrings = Set(items.map { $0.xmlString })
+		self.removeChildren { child in
+			itemXMLStrings.contains(child.xmlString)
 		}
 	}
 
@@ -2937,201 +2928,14 @@ extension PNXMLElement {
 		return parserDelegate.roles
 		
 	}
-	
-	
+
 	// MARK: - Constants
-	enum FCPXMLElementError: Error, CustomStringConvertible, Sendable {
-		case notAnEvent(elementName: String)
-		case notAnAnnotatableItem(elementName: String)
-		case notAnAnnotation(elementName: String)
-		
-		var description: String {
-			switch self {
-			case .notAnEvent(let elementName):
-				return "The \"\(elementName)\" element is not an event."
-			case .notAnAnnotatableItem(let elementName):
-				return "The \"\(elementName)\" element cannot be annotated."
-			case .notAnAnnotation(let elementName):
-				return "The \"\(elementName)\" element is not an annotation."
-			}
-		}
-	}
-	
-	public enum TextAlignment: String, Sendable {
-		case left = "left"
-		case center = "center"
-		case right = "right"
-		case justified = "justified"
-	}
-	
-	public enum TimecodeFormat: String, Sendable {
-		case dropFrame = "DF"
-		case nonDropFrame = "NDF"
-	}
-	
-	public enum AudioLayout: String, Sendable {
-		case mono = "mono"
-		case stereo = "stereo"
-		case surround = "surround"
-	}
-	
-	public enum AudioRate: String, Sendable {
-		case rate32kHz = "32k"
-		case rate44_1kHz = "44.1k"
-		case rate48kHz = "48k"
-		case rate88_2kHz = "88.2k"
-		case rate96kHz = "96k"
-		case rate176_4kHz = "176.4k"
-		case rate192kHz = "192k"
-	}
-	
-	/// Legacy render color space for existing FCPXML project/sequence attributes.
-	///
-	/// For new export workflows, prefer ``ColorSpace`` which includes HDR variants
-	/// and provides `fcpxmlValue` for attribute serialisation.
-	public enum RenderColorSpace: String, Sendable {
-		case rec601NTSC = "Rec. 601 (NTSC)"
-		case rec601PAL = "Rec. 601 (PAL)"
-		case rec709 = "Rec. 709"
-		case rec2020 = "Rec. 2020"
-	}
-	
-	public enum MulticamSourceEnable: String, Sendable {
-		case audio = "audio"
-		case video = "video"
-		case all = "all"
-		case none = "none"
-	}
-	
-	/// The caption format included in caption role attributes.
-	public enum CaptionFormat: String, Sendable {
-		case itt = "ITT"
-		case cea608 = "CEA608"
-	}
-	
-	/// RFC 5646 language tags for use in caption role attributes. The languages included in this enum are those supported by FCPX.
-	public enum CaptionLanguage: String, Sendable {
-		case afrikaans = "af"
-		case arabic = "ar"
-		case bangla = "bn"
-		case bulgarian = "bg"
-		case catalan = "ca"
-		case chineseCantonese = "yue-Hant"
-		case chineseSimplified = "cmn-Hans"
-		case chineseTraditional = "cmn-Hant"
-		case croatian = "hr"
-		case czech = "cs"
-		case danish = "da"
-		case dutch = "nl"
-		case english = "en"
-		case englishAustralia = "en-AU"
-		case englishCanada = "en-CA"
-		case englishUnitedKingdom = "en-GB"
-		case englishUnitedStates = "en-US"
-		case estonian = "et"
-		case finnish = "fi"
-		case frenchBelgium = "fr-BE"
-		case frenchCanada = "fr-CA"
-		case frenchFrance = "fr-FR"
-		case frenchSwitzerland = "fr-CH"
-		case german = "de"
-		case germanAustria = "de-AT"
-		case germanGermany = "de-DE"
-		case germanSwitzerland = "de-CH"
-		case greek = "el"
-		case greekCyprus = "el-CY"
-		case hebrew = "he"
-		case hindi = "hi"
-		case hungarian = "hu"
-		case icelandic = "is"
-		case indonesian = "id"
-		case italian = "it"
-		case japanese = "ja"
-		case kannada = "kn"
-		case kazakh = "kk"
-		case korean = "ko"
-		case lao = "lo"
-		case latvian = "lv"
-		case lithuanian = "lt"
-		case luxembourgish = "lb"
-		case malay = "ms"
-		case malayalam = "ml"
-		case maltese = "mt"
-		case marathi = "mr"
-		case norwegian = "no"
-		case polish = "pl"
-		case portugueseBrazil = "pt-BR"
-		case portuguesePortugal = "pt-PT"
-		case punjabi = "pa"
-		case romanian = "ro"
-		case russian = "ru"
-		case slovak = "sk"
-		case slovenian = "sl"
-		case spanishLatinAmerica = "es-419"
-		case spanishMexico = "es-MX"
-		case spanishSpain = "es-ES"
-		case swedish = "sv"
-		case tagalog = "tl"
-		case tamil = "ta"
-		case telugu = "te"
-		case thai = "th"
-		case turkish = "tr"
-		case ukrainian = "uk"
-		case urdu = "ur"
-		case vietnamese = "vi"
-		case zulu = "zu"
-	}
-	
-	/// Caption display style for CEA-608 captions
-	public enum CEA608CaptionDisplayStyle: String, Sendable {
-		case popOn = "pop-on"
-		case paintOn = "paint-on"
-		case rollUp = "roll-up"
-	}
-	
-	/// Caption placement for ITT captions.
-	public enum ITTCaptionPlacement: String, Sendable {
-		case top = "top"
-		case bottom = "bottom"
-		case left = "left"
-		case right = "right"
-	}
-	
-	/// Caption alignment for CEA-608 captions.
-	public enum CEA608CaptionAlignment: String, Sendable {
-		case left = "left"
-		case center = "center"
-		case right = "right"
-	}
-	
-	/// Color values for CEA-608 captions. The raw value is the color expressed as "red green blue alpha" which is the way it is represented in FCPXML text style elements.
-	public enum CEA608Color: String, Sendable {
-		case red = "1 0 0 1"
-		case yellow = "1 1 0 1"
-		case green = "0 1 0 1"
-		case cyan = "0 1 1 1"
-		case blue = "0 0 1 1"
-		case magenta = "1 0 1 1"
-		case white = "1 1 1 1"
-		case black = "0 0 0 1"
-	}
-	
-	/// The location of a story element within its sequence or timeline.
-	///
-	/// - primaryStoryline: The story element exists on the primary storyline.
-	/// - attachedClip: The story element is attached to another clip that is on the primary storyline.
-	/// - secondaryStoryline: The story element is embedded in a secondary storyline.
-	public enum StoryElementLocation: Sendable {
-		case primaryStoryline
-		case attachedClip
-		case secondaryStoryline
-	}
+	// Enum definitions moved to XMLElementExtensionTypes.swift.
+	// Typealiases back into PNXMLElement are declared there.
 
 #if canImport(Logging)
-  	private static let logger = Logger(label: "PipelineNeo.PNXMLElement")
-
-  	private func debugLog(_ message: String) {
-		PNXMLElement.logger.debug("\(message)")
+	private func debugLog(_ message: String) {
+		_pnxmlElementLogger.debug("\(message)")
 	}
 #else
 	private func debugLog(_ message: String) {
@@ -3139,3 +2943,7 @@ extension PNXMLElement {
 	}
 #endif
 }
+
+#if canImport(Logging)
+private let _pnxmlElementLogger = Logger(label: "PipelineNeo.PNXMLElement")
+#endif

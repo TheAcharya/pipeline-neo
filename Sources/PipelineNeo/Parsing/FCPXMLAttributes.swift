@@ -264,7 +264,7 @@ extension PNXMLElement {
         }
         
         addAttribute(
-            withName: attributeName,
+            name: attributeName,
             value: newValue?.fcpxmlStringValue
         )
     }

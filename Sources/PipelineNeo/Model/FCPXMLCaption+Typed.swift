@@ -10,9 +10,7 @@
 
 import Foundation
 
-// Typealias to decouple from Foundation XML namespace; will be removed when
-// the Extensions layer is migrated (Sortie 17).
-private typealias _CaptionTextAlignment = _CaptionTextAlignment
+// No typealias needed — use FinalCutPro.FCPXML.TextAlignment directly.
 
 extension FinalCutPro.FCPXML.Caption {
     /// Returns typed text style definitions from the caption.
@@ -81,7 +79,7 @@ extension FinalCutPro.FCPXML.Caption {
         let kerningString = element.stringValue(forAttributeNamed: "kerning")
         let kerning = kerningString.flatMap { Double($0) }
         let alignmentString = element.stringValue(forAttributeNamed: "alignment")
-        let alignment = alignmentString.flatMap { _CaptionTextAlignment(rawValue: $0) }
+        let alignment = alignmentString.flatMap { FinalCutPro.FCPXML.TextAlignment(rawValue: $0) }
         let lineSpacingString = element.stringValue(forAttributeNamed: "lineSpacing")
         let lineSpacing = lineSpacingString.flatMap { Double($0) }
         let tabStopsString = element.stringValue(forAttributeNamed: "tabStops")

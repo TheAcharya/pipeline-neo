@@ -17,7 +17,7 @@ import Foundation
 @available(macOS 12.0, *)
 public final class XMLDocumentManager: XMLDocumentOperations, XMLElementOperations, Sendable {
 
-    private let factory: any PNXMLFactory
+    private nonisolated(unsafe) let factory: any PNXMLFactory
 
     /// Creates a new XML document manager.
     /// - Parameter factory: XML factory for creating documents and elements (default: `FoundationXMLFactory()`).

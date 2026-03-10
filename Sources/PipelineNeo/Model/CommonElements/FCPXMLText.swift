@@ -161,7 +161,7 @@ extension PNXMLElement {
     /// FCPXML: Returns child `text-style` elements.
     /// Use on `text` or `text-style-def` elements.
     public var fcpTextStyles: [any PNXMLElement] {
-        childElements.filter(whereFCPElementType: .textStyle)
+        Array(childElements.filter(whereFCPElementType: .textStyle))
     }
 }
 

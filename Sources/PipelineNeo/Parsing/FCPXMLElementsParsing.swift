@@ -89,7 +89,20 @@ extension PNXMLElement {
         // add new children
         addChildren(Array(newChildren))
     }
-    
+
+    func _updateChildElements<S: Sequence>(
+        ofType elementType: FinalCutPro.FCPXML.ElementType,
+        with newChildren: S
+    ) where S.Element == any PNXMLElement {
+        // remove existing children of the element type first
+        removeChildren { child in
+            child.fcpElementType == elementType
+        }
+
+        // add new children
+        addChildren(newChildren.map { $0 as any PNXMLNode })
+    }
+
     func _updateChildElements<S: Sequence, T: FCPXMLElementModelTypeProtocol>(
         ofType elementType: T,
         with newChildren: S
@@ -143,34 +156,38 @@ extension PNXMLElement {
         default defaultChild: M? = nil
     ) {
         let newElement = newChild?.element ?? defaultChild?.element
-        
+
         if let existingChild = firstChild(whereFCPElement: modelType)?.element {
             if let newElement = newElement {
-                if newElement != existingChild {
-                    replaceChild(at: existingChild.index, with: newElement)
+                if existingChild !== newElement,
+                   let idx = children?.firstIndex(where: { $0 === existingChild }) {
+                    removeChild(at: idx)
+                    insertChild(newElement, at: idx)
                 }
-            } else {
-                removeChild(at: existingChild.index)
+            } else if let idx = children?.firstIndex(where: { $0 === existingChild }) {
+                removeChild(at: idx)
             }
         } else if let newElement = newElement {
             addChild(newElement)
         }
     }
-    
+
     func _updateFirstChildElement(
         ofType elementType: FinalCutPro.FCPXML.ElementType,
         withChild newChild: (any PNXMLElement)?,
         default defaultChild: @autoclosure () -> (any PNXMLElement)? = { nil }()
     ) {
         let newElement = newChild ?? defaultChild()
-        
+
         if let existingChild = firstChildElement(whereFCPElementType: elementType) {
             if let newElement = newElement {
-                if newElement != existingChild {
-                    replaceChild(at: existingChild.index, with: newElement)
+                if existingChild !== newElement,
+                   let idx = children?.firstIndex(where: { $0 === existingChild }) {
+                    removeChild(at: idx)
+                    insertChild(newElement, at: idx)
                 }
-            } else {
-                removeChild(at: existingChild.index)
+            } else if let idx = children?.firstIndex(where: { $0 === existingChild }) {
+                removeChild(at: idx)
             }
         } else if let newElement = newElement {
             addChild(newElement)
@@ -231,8 +248,8 @@ extension PNXMLElement {
         if let existingChild = firstChildElement(named: childName) {
             if let newStringValue = newStringValue {
                 existingChild.stringValue = newStringValue
-            } else {
-                existingChild.detach()
+            } else if let idx = children?.firstIndex(where: { $0 === existingChild }) {
+                removeChild(at: idx)
             }
         } else {
             if let newStringValue = newStringValue {

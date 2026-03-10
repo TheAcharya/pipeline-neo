@@ -25,17 +25,19 @@ extension FinalCutPro.FCPXML {
             {
                 return existingElement
             }
-            
+
             // create new element and attach
             let newElement = FinalCutPro.FCPXML.Root()
-            xml.addChild(newElement.element)
+            xml.setRootElement(newElement.element)
             return newElement
         }
         set {
             let current = root
-            guard current.element != newValue.element else { return }
-            current.element.detach()
-            xml.addChild(newValue.element)
+            guard current.element.name == newValue.element.name,
+                  current.element.xmlString == newValue.element.xmlString else {
+                xml.setRootElement(newValue.element)
+                return
+            }
         }
     }
     

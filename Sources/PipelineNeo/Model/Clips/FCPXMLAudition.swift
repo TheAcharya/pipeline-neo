@@ -130,7 +130,8 @@ extension FinalCutPro.FCPXML.Audition {
                 element.addChild(newValue)
                 return
             }
-            element.replaceChild(at: 0, with: newValue)
+            element.removeChild(at: 0)
+            element.insertChild(newValue, at: 0)
         }
     }
     

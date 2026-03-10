@@ -114,7 +114,7 @@ extension FinalCutPro.FCPXML.Clip {
         nonmutating set {
             // Remove existing adjust-crop element
             if let existing = element.firstChildElement(named: "adjust-crop") {
-                element.removeChild(at: existing.index)
+                element.removeChildren { $0 === existing }
             }
             
             guard let adjustment = newValue else { return }
@@ -195,7 +195,7 @@ extension FinalCutPro.FCPXML.Clip {
         nonmutating set {
             // Remove existing adjust-transform element
             if let existing = element.firstChildElement(named: "adjust-transform") {
-                element.removeChild(at: existing.index)
+                element.removeChildren { $0 === existing }
             }
             
             guard let adjustment = newValue else { return }
@@ -231,7 +231,7 @@ extension FinalCutPro.FCPXML.Clip {
         nonmutating set {
             // Remove existing adjust-blend element
             if let existing = element.firstChildElement(named: "adjust-blend") {
-                element.removeChild(at: existing.index)
+                element.removeChildren { $0 === existing }
             }
             
             guard let adjustment = newValue else { return }
@@ -264,7 +264,7 @@ extension FinalCutPro.FCPXML.Clip {
         nonmutating set {
             // Remove existing adjust-stabilization element
             if let existing = element.firstChildElement(named: "adjust-stabilization") {
-                element.removeChild(at: existing.index)
+                element.removeChildren { $0 === existing }
             }
             
             guard let adjustment = newValue else { return }
@@ -292,7 +292,7 @@ extension FinalCutPro.FCPXML.Clip {
         }
         nonmutating set {
             if let existing = element.firstChildElement(named: "adjust-rollingShutter") {
-                element.removeChild(at: existing.index)
+                element.removeChildren { $0 === existing }
             }
             guard let adjustment = newValue else { return }
             let adjustElement = FoundationXMLFactory().makeElement(name: "adjust-rollingShutter")
@@ -315,7 +315,7 @@ extension FinalCutPro.FCPXML.Clip {
         }
         nonmutating set {
             if let existing = element.firstChildElement(named: "adjust-conform") {
-                element.removeChild(at: existing.index)
+                element.removeChildren { $0 === existing }
             }
             guard let adjustment = newValue else { return }
             let adjustElement = FoundationXMLFactory().makeElement(name: "adjust-conform")
@@ -346,7 +346,7 @@ extension FinalCutPro.FCPXML.Clip {
         nonmutating set {
             // Remove existing adjust-volume element
             if let existing = element.firstChildElement(named: "adjust-volume") {
-                element.removeChild(at: existing.index)
+                element.removeChildren { $0 === existing }
             }
             
             guard let adjustment = newValue else { return }
@@ -379,7 +379,7 @@ extension FinalCutPro.FCPXML.Clip {
         nonmutating set {
             // Remove existing adjust-loudness element
             if let existing = element.firstChildElement(named: "adjust-loudness") {
-                element.removeChild(at: existing.index)
+                element.removeChildren { $0 === existing }
             }
             
             guard let adjustment = newValue else { return }

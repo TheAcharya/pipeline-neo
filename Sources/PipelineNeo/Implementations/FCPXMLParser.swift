@@ -17,7 +17,7 @@ import Foundation
 @available(macOS 12.0, *)
 public final class FCPXMLParser: FCPXMLParsing, FCPXMLElementFiltering, Sendable {
 
-    private let factory: any PNXMLFactory
+    private nonisolated(unsafe) let factory: any PNXMLFactory
 
     /// Creates a new FCPXML parser.
     /// - Parameter factory: XML factory for creating documents (default: `FoundationXMLFactory()`).

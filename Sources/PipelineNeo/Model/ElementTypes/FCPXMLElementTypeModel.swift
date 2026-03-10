@@ -134,9 +134,9 @@ extension Set<FinalCutPro.FCPXML.ElementType> {
     ]
     
     public static let allStoryElementCases: Self =
-        [.sequence, .spine]
-            + allClipCases
-            + allAnnotationCases
+        Set<FinalCutPro.FCPXML.ElementType>([.sequence, .spine])
+            .union(allClipCases)
+            .union(allAnnotationCases)
     
     public static let allTimelineCases: Self = [
         .assetClip,

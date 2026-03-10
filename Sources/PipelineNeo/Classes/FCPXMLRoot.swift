@@ -123,7 +123,7 @@ extension FinalCutPro.FCPXML.Root {
     /// Exactly one of these elements is always required.
     public var resources: any PNXMLElement {
         get {
-            element.firstDefaultedChildElement(whereFCPElementType: .resources)
+            element.firstDefaultedChildElement(whereFCPElementType: .resources, using: FoundationXMLFactory())
         }
         nonmutating set {
             element._updateFirstChildElement(
@@ -195,15 +195,11 @@ extension FinalCutPro.FCPXML.Root {
         }
         nonmutating set {
             // Remove existing import-options element if present
-            if let existing = element.firstChildElement(named: "import-options"),
-               let children = element.children,
-               let index = children.firstIndex(of: existing) {
-                element.removeChild(at: index)
-            }
-            
+            element.removeChildren { $0.name == "import-options" }
+
             // Add new import-options element if provided
             guard let importOptions = newValue, !importOptions.options.isEmpty else { return }
-            
+
             let factory = FoundationXMLFactory()
             let importOptionsElement = factory.makeElement(name: "import-options")
             for option in importOptions.options {
@@ -212,11 +208,9 @@ extension FinalCutPro.FCPXML.Root {
                 optionElement.addAttribute(name: "value", value: option.value)
                 importOptionsElement.addChild(optionElement)
             }
-            
+
             // Insert import-options before resources (if resources exists) or at the beginning
-            if let resourcesElement = element.firstChildElement(named: FinalCutPro.FCPXML.ElementType.resources.rawValue),
-               let children = element.children,
-               let resourcesIndex = children.firstIndex(of: resourcesElement) {
+            if let resourcesIndex = element.childElements.firstIndex(where: { $0.name == FinalCutPro.FCPXML.ElementType.resources.rawValue }) {
                 element.insertChild(importOptionsElement, at: resourcesIndex)
             } else {
                 element.insertChild(importOptionsElement, at: 0)

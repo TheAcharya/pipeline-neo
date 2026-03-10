@@ -149,10 +149,13 @@ extension FinalCutPro.FCPXML.ExtractableChildren {
                 let (audio, video) = multicam
                     .audioVideoMCAngles(forMulticamSources: multicamSources)
                 
-                // remove nils and reduce any duplicate elements
-                let reducedMCAngles = [video, audio] // video first, audio second
+                // remove nils and reduce any duplicate elements (identity-based)
+                let allMCAngles = [video, audio] // video first, audio second
                     .compactMap { $0?.element }
-                    .removingDuplicates()
+                var seen = Set<ObjectIdentifier>()
+                let reducedMCAngles = allMCAngles.filter { element in
+                    seen.insert(ObjectIdentifier(element)).inserted
+                }
                 
                 // provide explicit descendants
                 descendants.append(

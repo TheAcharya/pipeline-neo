@@ -266,7 +266,11 @@ public final class FCPXMLUtility: Sendable {
 	}
 	
 	private func _validateDocumentAgainstDeclaredVersion(_ document: any PNXMLDocument) -> ValidationResult {
-		guard let versionString = document.fcpxmlVersion, !versionString.isEmpty else {
+		let versionString: String? = {
+			guard let root = document.rootElement(), root.name == "fcpxml" else { return nil }
+			return root.attribute(forName: "version")
+		}()
+		guard let versionString, !versionString.isEmpty else {
 			return .error(ValidationError(
 				type: .invalidAttributeValue,
 				message: "Document has no FCPXML version attribute on root",

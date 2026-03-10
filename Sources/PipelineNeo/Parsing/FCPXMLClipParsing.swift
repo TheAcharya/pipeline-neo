@@ -31,7 +31,7 @@ extension PNXMLElement {
         let keywords = timeline.children(whereFCPElement: .keyword)
         
         // if self is a timeline, just return all keywords
-        if timeline == self { return Array(keywords) }
+        if timeline === self { return Array(keywords) }
         
         // if we're not constraining to keyword ranges, just return all keywords
         if !constrainToKeywordRanges { return Array(keywords) }

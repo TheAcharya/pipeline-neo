@@ -42,7 +42,7 @@ public enum FCPXMLExportError: Error, LocalizedError, Sendable {
 public struct FCPXMLExporter: Sendable {
 
     public var version: FCPXMLVersion
-    private let factory: any PNXMLFactory
+    private nonisolated(unsafe) let factory: any PNXMLFactory
 
     /// Format resource ID used in exported FCPXML. Must not collide with asset IDs.
     public static let formatResourceID = "r1"
