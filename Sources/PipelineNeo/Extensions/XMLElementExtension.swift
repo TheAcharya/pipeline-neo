@@ -42,7 +42,7 @@ extension PNXMLElement {
 	/// - Parameter name: The name of the event in Final Cut Pro X.
 	/// - Returns: An element of the event.
 	public func fcpxEvent(name: String) -> any PNXMLElement {
-		let element = FoundationXMLFactory().makeElement(name: "event")
+		let element = PNXMLDefaultFactory().makeElement(name: "event")
 		element.fcpxName = name
 		return element
 	}
@@ -80,10 +80,10 @@ extension PNXMLElement {
 	/// - Returns: The element of the project.
 	public func fcpxProject(name: String, formatRef: String, duration: CMTime, tcStart: CMTime, tcFormat: TimecodeFormat, audioLayout: AudioLayout, audioRate: AudioRate, renderColorSpace: RenderColorSpace, clips: [any PNXMLElement]) -> any PNXMLElement {
 
-		let element = FoundationXMLFactory().makeElement(name: "project")
+		let element = PNXMLDefaultFactory().makeElement(name: "project")
 		element.fcpxName = name
 
-		let sequence = FoundationXMLFactory().makeElement(name: "sequence")
+		let sequence = PNXMLDefaultFactory().makeElement(name: "sequence")
 		sequence.fcpxFormatRef = formatRef
 		sequence.fcpxDuration = duration
 		sequence.fcpxTCStart = tcStart
@@ -92,7 +92,7 @@ extension PNXMLElement {
 		sequence.fcpxAudioRate = audioRate
 		sequence.fcpxRenderColorSpace = renderColorSpace
 
-		let spine = FoundationXMLFactory().makeElement(name: "spine")
+		let spine = PNXMLDefaultFactory().makeElement(name: "spine")
 		for clip in clips {
 			spine.addChild(clip)
 		}
@@ -117,7 +117,7 @@ extension PNXMLElement {
 	/// - Returns: An element of the ref-clip.
 	public func fcpxCompoundClip(name: String, ref: String, offset: CMTime?, duration: CMTime, start: CMTime?, useAudioSubroles: Bool) -> any PNXMLElement {
 		
-		let element = FoundationXMLFactory().makeElement(name: "ref-clip")
+		let element = PNXMLDefaultFactory().makeElement(name: "ref-clip")
 		
 		element.fcpxName = name
 		element.fcpxRef = ref
@@ -149,12 +149,12 @@ extension PNXMLElement {
 	/// - Returns: An element of the multicam <media> resource.
 	public func fcpxMulticamResource(name: String, id: String, formatRef: String, tcStart: CMTime?, tcFormat: TimecodeFormat, renderColorSpace: RenderColorSpace, angles: [any PNXMLElement]) -> any PNXMLElement {
 		
-		let element = FoundationXMLFactory().makeElement(name: "media")
+		let element = PNXMLDefaultFactory().makeElement(name: "media")
 		
 		element.fcpxName = name
 		element.fcpxID = id
 		
-		let multicamElement = FoundationXMLFactory().makeElement(name: "multicam")
+		let multicamElement = PNXMLDefaultFactory().makeElement(name: "multicam")
 		
 		multicamElement.fcpxFormatRef = formatRef
 		multicamElement.fcpxRenderColorSpace = renderColorSpace
@@ -182,7 +182,7 @@ extension PNXMLElement {
 	/// - Returns: An element of the multicam <mc-clip> resource.
 	public func fcpxMulticamClip(name: String, refID: String, offset: CMTime?, start: CMTime?, duration: CMTime, mcSources: [any PNXMLElement]) -> any PNXMLElement {
 		
-		let element = FoundationXMLFactory().makeElement(name: "mc-clip")
+		let element = PNXMLDefaultFactory().makeElement(name: "mc-clip")
 		
 		element.fcpxName = name
 		element.fcpxRef = refID
@@ -209,7 +209,7 @@ extension PNXMLElement {
 	/// - Returns: An element of the secondary storyline <spine> element.
 	public func fcpxSecondaryStoryline(lane: Int, offset: CMTime, formatRef: String?, clips: [any PNXMLElement]) -> any PNXMLElement {
 		
-		let element = FoundationXMLFactory().makeElement(name: "spine")
+		let element = PNXMLDefaultFactory().makeElement(name: "spine")
 		
 		element.fcpxLane = lane
 		element.fcpxOffset = offset
@@ -232,7 +232,7 @@ extension PNXMLElement {
 	/// - Returns: An element of the gap.
 	public func fcpxGap(offset: CMTime?, duration: CMTime, start: CMTime?) -> any PNXMLElement {
 		
-		let element = FoundationXMLFactory().makeElement(name: "gap")
+		let element = PNXMLDefaultFactory().makeElement(name: "gap")
 		
 		element.fcpxOffset = offset
 		element.fcpxDuration = duration
@@ -273,7 +273,7 @@ extension PNXMLElement {
 	/// - Returns: An element of the title, which will contain the text style definition, if specified.
 	public func fcpxTitle(titleName: String, lane: Int?, offset: CMTime, ref: String, duration: CMTime, start: CMTime, role: String?, titleText: String, textStyleID: Int, newTextStyle: Bool, font: String = "Helvetica", fontSize: CGFloat = 62, fontFace: String = "Regular", fontColor: NSColor = NSColor(calibratedRed: 1.0, green: 1.0, blue: 1.0, alpha: 1.0), strokeColor: NSColor? = nil, strokeWidth: Float = 2.0, shadowColor: NSColor? = nil, shadowDistance: Float = 5.0, shadowAngle: Float = 315.0, shadowBlurRadius: Float = 1.0, alignment: TextAlignment = TextAlignment.center, xPosition: Float = 0, yPosition: Float = 0) -> any PNXMLElement {
 		
-		let element = FoundationXMLFactory().makeElement(name: "title")
+		let element = PNXMLDefaultFactory().makeElement(name: "title")
 		
 		element.fcpxName = titleName
 		element.fcpxLane = lane
@@ -283,8 +283,8 @@ extension PNXMLElement {
 		element.fcpxStart = start
 		element.fcpxRole = role
 		
-		let text = FoundationXMLFactory().makeElement(name: "text")
-		let textTextStyle = FoundationXMLFactory().makeElement(name: "text-style", stringValue: titleText)
+		let text = PNXMLDefaultFactory().makeElement(name: "text")
+		let textTextStyle = PNXMLDefaultFactory().makeElement(name: "text-style", stringValue: titleText)
 		
 		
 		// Add the text content and its style
@@ -296,11 +296,11 @@ extension PNXMLElement {
 		// Text Style Definition
 		if newTextStyle == true {  // If a new text style definition hasn't been created yet
 			
-			let textStyleDef = FoundationXMLFactory().makeElement(name: "text-style-def")
+			let textStyleDef = PNXMLDefaultFactory().makeElement(name: "text-style-def")
 			
 			textStyleDef.fcpxID = "ts\(textStyleID)"
 			
-			let textStyleDefTextStyle = FoundationXMLFactory().makeElement(name: "text-style")
+			let textStyleDefTextStyle = PNXMLDefaultFactory().makeElement(name: "text-style")
 			
 			textStyleDefTextStyle.setElementAttribute("font", value: font)
 			textStyleDefTextStyle.setElementAttribute("fontSize", value: String(describing: fontSize))
@@ -328,7 +328,7 @@ extension PNXMLElement {
 		}
 		
 		// Add the transform
-		let adjustTransform = FoundationXMLFactory().makeElement(name: "adjust-transform")
+		let adjustTransform = PNXMLDefaultFactory().makeElement(name: "adjust-transform")
 		
 		adjustTransform.setElementAttribute("position", value: "\(xPosition) \(yPosition)")
 		
@@ -365,7 +365,7 @@ extension PNXMLElement {
 	/// - Returns: An element of the caption, which will contain the text style definition, if newTextStyle is true.
 	public func fcpxCaption(captionName: String, lane: Int?, offset: CMTime, duration: CMTime, start: CMTime, roleName: String, captionFormat: CaptionFormat, language: CaptionLanguage, captionText: String, CEA_displayStyle: CEA608CaptionDisplayStyle?, CEA_rollUpHeight: Int?, CEA_xPosition: Int?, CEA_yPosition: Int?, CEA_alignment: CEA608CaptionAlignment?, ITT_placement: ITTCaptionPlacement?, textStyleID: Int, newTextStyle: Bool, bold: Bool, italic: Bool, underline: Bool, fontColor: NSColor = NSColor(calibratedRed: 1.0, green: 1.0, blue: 1.0, alpha: 1.0), bgColor: NSColor = NSColor(calibratedRed: 1.0, green: 1.0, blue: 1.0, alpha: 1.0)) -> any PNXMLElement {
 		
-		let element = FoundationXMLFactory().makeElement(name: "caption")
+		let element = PNXMLDefaultFactory().makeElement(name: "caption")
 		
 		element.fcpxName = captionName
 		element.fcpxLane = lane
@@ -374,7 +374,7 @@ extension PNXMLElement {
 		element.fcpxStart = start
 		element.fcpxRole = "\(roleName)?captionFormat=\(captionFormat.rawValue).\(language.rawValue)"
 		
-		let text = FoundationXMLFactory().makeElement(name: "text")
+		let text = PNXMLDefaultFactory().makeElement(name: "text")
 		
 		if captionFormat == .cea608 {
 			text.fcpxCEACaptionDisplayStyle = CEA_displayStyle
@@ -388,7 +388,7 @@ extension PNXMLElement {
 			text.fcpxITTCaptionPlacement = ITT_placement
 		}
 		
-		let textTextStyle = FoundationXMLFactory().makeElement(name: "text-style", stringValue: captionText)
+		let textTextStyle = PNXMLDefaultFactory().makeElement(name: "text-style", stringValue: captionText)
 		
 		
 		// Add the text content and its style
@@ -400,11 +400,11 @@ extension PNXMLElement {
 		// Text Style Definition
 		if newTextStyle == true {  // If a new text style definition hasn't been created yet
 			
-			let textStyleDef = FoundationXMLFactory().makeElement(name: "text-style-def")
+			let textStyleDef = PNXMLDefaultFactory().makeElement(name: "text-style-def")
 			
 			textStyleDef.fcpxID = "ts\(textStyleID)"
 			
-			let textStyleDefTextStyle = FoundationXMLFactory().makeElement(name: "text-style")
+			let textStyleDefTextStyle = PNXMLDefaultFactory().makeElement(name: "text-style")
 			
 			textStyleDefTextStyle.setElementAttribute("font", value: ".SF NS Text")
 			textStyleDefTextStyle.setElementAttribute("fontSize", value: "13")

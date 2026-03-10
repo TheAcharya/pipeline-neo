@@ -201,7 +201,7 @@ extension PNXMLElement {
         _updateFirstChildElement(
             ofType: elementType,
             withChild: newChild,
-            default: FoundationXMLFactory().makeElement(name: elementType.rawValue)
+            default: PNXMLDefaultFactory().makeElement(name: elementType.rawValue)
         )
     }
     
@@ -253,7 +253,7 @@ extension PNXMLElement {
             }
         } else {
             if let newStringValue = newStringValue {
-                let newNote = FoundationXMLFactory().makeElement(name: childName)
+                let newNote = PNXMLDefaultFactory().makeElement(name: childName)
                 newNote.stringValue = newStringValue
                 addChild(newNote)
             }

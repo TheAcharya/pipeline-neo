@@ -117,7 +117,7 @@ extension PNXMLElement {
             {
                 existingMDElement.fcpValue = newValue
             } else {
-                let newMDElement = FoundationXMLFactory().makeElement(name: "md")
+                let newMDElement = PNXMLDefaultFactory().makeElement(name: "md")
                 newMDElement.addAttributes([
                     (name: "key", value: key),
                     (name: "value", value: newValue),
@@ -175,7 +175,7 @@ extension PNXMLElement {
             // otherwise, create `md` child if needed
             if mdElement == nil {
                 // `md` child
-                let newMDElement = FoundationXMLFactory().makeElement(name: "md")
+                let newMDElement = PNXMLDefaultFactory().makeElement(name: "md")
                 newMDElement.addAttribute(name: "key", value: key)
                 addChild(newMDElement)
 
@@ -232,14 +232,14 @@ extension PNXMLElement {
         
         // point to existing array or create new array if needed
         let arrayElement = existingArrayElement ?? {
-            let newArrayElement = FoundationXMLFactory().makeElement(name: "array")
+            let newArrayElement = PNXMLDefaultFactory().makeElement(name: "array")
             addChild(newArrayElement)
             return newArrayElement
         }()
 
         // add array elements
         for newArrayString in newArray {
-            let newArrayElement = FoundationXMLFactory().makeElement(name: "")
+            let newArrayElement = PNXMLDefaultFactory().makeElement(name: "")
             newArrayElement.stringValue = newArrayString
             arrayElement.addChild(newArrayElement)
         }

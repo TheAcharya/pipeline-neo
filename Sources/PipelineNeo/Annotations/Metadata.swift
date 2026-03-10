@@ -46,7 +46,7 @@ public struct Metadata: Sendable, Equatable, Hashable, Codable {
     }
 
     /// Builds the FCPXML `<metadata>` element with child `<md key="..." value="..."/>` elements.
-    public func xmlElement(factory: any PNXMLFactory = FoundationXMLFactory()) -> any PNXMLElement {
+    public func xmlElement(factory: any PNXMLFactory = PNXMLDefaultFactory()) -> any PNXMLElement {
         let element = factory.makeElement(name: "metadata")
         for key in entries.keys.sorted() {
             guard let value = entries[key] else { continue }

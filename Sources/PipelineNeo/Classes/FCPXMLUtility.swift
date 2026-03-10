@@ -615,7 +615,7 @@ public final class FCPXMLUtility: Sendable {
 			
 			let newDocument = newSplitDocument.joined(separator: "=\"")
 			
-			let newXMLDocument = try FoundationXMLFactory().makeDocument(xmlString: newDocument, options: [.preserveWhitespace, .prettyPrint, .compactEmptyElements])
+			let newXMLDocument = try PNXMLDefaultFactory().makeDocument(xmlString: newDocument, options: [.preserveWhitespace, .prettyPrint, .compactEmptyElements])
 			
 			return newXMLDocument
 			

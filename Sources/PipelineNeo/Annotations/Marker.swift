@@ -58,7 +58,7 @@ public struct Marker: Sendable, Equatable, Hashable {
     }
 
     /// Builds the FCPXML `<marker>` element for this marker.
-    public func xmlElement(factory: any PNXMLFactory = FoundationXMLFactory()) -> any PNXMLElement {
+    public func xmlElement(factory: any PNXMLFactory = PNXMLDefaultFactory()) -> any PNXMLElement {
         let utility = FCPXMLUtility.defaultForExtensions
         let element = factory.makeElement(name: "marker")
         element.addSafeAttribute(name: "start", value: utility.fcpxmlTime(fromCMTime: start))

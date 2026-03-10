@@ -29,7 +29,7 @@ extension FinalCutPro.FCPXML {
         public static let supportedElementTypes: Set<ElementType> = [.locator]
 
         public init() {
-            element = FoundationXMLFactory().makeElement(name: elementType.rawValue)
+            element = PNXMLDefaultFactory().makeElement(name: elementType.rawValue)
         }
 
         public init?(element: any PNXMLElement) {

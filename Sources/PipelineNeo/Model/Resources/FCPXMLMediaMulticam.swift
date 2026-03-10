@@ -23,7 +23,7 @@ extension FinalCutPro.FCPXML.Media {
         public static let supportedElementTypes: Set<FinalCutPro.FCPXML.ElementType> = [.multicam]
 
         public init() {
-            element = FoundationXMLFactory().makeElement(name: elementType.rawValue)
+            element = PNXMLDefaultFactory().makeElement(name: elementType.rawValue)
         }
 
         public init?(element: any PNXMLElement) {

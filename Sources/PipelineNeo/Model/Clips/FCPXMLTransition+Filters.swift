@@ -56,7 +56,7 @@ extension FinalCutPro.FCPXML.Transition {
             
             // Add new filter-video elements
             for filter in newValue {
-                let filterElement = FoundationXMLFactory().makeElement(name: "filter-video")
+                let filterElement = PNXMLDefaultFactory().makeElement(name: "filter-video")
                 filterElement.addAttribute(name: "ref", value: filter.effectID)
                 if let name = filter.name {
                     filterElement.addAttribute(name: "name", value: name)
@@ -67,7 +67,7 @@ extension FinalCutPro.FCPXML.Transition {
                 
                 // Add data elements
                 for dataItem in filter.data {
-                    let dataElement = FoundationXMLFactory().makeElement(name: "data")
+                    let dataElement = PNXMLDefaultFactory().makeElement(name: "data")
                     if let key = dataItem.key {
                         dataElement.addAttribute(name: "key", value: key)
                     }
@@ -77,7 +77,7 @@ extension FinalCutPro.FCPXML.Transition {
                 
                 // Add param elements
                 for param in filter.parameters {
-                    let paramElement = FoundationXMLFactory().makeElement(name: "param")
+                    let paramElement = PNXMLDefaultFactory().makeElement(name: "param")
                     paramElement.addAttribute(name: "name", value: param.name)
                     if let key = param.key {
                         paramElement.addAttribute(name: "key", value: key)
@@ -146,7 +146,7 @@ extension FinalCutPro.FCPXML.Transition {
             
             // Add new filter-audio elements
             for filter in newValue {
-                let filterElement = FoundationXMLFactory().makeElement(name: "filter-audio")
+                let filterElement = PNXMLDefaultFactory().makeElement(name: "filter-audio")
                 filterElement.addAttribute(name: "ref", value: filter.effectID)
                 if let name = filter.name {
                     filterElement.addAttribute(name: "name", value: name)
@@ -160,7 +160,7 @@ extension FinalCutPro.FCPXML.Transition {
                 
                 // Add data elements
                 for dataItem in filter.data {
-                    let dataElement = FoundationXMLFactory().makeElement(name: "data")
+                    let dataElement = PNXMLDefaultFactory().makeElement(name: "data")
                     if let key = dataItem.key {
                         dataElement.addAttribute(name: "key", value: key)
                     }
@@ -170,7 +170,7 @@ extension FinalCutPro.FCPXML.Transition {
                 
                 // Add param elements
                 for param in filter.parameters {
-                    let paramElement = FoundationXMLFactory().makeElement(name: "param")
+                    let paramElement = PNXMLDefaultFactory().makeElement(name: "param")
                     paramElement.addAttribute(name: "name", value: param.name)
                     if let key = param.key {
                         paramElement.addAttribute(name: "key", value: key)

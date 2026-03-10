@@ -50,8 +50,8 @@ public struct FCPXMLExporter: Sendable {
     /// Creates a new exporter.
     /// - Parameters:
     ///   - version: FCPXML version (default: `.default`).
-    ///   - factory: XML factory for creating documents and elements (default: `FoundationXMLFactory()`).
-    public init(version: FCPXMLVersion = .default, factory: any PNXMLFactory = FoundationXMLFactory()) {
+    ///   - factory: XML factory for creating documents and elements (default: `PNXMLDefaultFactory()`).
+    public init(version: FCPXMLVersion = .default, factory: any PNXMLFactory = PNXMLDefaultFactory()) {
         self.version = version
         self.factory = factory
     }

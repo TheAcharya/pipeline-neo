@@ -22,7 +22,7 @@ extension FinalCutPro.FCPXML {
         public static let supportedElementTypes: Set<ElementType> = [.metadata]
 
         public init() {
-            element = FoundationXMLFactory().makeElement(name: elementType.rawValue)
+            element = PNXMLDefaultFactory().makeElement(name: elementType.rawValue)
         }
 
         public init?(element: any PNXMLElement) {
@@ -59,7 +59,7 @@ extension FinalCutPro.FCPXML.Metadata {
 extension FinalCutPro.FCPXML.Metadata {
     /// Wraps children in a `metadata` container element.
     public init(from children: [any PNXMLElement]) {
-        let container = FoundationXMLFactory().makeElement(name: elementType.rawValue)
+        let container = PNXMLDefaultFactory().makeElement(name: elementType.rawValue)
         container.addChildren(children)
         element = container
     }

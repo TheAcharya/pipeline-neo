@@ -54,7 +54,7 @@ extension FinalCutPro.FCPXML.Clip {
             
             // Add new filter-video elements
             for filter in newValue {
-                let filterElement = FoundationXMLFactory().makeElement(name: "filter-video")
+                let filterElement = PNXMLDefaultFactory().makeElement(name: "filter-video")
                 filterElement.addAttribute(name: "ref", value: filter.effectID)
                 if let name = filter.name {
                     filterElement.addAttribute(name: "name", value: name)
@@ -65,7 +65,7 @@ extension FinalCutPro.FCPXML.Clip {
                 
                 // Add data elements
                 for dataItem in filter.data {
-                    let dataElement = FoundationXMLFactory().makeElement(name: "data")
+                    let dataElement = PNXMLDefaultFactory().makeElement(name: "data")
                     if let key = dataItem.key {
                         dataElement.addAttribute(name: "key", value: key)
                     }
@@ -75,7 +75,7 @@ extension FinalCutPro.FCPXML.Clip {
                 
                 // Add param elements
                 for param in filter.parameters {
-                    let paramElement = FoundationXMLFactory().makeElement(name: "param")
+                    let paramElement = PNXMLDefaultFactory().makeElement(name: "param")
                     paramElement.addAttribute(name: "name", value: param.name)
                     if let key = param.key {
                         paramElement.addAttribute(name: "key", value: key)
@@ -255,7 +255,7 @@ extension FinalCutPro.FCPXML.Clip {
             
             // Add new filter-video-mask elements
             for mask in newValue {
-                let maskElement = FoundationXMLFactory().makeElement(name: "filter-video-mask")
+                let maskElement = PNXMLDefaultFactory().makeElement(name: "filter-video-mask")
                 if !mask.isEnabled {
                     maskElement.addAttribute(name: "enabled", value: "0")
                 }
@@ -265,7 +265,7 @@ extension FinalCutPro.FCPXML.Clip {
                 
                 // Add mask-shape elements
                 for shape in mask.maskShapes {
-                    let shapeElement = FoundationXMLFactory().makeElement(name: "mask-shape")
+                    let shapeElement = PNXMLDefaultFactory().makeElement(name: "mask-shape")
                     if let name = shape.name {
                         shapeElement.addAttribute(name: "name", value: name)
                     }
@@ -275,7 +275,7 @@ extension FinalCutPro.FCPXML.Clip {
                     shapeElement.addAttribute(name: "blendMode", value: shape.blendMode.rawValue)
                     
                     for param in shape.parameters {
-                        let paramElement = FoundationXMLFactory().makeElement(name: "param")
+                        let paramElement = PNXMLDefaultFactory().makeElement(name: "param")
                         paramElement.addAttribute(name: "name", value: param.name)
                         if let key = param.key {
                             paramElement.addAttribute(name: "key", value: key)
@@ -297,7 +297,7 @@ extension FinalCutPro.FCPXML.Clip {
                 
                 // Add mask-isolation elements
                 for isolation in mask.maskIsolations {
-                    let isolationElement = FoundationXMLFactory().makeElement(name: "mask-isolation")
+                    let isolationElement = PNXMLDefaultFactory().makeElement(name: "mask-isolation")
                     if let name = isolation.name {
                         isolationElement.addAttribute(name: "name", value: name)
                     }
@@ -307,7 +307,7 @@ extension FinalCutPro.FCPXML.Clip {
                     isolationElement.addAttribute(name: "blendMode", value: isolation.blendMode.rawValue)
                     
                     for dataItem in isolation.data {
-                        let dataElement = FoundationXMLFactory().makeElement(name: "data")
+                        let dataElement = PNXMLDefaultFactory().makeElement(name: "data")
                         if let key = dataItem.key {
                             dataElement.addAttribute(name: "key", value: key)
                         }
@@ -316,7 +316,7 @@ extension FinalCutPro.FCPXML.Clip {
                     }
                     
                     for param in isolation.parameters {
-                        let paramElement = FoundationXMLFactory().makeElement(name: "param")
+                        let paramElement = PNXMLDefaultFactory().makeElement(name: "param")
                         paramElement.addAttribute(name: "name", value: param.name)
                         if let key = param.key {
                             paramElement.addAttribute(name: "key", value: key)
@@ -338,7 +338,7 @@ extension FinalCutPro.FCPXML.Clip {
                 
                 // Add filter-video elements
                 for filter in mask.videoFilters {
-                    let filterElement = FoundationXMLFactory().makeElement(name: "filter-video")
+                    let filterElement = PNXMLDefaultFactory().makeElement(name: "filter-video")
                     filterElement.addAttribute(name: "ref", value: filter.effectID)
                     if let name = filter.name {
                         filterElement.addAttribute(name: "name", value: name)
@@ -348,7 +348,7 @@ extension FinalCutPro.FCPXML.Clip {
                     }
                     
                     for dataItem in filter.data {
-                        let dataElement = FoundationXMLFactory().makeElement(name: "data")
+                        let dataElement = PNXMLDefaultFactory().makeElement(name: "data")
                         if let key = dataItem.key {
                             dataElement.addAttribute(name: "key", value: key)
                         }
@@ -357,7 +357,7 @@ extension FinalCutPro.FCPXML.Clip {
                     }
                     
                     for param in filter.parameters {
-                        let paramElement = FoundationXMLFactory().makeElement(name: "param")
+                        let paramElement = PNXMLDefaultFactory().makeElement(name: "param")
                         paramElement.addAttribute(name: "name", value: param.name)
                         if let key = param.key {
                             paramElement.addAttribute(name: "key", value: key)
@@ -427,7 +427,7 @@ extension FinalCutPro.FCPXML.Clip {
             
             // Add new filter-audio elements
             for filter in newValue {
-                let filterElement = FoundationXMLFactory().makeElement(name: "filter-audio")
+                let filterElement = PNXMLDefaultFactory().makeElement(name: "filter-audio")
                 filterElement.addAttribute(name: "ref", value: filter.effectID)
                 if let name = filter.name {
                     filterElement.addAttribute(name: "name", value: name)
@@ -441,7 +441,7 @@ extension FinalCutPro.FCPXML.Clip {
                 
                 // Add data elements
                 for dataItem in filter.data {
-                    let dataElement = FoundationXMLFactory().makeElement(name: "data")
+                    let dataElement = PNXMLDefaultFactory().makeElement(name: "data")
                     if let key = dataItem.key {
                         dataElement.addAttribute(name: "key", value: key)
                     }
@@ -451,7 +451,7 @@ extension FinalCutPro.FCPXML.Clip {
                 
                 // Add param elements
                 for param in filter.parameters {
-                    let paramElement = FoundationXMLFactory().makeElement(name: "param")
+                    let paramElement = PNXMLDefaultFactory().makeElement(name: "param")
                     paramElement.addAttribute(name: "name", value: param.name)
                     if let key = param.key {
                         paramElement.addAttribute(name: "key", value: key)

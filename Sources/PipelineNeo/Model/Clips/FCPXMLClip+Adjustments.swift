@@ -120,7 +120,7 @@ extension FinalCutPro.FCPXML.Clip {
             guard let adjustment = newValue else { return }
             
             // Create new adjust-crop element
-            let adjustElement = FoundationXMLFactory().makeElement(name: "adjust-crop")
+            let adjustElement = PNXMLDefaultFactory().makeElement(name: "adjust-crop")
             adjustElement.addAttribute(name: AttributeName.mode, value: adjustment.mode.rawValue)
             if !adjustment.isEnabled {
                 adjustElement.addAttribute(name: AttributeName.enabled, value: "0")
@@ -128,7 +128,7 @@ extension FinalCutPro.FCPXML.Clip {
             
             // Add crop-rect if present
             if let cropRect = adjustment.cropRect {
-                let cropRectElement = FoundationXMLFactory().makeElement(name: "crop-rect")
+                let cropRectElement = PNXMLDefaultFactory().makeElement(name: "crop-rect")
                 cropRectElement.addAttribute(name: AttributeName.left, value: String(cropRect.left))
                 cropRectElement.addAttribute(name: AttributeName.top, value: String(cropRect.top))
                 cropRectElement.addAttribute(name: AttributeName.right, value: String(cropRect.right))
@@ -138,7 +138,7 @@ extension FinalCutPro.FCPXML.Clip {
             
             // Add trim-rect if present
             if let trimRect = adjustment.trimRect {
-                let trimRectElement = FoundationXMLFactory().makeElement(name: "trim-rect")
+                let trimRectElement = PNXMLDefaultFactory().makeElement(name: "trim-rect")
                 trimRectElement.addAttribute(name: AttributeName.left, value: String(trimRect.left))
                 trimRectElement.addAttribute(name: AttributeName.top, value: String(trimRect.top))
                 trimRectElement.addAttribute(name: AttributeName.right, value: String(trimRect.right))
@@ -149,7 +149,7 @@ extension FinalCutPro.FCPXML.Clip {
             // Add pan-rect elements if present
             if let panRects = adjustment.panRects {
                 for panRect in panRects {
-                    let panRectElement = FoundationXMLFactory().makeElement(name: "pan-rect")
+                    let panRectElement = PNXMLDefaultFactory().makeElement(name: "pan-rect")
                     panRectElement.addAttribute(name: AttributeName.left, value: String(panRect.left))
                     panRectElement.addAttribute(name: AttributeName.top, value: String(panRect.top))
                     panRectElement.addAttribute(name: AttributeName.right, value: String(panRect.right))
@@ -201,7 +201,7 @@ extension FinalCutPro.FCPXML.Clip {
             guard let adjustment = newValue else { return }
             
             // Create new adjust-transform element
-            let adjustElement = FoundationXMLFactory().makeElement(name: "adjust-transform")
+            let adjustElement = PNXMLDefaultFactory().makeElement(name: "adjust-transform")
             if !adjustment.isEnabled {
                 adjustElement.addAttribute(name: AttributeName.enabled, value: "0")
             }
@@ -237,7 +237,7 @@ extension FinalCutPro.FCPXML.Clip {
             guard let adjustment = newValue else { return }
             
             // Create new adjust-blend element
-            let adjustElement = FoundationXMLFactory().makeElement(name: "adjust-blend")
+            let adjustElement = PNXMLDefaultFactory().makeElement(name: "adjust-blend")
             adjustElement.addAttribute(name: AttributeName.amount, value: String(adjustment.amount))
             if let mode = adjustment.mode {
                 adjustElement.addAttribute(name: AttributeName.mode, value: mode)
@@ -270,7 +270,7 @@ extension FinalCutPro.FCPXML.Clip {
             guard let adjustment = newValue else { return }
             
             // Create new adjust-stabilization element
-            let adjustElement = FoundationXMLFactory().makeElement(name: "adjust-stabilization")
+            let adjustElement = PNXMLDefaultFactory().makeElement(name: "adjust-stabilization")
             adjustElement.addAttribute(name: AttributeName.type, value: adjustment.type.rawValue)
             
             element.addChild(adjustElement)
@@ -295,7 +295,7 @@ extension FinalCutPro.FCPXML.Clip {
                 element.removeChildren { $0 === existing }
             }
             guard let adjustment = newValue else { return }
-            let adjustElement = FoundationXMLFactory().makeElement(name: "adjust-rollingShutter")
+            let adjustElement = PNXMLDefaultFactory().makeElement(name: "adjust-rollingShutter")
             if !adjustment.isEnabled { adjustElement.addAttribute(name: AttributeName.enabled, value: "0") }
             adjustElement.addAttribute(name: AttributeName.amount, value: adjustment.amount.rawValue)
             element.addChild(adjustElement)
@@ -318,7 +318,7 @@ extension FinalCutPro.FCPXML.Clip {
                 element.removeChildren { $0 === existing }
             }
             guard let adjustment = newValue else { return }
-            let adjustElement = FoundationXMLFactory().makeElement(name: "adjust-conform")
+            let adjustElement = PNXMLDefaultFactory().makeElement(name: "adjust-conform")
             adjustElement.addAttribute(name: AttributeName.type, value: adjustment.type.rawValue)
             element.addChild(adjustElement)
         }
@@ -352,7 +352,7 @@ extension FinalCutPro.FCPXML.Clip {
             guard let adjustment = newValue else { return }
             
             // Create new adjust-volume element
-            let adjustElement = FoundationXMLFactory().makeElement(name: "adjust-volume")
+            let adjustElement = PNXMLDefaultFactory().makeElement(name: "adjust-volume")
             adjustElement.addAttribute(name: AttributeName.amount, value: adjustment.decibelString)
             
             element.addChild(adjustElement)
@@ -385,7 +385,7 @@ extension FinalCutPro.FCPXML.Clip {
             guard let adjustment = newValue else { return }
             
             // Create new adjust-loudness element
-            let adjustElement = FoundationXMLFactory().makeElement(name: "adjust-loudness")
+            let adjustElement = PNXMLDefaultFactory().makeElement(name: "adjust-loudness")
             adjustElement.addAttribute(name: AttributeName.amount, value: String(adjustment.amount))
             adjustElement.addAttribute(name: AttributeName.uniformity, value: String(adjustment.uniformity))
             
@@ -414,7 +414,7 @@ extension FinalCutPro.FCPXML.Clip {
             guard let adjustment = newValue else { return }
             
             // Create new adjust-noiseReduction element
-            let adjustElement = FoundationXMLFactory().makeElement(name: "adjust-noiseReduction")
+            let adjustElement = PNXMLDefaultFactory().makeElement(name: "adjust-noiseReduction")
             adjustElement.addAttribute(name: AttributeName.amount, value: String(adjustment.amount))
             
             element.addChild(adjustElement)
@@ -442,7 +442,7 @@ extension FinalCutPro.FCPXML.Clip {
             guard let adjustment = newValue else { return }
             
             // Create new adjust-humReduction element
-            let adjustElement = FoundationXMLFactory().makeElement(name: "adjust-humReduction")
+            let adjustElement = PNXMLDefaultFactory().makeElement(name: "adjust-humReduction")
             adjustElement.addAttribute(name: AttributeName.frequency, value: adjustment.frequency.rawValue)
             
             element.addChild(adjustElement)
@@ -477,12 +477,12 @@ extension FinalCutPro.FCPXML.Clip {
             guard let adjustment = newValue else { return }
             
             // Create new adjust-EQ element
-            let adjustElement = FoundationXMLFactory().makeElement(name: "adjust-EQ")
+            let adjustElement = PNXMLDefaultFactory().makeElement(name: "adjust-EQ")
             adjustElement.addAttribute(name: AttributeName.mode, value: adjustment.mode.rawValue)
             
             // Add param elements
             for param in adjustment.parameters {
-                let paramElement = FoundationXMLFactory().makeElement(name: "param")
+                let paramElement = PNXMLDefaultFactory().makeElement(name: "param")
                 paramElement.addAttribute(name: AttributeName.name, value: param.name)
                 if let key = param.key {
                     paramElement.addAttribute(name: AttributeName.key, value: key)
@@ -528,10 +528,10 @@ extension FinalCutPro.FCPXML.Clip {
             guard let adjustment = newValue else { return }
             
             // Create new adjust-matchEQ element
-            let adjustElement = FoundationXMLFactory().makeElement(name: "adjust-matchEQ")
+            let adjustElement = PNXMLDefaultFactory().makeElement(name: "adjust-matchEQ")
             
             // Add data element
-            let dataElement = FoundationXMLFactory().makeElement(name: "data")
+            let dataElement = PNXMLDefaultFactory().makeElement(name: "data")
             if let key = adjustment.data.key {
                 dataElement.addAttribute(name: AttributeName.key, value: key)
             }
@@ -608,7 +608,7 @@ extension FinalCutPro.FCPXML.Clip {
             guard let adjustment = newValue else { return }
             
             // Create new adjust-360-transform element
-            let adjustElement = FoundationXMLFactory().makeElement(name: "adjust-360-transform")
+            let adjustElement = PNXMLDefaultFactory().makeElement(name: "adjust-360-transform")
             adjustElement.addAttribute(name: AttributeName.coordinates, value: adjustment.coordinateType.rawValue)
             if !adjustment.isEnabled {
                 adjustElement.addAttribute(name: AttributeName.enabled, value: "0")
@@ -654,7 +654,7 @@ extension FinalCutPro.FCPXML.Clip {
             
             // Add param elements
             for param in adjustment.parameters {
-                let paramElement = FoundationXMLFactory().makeElement(name: "param")
+                let paramElement = PNXMLDefaultFactory().makeElement(name: "param")
                 paramElement.addAttribute(name: AttributeName.name, value: param.name)
                 if let key = param.key {
                     paramElement.addAttribute(name: AttributeName.key, value: key)
@@ -695,14 +695,14 @@ extension FinalCutPro.FCPXML.Clip {
         nonmutating set {
             element.removeChildren { $0.name == "adjust-reorient" }
             guard let adjustment = newValue else { return }
-            let adjustElement = FoundationXMLFactory().makeElement(name: "adjust-reorient")
+            let adjustElement = PNXMLDefaultFactory().makeElement(name: "adjust-reorient")
             if !adjustment.isEnabled { adjustElement.addAttribute(name: AttributeName.enabled, value: "0") }
             adjustElement.addAttribute(name: AttributeName.tilt, value: adjustment.tilt)
             adjustElement.addAttribute(name: AttributeName.pan, value: adjustment.pan)
             adjustElement.addAttribute(name: AttributeName.roll, value: adjustment.roll)
             adjustElement.addAttribute(name: AttributeName.convergence, value: adjustment.convergence)
             for param in adjustment.parameters {
-                let paramElement = FoundationXMLFactory().makeElement(name: "param")
+                let paramElement = PNXMLDefaultFactory().makeElement(name: "param")
                 paramElement.addAttribute(name: AttributeName.name, value: param.name)
                 if let k = param.key { paramElement.addAttribute(name: AttributeName.key, value: k) }
                 if let v = param.value { paramElement.addAttribute(name: AttributeName.value, value: v) }
@@ -737,7 +737,7 @@ extension FinalCutPro.FCPXML.Clip {
         nonmutating set {
             element.removeChildren { $0.name == "adjust-orientation" }
             guard let adjustment = newValue else { return }
-            let adjustElement = FoundationXMLFactory().makeElement(name: "adjust-orientation")
+            let adjustElement = PNXMLDefaultFactory().makeElement(name: "adjust-orientation")
             if !adjustment.isEnabled { adjustElement.addAttribute(name: AttributeName.enabled, value: "0") }
             adjustElement.addAttribute(name: AttributeName.tilt, value: adjustment.tilt)
             adjustElement.addAttribute(name: AttributeName.pan, value: adjustment.pan)
@@ -745,7 +745,7 @@ extension FinalCutPro.FCPXML.Clip {
             if let fov = adjustment.fieldOfView { adjustElement.addAttribute(name: AttributeName.fieldOfView, value: fov) }
             adjustElement.addAttribute(name: AttributeName.mapping, value: adjustment.mapping.rawValue)
             for param in adjustment.parameters {
-                let paramElement = FoundationXMLFactory().makeElement(name: "param")
+                let paramElement = PNXMLDefaultFactory().makeElement(name: "param")
                 paramElement.addAttribute(name: AttributeName.name, value: param.name)
                 if let k = param.key { paramElement.addAttribute(name: AttributeName.key, value: k) }
                 if let v = param.value { paramElement.addAttribute(name: AttributeName.value, value: v) }
@@ -775,12 +775,12 @@ extension FinalCutPro.FCPXML.Clip {
         nonmutating set {
             element.removeChildren { $0.name == "adjust-cinematic" }
             guard let adjustment = newValue else { return }
-            let adjustElement = FoundationXMLFactory().makeElement(name: "adjust-cinematic")
+            let adjustElement = PNXMLDefaultFactory().makeElement(name: "adjust-cinematic")
             if !adjustment.isEnabled { adjustElement.addAttribute(name: AttributeName.enabled, value: "0") }
             if let loc = adjustment.dataLocator { adjustElement.addAttribute(name: AttributeName.dataLocator, value: loc) }
             if let ap = adjustment.aperture { adjustElement.addAttribute(name: AttributeName.aperture, value: ap) }
             for param in adjustment.parameters {
-                let paramElement = FoundationXMLFactory().makeElement(name: "param")
+                let paramElement = PNXMLDefaultFactory().makeElement(name: "param")
                 paramElement.addAttribute(name: AttributeName.name, value: param.name)
                 if let k = param.key { paramElement.addAttribute(name: AttributeName.key, value: k) }
                 if let v = param.value { paramElement.addAttribute(name: AttributeName.value, value: v) }
@@ -816,7 +816,7 @@ extension FinalCutPro.FCPXML.Clip {
         nonmutating set {
             element.removeChildren { $0.name == "adjust-colorConform" }
             guard let adjustment = newValue else { return }
-            let adjustElement = FoundationXMLFactory().makeElement(name: "adjust-colorConform")
+            let adjustElement = PNXMLDefaultFactory().makeElement(name: "adjust-colorConform")
             if !adjustment.isEnabled { adjustElement.addAttribute(name: AttributeName.enabled, value: "0") }
             adjustElement.addAttribute(name: AttributeName.autoOrManual, value: adjustment.autoOrManual.rawValue)
             adjustElement.addAttribute(name: AttributeName.conformType, value: adjustment.conformType.rawValue)
@@ -848,14 +848,14 @@ extension FinalCutPro.FCPXML.Clip {
         nonmutating set {
             element.removeChildren { $0.name == "adjust-stereo-3D" }
             guard let adjustment = newValue else { return }
-            let adjustElement = FoundationXMLFactory().makeElement(name: "adjust-stereo-3D")
+            let adjustElement = PNXMLDefaultFactory().makeElement(name: "adjust-stereo-3D")
             if !adjustment.isEnabled { adjustElement.addAttribute(name: AttributeName.enabled, value: "0") }
             adjustElement.addAttribute(name: AttributeName.convergence, value: adjustment.convergence)
             adjustElement.addAttribute(name: AttributeName.autoScale, value: adjustment.autoScale ? "1" : "0")
             adjustElement.addAttribute(name: AttributeName.swapEyes, value: adjustment.swapEyes ? "1" : "0")
             adjustElement.addAttribute(name: AttributeName.depth, value: adjustment.depth)
             for param in adjustment.parameters {
-                let paramElement = FoundationXMLFactory().makeElement(name: "param")
+                let paramElement = PNXMLDefaultFactory().makeElement(name: "param")
                 paramElement.addAttribute(name: AttributeName.name, value: param.name)
                 if let k = param.key { paramElement.addAttribute(name: AttributeName.key, value: k) }
                 if let v = param.value { paramElement.addAttribute(name: AttributeName.value, value: v) }
@@ -888,7 +888,7 @@ extension FinalCutPro.FCPXML.Clip {
                 if child.name == "audio-channel-source" || child.name == "audio-role-source" {
                     child.removeChildren { $0.name == "adjust-voiceIsolation" }
                     if let adjustment = newValue {
-                        let voiceElement = FoundationXMLFactory().makeElement(name: "adjust-voiceIsolation")
+                        let voiceElement = PNXMLDefaultFactory().makeElement(name: "adjust-voiceIsolation")
                         voiceElement.addAttribute(name: AttributeName.amount, value: adjustment.amount)
                         child.addChild(voiceElement)
                     }

@@ -48,7 +48,7 @@ public struct Rating: Sendable, Equatable, Hashable {
     }
 
     /// Builds the FCPXML `<rating>` element.
-    public func xmlElement(factory: any PNXMLFactory = FoundationXMLFactory()) -> any PNXMLElement {
+    public func xmlElement(factory: any PNXMLFactory = PNXMLDefaultFactory()) -> any PNXMLElement {
         let utility = FCPXMLUtility.defaultForExtensions
         let element = factory.makeElement(name: "rating")
         element.addSafeAttribute(name: "start", value: utility.fcpxmlTime(fromCMTime: start))

@@ -26,7 +26,7 @@ extension FinalCutPro.FCPXML {
         public static let supportedElementTypes: Set<ElementType> = [.conformRate]
 
         public init() {
-            element = FoundationXMLFactory().makeElement(name: elementType.rawValue)
+            element = PNXMLDefaultFactory().makeElement(name: elementType.rawValue)
         }
 
         public init?(element: any PNXMLElement) {

@@ -44,7 +44,7 @@ extension FinalCutPro.FCPXML {
 
             let resources = resources
                 ?? element.fcpRootResources
-                ?? FoundationXMLFactory().makeElement(name: ElementType.resources.rawValue)
+                ?? PNXMLDefaultFactory().makeElement(name: ElementType.resources.rawValue)
             
             return valueBuilder(
                 element,

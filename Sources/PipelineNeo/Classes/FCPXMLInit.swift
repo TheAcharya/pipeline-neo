@@ -14,7 +14,7 @@ import SwiftTimecode
 extension FinalCutPro.FCPXML {
     /// Parse FCPXML/FCPXMLD file contents exported from Final Cut Pro.
     public init(fileContent data: Data) throws {
-        let xmlDocument = try FoundationXMLFactory().makeDocument(data: data, options: [])
+        let xmlDocument = try PNXMLDefaultFactory().makeDocument(data: data, options: [])
         self.init(fileContent: xmlDocument)
     }
 

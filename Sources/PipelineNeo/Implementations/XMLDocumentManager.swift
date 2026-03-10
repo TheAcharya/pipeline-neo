@@ -20,8 +20,8 @@ public final class XMLDocumentManager: XMLDocumentOperations, XMLElementOperatio
     private nonisolated(unsafe) let factory: any PNXMLFactory
 
     /// Creates a new XML document manager.
-    /// - Parameter factory: XML factory for creating documents and elements (default: `FoundationXMLFactory()`).
-    public init(factory: any PNXMLFactory = FoundationXMLFactory()) {
+    /// - Parameter factory: XML factory for creating documents and elements (default: `PNXMLDefaultFactory()`).
+    public init(factory: any PNXMLFactory = PNXMLDefaultFactory()) {
         self.factory = factory
     }
 

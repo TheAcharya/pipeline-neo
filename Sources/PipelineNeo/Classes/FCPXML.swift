@@ -107,7 +107,7 @@ extension FinalCutPro {
             }
 
             do {
-                let xmlDocument = try FoundationXMLFactory().makeDocument(data: xmlData, options: [])
+                let xmlDocument = try PNXMLDefaultFactory().makeDocument(data: xmlData, options: [])
                 self.xml = xmlDocument
             } catch {
                 throw FCPXMLCodableError.xmlStringConversionFailed

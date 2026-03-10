@@ -28,7 +28,7 @@ extension FinalCutPro.FCPXML {
         public static let supportedElementTypes: Set<ElementType> = [.smartCollection]
 
         public init() {
-            element = FoundationXMLFactory().makeElement(name: elementType.rawValue)
+            element = PNXMLDefaultFactory().makeElement(name: elementType.rawValue)
         }
 
         public init?(element: any PNXMLElement) {
@@ -186,7 +186,7 @@ extension FinalCutPro.FCPXML.SmartCollection {
             
             // Add new match-text elements
             for matchText in newValue {
-                let matchElement = FoundationXMLFactory().makeElement(name: "match-text")
+                let matchElement = PNXMLDefaultFactory().makeElement(name: "match-text")
                 matchElement.addAttribute(name: "enabled", value: matchText.isEnabled ? "1" : "0")
                 matchElement.addAttribute(name: "rule", value: matchText.rule.rawValue)
                 matchElement.addAttribute(name: "value", value: matchText.value)
@@ -219,7 +219,7 @@ extension FinalCutPro.FCPXML.SmartCollection {
             
             // Add new match-ratings elements
             for matchRating in newValue {
-                let matchElement = FoundationXMLFactory().makeElement(name: "match-ratings")
+                let matchElement = PNXMLDefaultFactory().makeElement(name: "match-ratings")
                 matchElement.addAttribute(name: "enabled", value: matchRating.isEnabled ? "1" : "0")
                 matchElement.addAttribute(name: "value", value: matchRating.value.rawValue)
                 element.addChild(matchElement)
@@ -250,7 +250,7 @@ extension FinalCutPro.FCPXML.SmartCollection {
             
             // Add new match-media elements
             for matchMedia in newValue {
-                let matchElement = FoundationXMLFactory().makeElement(name: "match-media")
+                let matchElement = PNXMLDefaultFactory().makeElement(name: "match-media")
                 matchElement.addAttribute(name: "enabled", value: matchMedia.isEnabled ? "1" : "0")
                 matchElement.addAttribute(name: "rule", value: matchMedia.rule.rawValue)
                 matchElement.addAttribute(name: "type", value: matchMedia.type.rawValue)
@@ -282,7 +282,7 @@ extension FinalCutPro.FCPXML.SmartCollection {
             
             // Add new match-clip elements
             for matchClip in newValue {
-                let matchElement = FoundationXMLFactory().makeElement(name: "match-clip")
+                let matchElement = PNXMLDefaultFactory().makeElement(name: "match-clip")
                 matchElement.addAttribute(name: "enabled", value: matchClip.isEnabled ? "1" : "0")
                 matchElement.addAttribute(name: "rule", value: matchClip.rule.rawValue)
                 matchElement.addAttribute(name: "type", value: matchClip.type.rawValue)
@@ -323,12 +323,12 @@ extension FinalCutPro.FCPXML.SmartCollection {
             
             // Add new match-stabilization elements
             for matchStab in newValue {
-                let matchElement = FoundationXMLFactory().makeElement(name: "match-stabilization")
+                let matchElement = PNXMLDefaultFactory().makeElement(name: "match-stabilization")
                 matchElement.addAttribute(name: "enabled", value: matchStab.isEnabled ? "1" : "0")
                 matchElement.addAttribute(name: "rule", value: matchStab.rule.rawValue)
                 
                 for stabType in matchStab.stabilizationTypes {
-                    let stabElement = FoundationXMLFactory().makeElement(name: "stabilization-type")
+                    let stabElement = PNXMLDefaultFactory().makeElement(name: "stabilization-type")
                     stabElement.addAttribute(name: "value", value: stabType.value.rawValue)
                     matchElement.addChild(stabElement)
                 }
@@ -369,12 +369,12 @@ extension FinalCutPro.FCPXML.SmartCollection {
             
             // Add new match-keywords elements
             for matchKeywords in newValue {
-                let matchElement = FoundationXMLFactory().makeElement(name: "match-keywords")
+                let matchElement = PNXMLDefaultFactory().makeElement(name: "match-keywords")
                 matchElement.addAttribute(name: "enabled", value: matchKeywords.isEnabled ? "1" : "0")
                 matchElement.addAttribute(name: "rule", value: matchKeywords.rule.rawValue)
                 
                 for keywordName in matchKeywords.keywordNames {
-                    let keywordElement = FoundationXMLFactory().makeElement(name: "keyword-name")
+                    let keywordElement = PNXMLDefaultFactory().makeElement(name: "keyword-name")
                     keywordElement.addAttribute(name: "value", value: keywordName.value)
                     matchElement.addChild(keywordElement)
                 }
@@ -416,12 +416,12 @@ extension FinalCutPro.FCPXML.SmartCollection {
             
             // Add new match-shot elements
             for matchShot in newValue {
-                let matchElement = FoundationXMLFactory().makeElement(name: "match-shot")
+                let matchElement = PNXMLDefaultFactory().makeElement(name: "match-shot")
                 matchElement.addAttribute(name: "enabled", value: matchShot.isEnabled ? "1" : "0")
                 matchElement.addAttribute(name: "rule", value: matchShot.rule.rawValue)
                 
                 for shotType in matchShot.shotTypes {
-                    let shotElement = FoundationXMLFactory().makeElement(name: "shot-type")
+                    let shotElement = PNXMLDefaultFactory().makeElement(name: "shot-type")
                     shotElement.addAttribute(name: "value", value: shotType.value.rawValue)
                     matchElement.addChild(shotElement)
                 }
@@ -455,7 +455,7 @@ extension FinalCutPro.FCPXML.SmartCollection {
             
             // Add new match-property elements
             for matchProperty in newValue {
-                let matchElement = FoundationXMLFactory().makeElement(name: "match-property")
+                let matchElement = PNXMLDefaultFactory().makeElement(name: "match-property")
                 matchElement.addAttribute(name: "enabled", value: matchProperty.isEnabled ? "1" : "0")
                 matchElement.addAttribute(name: "key", value: matchProperty.key.rawValue)
                 matchElement.addAttribute(name: "rule", value: matchProperty.rule.rawValue)
@@ -489,7 +489,7 @@ extension FinalCutPro.FCPXML.SmartCollection {
             
             // Add new match-time elements
             for matchTime in newValue {
-                let matchElement = FoundationXMLFactory().makeElement(name: "match-time")
+                let matchElement = PNXMLDefaultFactory().makeElement(name: "match-time")
                 matchElement.addAttribute(name: "enabled", value: matchTime.isEnabled ? "1" : "0")
                 matchElement.addAttribute(name: "type", value: matchTime.type.rawValue)
                 matchElement.addAttribute(name: "rule", value: matchTime.rule.rawValue)
@@ -525,7 +525,7 @@ extension FinalCutPro.FCPXML.SmartCollection {
             
             // Add new match-timeRange elements
             for matchTimeRange in newValue {
-                let matchElement = FoundationXMLFactory().makeElement(name: "match-timeRange")
+                let matchElement = PNXMLDefaultFactory().makeElement(name: "match-timeRange")
                 matchElement.addAttribute(name: "enabled", value: matchTimeRange.isEnabled ? "1" : "0")
                 matchElement.addAttribute(name: "type", value: matchTimeRange.type.rawValue)
                 matchElement.addAttribute(name: "rule", value: matchTimeRange.rule.rawValue)
@@ -569,12 +569,12 @@ extension FinalCutPro.FCPXML.SmartCollection {
             
             // Add new match-roles elements
             for matchRoles in newValue {
-                let matchElement = FoundationXMLFactory().makeElement(name: "match-roles")
+                let matchElement = PNXMLDefaultFactory().makeElement(name: "match-roles")
                 matchElement.addAttribute(name: "enabled", value: matchRoles.isEnabled ? "1" : "0")
                 matchElement.addAttribute(name: "rule", value: matchRoles.rule.rawValue)
                 
                 for role in matchRoles.roles {
-                    let roleElement = FoundationXMLFactory().makeElement(name: "role")
+                    let roleElement = PNXMLDefaultFactory().makeElement(name: "role")
                     roleElement.addAttribute(name: "name", value: role.name)
                     matchElement.addChild(roleElement)
                 }
@@ -602,7 +602,7 @@ extension FinalCutPro.FCPXML.SmartCollection {
         nonmutating set {
             element.removeChildren { $0.name == "match-usage" }
             for matchUsage in newValue {
-                let matchElement = FoundationXMLFactory().makeElement(name: "match-usage")
+                let matchElement = PNXMLDefaultFactory().makeElement(name: "match-usage")
                 matchElement.addAttribute(name: "enabled", value: matchUsage.isEnabled ? "1" : "0")
                 matchElement.addAttribute(name: "rule", value: matchUsage.rule.rawValue)
                 element.addChild(matchElement)
@@ -630,7 +630,7 @@ extension FinalCutPro.FCPXML.SmartCollection {
         nonmutating set {
             element.removeChildren { $0.name == "match-representation" }
             for matchRep in newValue {
-                let matchElement = FoundationXMLFactory().makeElement(name: "match-representation")
+                let matchElement = PNXMLDefaultFactory().makeElement(name: "match-representation")
                 matchElement.addAttribute(name: "enabled", value: matchRep.isEnabled ? "1" : "0")
                 matchElement.addAttribute(name: "type", value: matchRep.type.rawValue)
                 matchElement.addAttribute(name: "rule", value: matchRep.rule.rawValue)
@@ -657,7 +657,7 @@ extension FinalCutPro.FCPXML.SmartCollection {
         nonmutating set {
             element.removeChildren { $0.name == "match-markers" }
             for matchMarkersItem in newValue {
-                let matchElement = FoundationXMLFactory().makeElement(name: "match-markers")
+                let matchElement = PNXMLDefaultFactory().makeElement(name: "match-markers")
                 matchElement.addAttribute(name: "enabled", value: matchMarkersItem.isEnabled ? "1" : "0")
                 matchElement.addAttribute(name: "type", value: matchMarkersItem.type.rawValue)
                 element.addChild(matchElement)
@@ -685,7 +685,7 @@ extension FinalCutPro.FCPXML.SmartCollection {
         nonmutating set {
             element.removeChildren { $0.name == "match-analysis-type" }
             for matchAnalysis in newValue {
-                let matchElement = FoundationXMLFactory().makeElement(name: "match-analysis-type")
+                let matchElement = PNXMLDefaultFactory().makeElement(name: "match-analysis-type")
                 matchElement.addAttribute(name: "enabled", value: matchAnalysis.isEnabled ? "1" : "0")
                 matchElement.addAttribute(name: "rule", value: matchAnalysis.rule.rawValue)
                 matchElement.addAttribute(name: "value", value: matchAnalysis.value.rawValue)

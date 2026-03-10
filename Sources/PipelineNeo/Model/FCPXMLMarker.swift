@@ -72,13 +72,13 @@ extension FinalCutPro.FCPXML.Marker {
     /// Initialize a new `marker` element with the given marker name.
     /// This element type may be a standard marker or a to-do marker.
     init(markerElementNamed markerName: String) {
-        element = FoundationXMLFactory().makeElement(name: FinalCutPro.FCPXML.ElementType.marker.rawValue)
+        element = PNXMLDefaultFactory().makeElement(name: FinalCutPro.FCPXML.ElementType.marker.rawValue)
         name = markerName
     }
     
     /// Initialize a new `chapter-marker` element with the given marker name.
     init(chapterMarkerElementNamed markerName: String) {
-        element = FoundationXMLFactory().makeElement(name: FinalCutPro.FCPXML.ElementType.chapterMarker.rawValue)
+        element = PNXMLDefaultFactory().makeElement(name: FinalCutPro.FCPXML.ElementType.chapterMarker.rawValue)
         name = markerName
     }
 }

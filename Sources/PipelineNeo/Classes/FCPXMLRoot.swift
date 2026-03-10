@@ -26,7 +26,7 @@ extension FinalCutPro.FCPXML {
         public static let supportedElementTypes: Set<ElementType> = [.fcpxml]
 
         public init() {
-            element = FoundationXMLFactory().makeElement(name: elementType.rawValue)
+            element = PNXMLDefaultFactory().makeElement(name: elementType.rawValue)
         }
 
         public init?(element: any PNXMLElement) {
@@ -66,7 +66,7 @@ extension FinalCutPro.FCPXML {
             }
 
             do {
-                let document = try FoundationXMLFactory().makeDocument(data: xmlData, options: [])
+                let document = try PNXMLDefaultFactory().makeDocument(data: xmlData, options: [])
                 guard let rootElement = document.rootElement() else {
                     throw FCPXMLCodableError.xmlStringConversionFailed
                 }
@@ -123,7 +123,7 @@ extension FinalCutPro.FCPXML.Root {
     /// Exactly one of these elements is always required.
     public var resources: any PNXMLElement {
         get {
-            element.firstDefaultedChildElement(whereFCPElementType: .resources, using: FoundationXMLFactory())
+            element.firstDefaultedChildElement(whereFCPElementType: .resources, using: PNXMLDefaultFactory())
         }
         nonmutating set {
             element._updateFirstChildElement(
@@ -150,7 +150,7 @@ extension FinalCutPro.FCPXML.Root {
                     == .orderedAscending
             })
 
-            let resourcesContainer = FoundationXMLFactory().makeElement(name: FinalCutPro.FCPXML.ElementType.resources.rawValue)
+            let resourcesContainer = PNXMLDefaultFactory().makeElement(name: FinalCutPro.FCPXML.ElementType.resources.rawValue)
             sortedElements.forEach { resourcesContainer.addChild($0) }
             resources = resourcesContainer
         }
@@ -200,7 +200,7 @@ extension FinalCutPro.FCPXML.Root {
             // Add new import-options element if provided
             guard let importOptions = newValue, !importOptions.options.isEmpty else { return }
 
-            let factory = FoundationXMLFactory()
+            let factory = PNXMLDefaultFactory()
             let importOptionsElement = factory.makeElement(name: "import-options")
             for option in importOptions.options {
                 let optionElement = factory.makeElement(name: "option")

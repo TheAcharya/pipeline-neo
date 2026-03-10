@@ -33,7 +33,7 @@ extension FinalCutPro.FCPXML.Title {
             
             // Add new text-style-def elements
             for styleDef in newValue {
-                let styleDefElement = FoundationXMLFactory().makeElement(name: "text-style-def")
+                let styleDefElement = PNXMLDefaultFactory().makeElement(name: "text-style-def")
                 styleDefElement.fcpID = styleDef.id
                 if let name = styleDef.name {
                     styleDefElement.fcpName = name
@@ -119,7 +119,7 @@ extension FinalCutPro.FCPXML.Title {
     
     /// Helper to create XML element from TextStyle.
     private func createTextStyleElement(from textStyle: FinalCutPro.FCPXML.TextStyle) -> any PNXMLElement {
-        let element = FoundationXMLFactory().makeElement(name: "text-style")
+        let element = PNXMLDefaultFactory().makeElement(name: "text-style")
         
         if let ref = textStyle.referenceID {
             element.fcpRef = ref
@@ -188,7 +188,7 @@ extension FinalCutPro.FCPXML.Title {
         
         // Add param elements
         for param in textStyle.parameters {
-            let paramElement = FoundationXMLFactory().makeElement(name: "param")
+            let paramElement = PNXMLDefaultFactory().makeElement(name: "param")
             paramElement.addAttribute(name: "name", value: param.name)
             if let key = param.key {
                 paramElement.addAttribute(name: "key", value: key)

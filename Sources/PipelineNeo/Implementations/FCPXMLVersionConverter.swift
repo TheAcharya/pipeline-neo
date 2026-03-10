@@ -24,8 +24,8 @@ public final class FCPXMLVersionConverter: FCPXMLVersionConverting, Sendable {
     private nonisolated(unsafe) let factory: any PNXMLFactory
 
     /// Creates a new version converter.
-    /// - Parameter factory: XML factory for creating documents (default: `FoundationXMLFactory()`).
-    public init(factory: any PNXMLFactory = FoundationXMLFactory()) {
+    /// - Parameter factory: XML factory for creating documents (default: `PNXMLDefaultFactory()`).
+    public init(factory: any PNXMLFactory = PNXMLDefaultFactory()) {
         self.factory = factory
     }
 
