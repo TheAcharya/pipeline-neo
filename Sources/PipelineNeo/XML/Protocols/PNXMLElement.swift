@@ -290,13 +290,16 @@ extension PNXMLElement {
     }
 
     /// Default: removes matching children by collecting indices in reverse.
+    /// Iterates the full `children` array (which includes text nodes) so that
+    /// the indices passed to `removeChild(at:)` are correct.
     public func removeChildren(
         where shouldBeRemoved: (_ child: any PNXMLElement) throws -> Bool
     ) rethrows {
-        let elements = childElements
+        guard let allChildren = children else { return }
         var indicesToRemove: [Int] = []
-        for (idx, element) in elements.enumerated() {
-            if try shouldBeRemoved(element) {
+        for (idx, child) in allChildren.enumerated() {
+            if let element = child as? (any PNXMLElement),
+               try shouldBeRemoved(element) {
                 indicesToRemove.append(idx)
             }
         }
