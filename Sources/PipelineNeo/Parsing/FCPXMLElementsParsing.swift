@@ -13,9 +13,9 @@ import SwiftExtensions
 
 // MARK: - Structure Elements
 
-extension XMLElement {
+extension PNXMLElement {
     /// FCPXML: Returns child structure elements.
-    public var fcpStructureElements: LazyFilteredCompactMapSequence<[XMLNode], XMLElement> {
+    public var fcpStructureElements: [any PNXMLElement] {
         childElements
             .filter { $0.fcpElementType?.isStructure == true }
     }
@@ -23,37 +23,24 @@ extension XMLElement {
 
 // MARK: - Story Elements
 
-extension XMLElement {
+extension PNXMLElement {
     /// FCPXML: Returns immediate child story elements.
-    public var fcpStoryElements: LazyFilteredCompactMapSequence<[XMLNode], XMLElement> {
+    public var fcpStoryElements: [any PNXMLElement] {
         childElements
             .filter { $0.fcpElementType?.isStoryElement == true }
     }
 }
 
-extension XMLElement {
+extension PNXMLElement {
     /// FCPXML: Returns immediate child timeline elements.
-    public var fcpTimelineElements: LazyFilteredCompactMapSequence<[XMLNode], XMLElement> {
+    public var fcpTimelineElements: [any PNXMLElement] {
         childElements
             .filter { $0.fcpElementType?.isTimeline == true }
     }
     
     /// FCPXML: Returns immediate child timeline model objects wrapped in type-erased
     /// ``FinalCutPro/FCPXML/AnyTimeline`` instances.
-    public var fcpTimelineElementsAsAnyTimeline: LazyMapSequence<
-        LazyFilterSequence<
-            LazyMapSequence<
-                LazyMapSequence<
-                    LazyFilterSequence<LazyMapSequence<
-                        LazySequence<[XMLNode]>.Elements,
-                        XMLElement?
-                    >>, XMLElement
-                >.Elements,
-                FinalCutPro.FCPXML.AnyTimeline?
-            >
-        >,
-        FinalCutPro.FCPXML.AnyTimeline
-    > {
+    public var fcpTimelineElementsAsAnyTimeline: [FinalCutPro.FCPXML.AnyTimeline] {
         childElements
             .compactMap { $0.fcpAsAnyTimeline }
     }
@@ -83,7 +70,7 @@ extension XMLElement {
 
 // MARK: - Child Elements
 
-extension XMLElement {
+extension PNXMLElement {
     func _addChildren<S: Sequence>(_ models: S) where S.Element: FCPXMLElement {
         for model in models {
             addChild(model.element)
@@ -93,14 +80,14 @@ extension XMLElement {
     func _updateChildElements<S: Sequence>(
         ofType elementType: FinalCutPro.FCPXML.ElementType,
         with newChildren: S
-    ) where S.Element: XMLNode {
+    ) where S.Element == any PNXMLNode {
         // remove existing children of the element type first
         removeChildren { child in
             child.fcpElementType == elementType
         }
-        
+
         // add new children
-        addChildren(newChildren)
+        addChildren(Array(newChildren))
     }
     
     func _updateChildElements<S: Sequence, T: FCPXMLElementModelTypeProtocol>(
@@ -119,8 +106,8 @@ extension XMLElement {
     
     func _updateChildElements(
         ofType elementType: FinalCutPro.FCPXML.ElementType,
-        withChild newChild: XMLNode?,
-        default defaultChild: XMLNode? = nil
+        withChild newChild: (any PNXMLNode)?,
+        default defaultChild: (any PNXMLNode)? = nil
     ) {
         // remove existing children of the element type first
         removeChildren { child in
@@ -172,8 +159,8 @@ extension XMLElement {
     
     func _updateFirstChildElement(
         ofType elementType: FinalCutPro.FCPXML.ElementType,
-        withChild newChild: XMLElement?,
-        default defaultChild: @autoclosure () -> XMLElement? = { nil }()
+        withChild newChild: (any PNXMLElement)?,
+        default defaultChild: @autoclosure () -> (any PNXMLElement)? = { nil }()
     ) {
         let newElement = newChild ?? defaultChild()
         
@@ -192,12 +179,12 @@ extension XMLElement {
     
     func _updateDefaultedFirstChildElement(
         ofType elementType: FinalCutPro.FCPXML.ElementType,
-        withChild newChild: XMLElement?
+        withChild newChild: (any PNXMLElement)?
     ) {
         _updateFirstChildElement(
             ofType: elementType,
             withChild: newChild,
-            default: XMLElement(name: elementType.rawValue)
+            default: FoundationXMLFactory().makeElement(name: elementType.rawValue)
         )
     }
     
@@ -228,7 +215,7 @@ extension XMLElement {
     }
 }
 
-extension XMLElement {
+extension PNXMLElement {
     /// Updates the `stringValue` of the first matching child if it exists.
     /// If the new value is `nil`, the child element is removed.
     func _updateFirstChildElement(
@@ -249,7 +236,7 @@ extension XMLElement {
             }
         } else {
             if let newStringValue = newStringValue {
-                let newNote = XMLElement(name: childName)
+                let newNote = FoundationXMLFactory().makeElement(name: childName)
                 newNote.stringValue = newStringValue
                 addChild(newNote)
             }
@@ -259,14 +246,14 @@ extension XMLElement {
 
 // MARK: - Ancestors
 
-extension XMLElement {
+extension PNXMLElement {
     /// Returns the first ancestor clip, if the element is contained within one.
     ///
     /// Ancestors are ordered nearest to furthest.
-    public func fcpAncestorClip<S: Sequence<XMLElement>>(
-        ancestors: S? = nil as [XMLElement]?,
+    public func fcpAncestorClip<S: Sequence<any PNXMLElement>>(
+        ancestors: S? = nil as [any PNXMLElement]?,
         includingSelf: Bool
-    ) -> XMLElement? {
+    ) -> (any PNXMLElement)? {
         let ancestors = ancestorElements(overrideWith: ancestors, includingSelf: includingSelf)
         let clipTypes = FinalCutPro.FCPXML.ElementType.allClipCases
         return ancestors
@@ -276,11 +263,11 @@ extension XMLElement {
     /// Returns the first ancestor timeline, if the element is contained within one.
     ///
     /// Ancestors are ordered nearest to furthest.
-    public func fcpAncestorTimeline<S: Sequence<XMLElement>>(
-        ancestors: S? = nil as [XMLElement]?,
+    public func fcpAncestorTimeline<S: Sequence<any PNXMLElement>>(
+        ancestors: S? = nil as [any PNXMLElement]?,
         includingSelf: Bool,
         withLaneZero: Bool = false
-    ) -> (timeline: XMLElement, ancestors: AnySequence<XMLElement>)? {
+    ) -> (timeline: any PNXMLElement, ancestors: AnySequence<any PNXMLElement>)? {
         var ancestors = ancestorElements(overrideWith: ancestors, includingSelf: includingSelf)
         let timelineTypes = FinalCutPro.FCPXML.ElementType.allTimelineCases
         
@@ -332,21 +319,12 @@ extension XMLElement {
     /// FCPXML: Returns type and lane for each of the element's ancestors.
     ///
     /// Ancestors are ordered nearest to furthest.
-    func _fcpAncestorElementTypesAndLanes<S: Sequence<XMLElement>>(
-        ancestors: S? = nil as [XMLElement]?,
+    func _fcpAncestorElementTypesAndLanes<S: Sequence<any PNXMLElement>>(
+        ancestors: S? = nil as [any PNXMLElement]?,
         includingSelf: Bool
-    ) -> LazyMapSequence<
-        LazyFilterSequence<
-            LazyMapSequence<
-                LazySequence<AnySequence<XMLElement>>.Elements,
-                (type: FinalCutPro.FCPXML.ElementType, lane: Int?)?
-            >
-        >,
-        (type: FinalCutPro.FCPXML.ElementType, lane: Int?)
-    > {
+    ) -> [(type: FinalCutPro.FCPXML.ElementType, lane: Int?)] {
         let ancestors = ancestorElements(overrideWith: ancestors, includingSelf: includingSelf)
         return ancestors
-            .lazy
             .compactMap { ancestor -> (type: FinalCutPro.FCPXML.ElementType, lane: Int?)? in
                 guard let type = ancestor.fcpElementType else { return nil }
                 let laneStr = ancestor.fcpLane
@@ -358,11 +336,11 @@ extension XMLElement {
 
 // MARK: - Children
 
-extension XMLElement {
+extension PNXMLElement {
     /// FCPXML: Finds the nearest child (descendent) timeline.
     func _fcpFirstChildTimelineElement(
         excluding: Set<FinalCutPro.FCPXML.ElementType> = []
-    ) -> XMLElement? {
+    ) -> (any PNXMLElement)? {
         fcpTimelineElements
             .first(whereFCPElementType: { elementType in
                 !excluding.contains(elementType)
