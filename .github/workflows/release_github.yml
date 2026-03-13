@@ -20,7 +20,7 @@ jobs:
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
 
     - name: Extract version number
       run: |
@@ -109,7 +109,7 @@ jobs:
         zip -q -r dist_bin/pipeline-neo-cli-portable-${{ env.VERSION }}.zip "dist/"
 
     - name: Save release binaries for cli
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: release_dist_bin_cli
         path: dist_bin
@@ -182,7 +182,7 @@ jobs:
         xcrun stapler staple "$SPKG"
 
     - name: Save release binaries for macos
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: release_PipelineNeo_pkg
         path: ${{ env.SPKG }}
@@ -200,20 +200,20 @@ jobs:
       actions: write
       attestations: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Get tag version
         run: |
           CLI_VERSION=$(sed -n 's/.*let packageVersion = "\(.*\)".*/\1/p' Sources/PipelineNeo/Version.swift)
           echo "VERSION=$CLI_VERSION" >> $GITHUB_ENV
 
       - name: Load release binaries for macos
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: release_dist_bin_cli
           path: dist
 
       - name: Load release pkg
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: release_PipelineNeo_pkg
           path: dist
