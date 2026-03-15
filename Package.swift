@@ -7,7 +7,8 @@ import PackageDescription
 let package = Package(
     name: "PipelineNeo",
     platforms: [
-        .macOS(.v12)
+        .macOS(.v12),
+        .iOS(.v15)
     ],
     products: [
         .library(
@@ -30,6 +31,8 @@ let package = Package(
         .package(url: "https://github.com/orchetect/swift-extensions", from: "2.1.0"),
         // Explicit logging dependency (Xcode 26 dynamic linking compatibility)
         .package(url: "https://github.com/apple/swift-log.git", from: "1.0.0"),
+        // Cross-platform XML parsing (AEXML backend for iOS and other non-macOS platforms)
+        .package(url: "https://github.com/tadija/AEXML", from: "4.0.0"),
     ],
     // Targets: core library, tests, user CLI, and DTD generator utility.
     targets: [
@@ -40,6 +43,7 @@ let package = Package(
                 .product(name: "SwiftTimecode", package: "swift-timecode"),
                 .product(name: "SwiftExtensions", package: "swift-extensions"),
                 .product(name: "Logging", package: "swift-log"),
+                .product(name: "AEXML", package: "AEXML"),
             ],
             resources: [
                 .process("FCPXML DTDs")
